@@ -31,7 +31,8 @@ export async function runSeeder() {
         riskScore: 90,
         riskLevel: 'Thấp (An toàn)',
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36',
-        timezone: 'Asia/Ho_Chi_Minh'
+        timezone: 'Asia/Ho_Chi_Minh',
+        isDeleted: false
       });
     }
     console.log('✅ Nạp dữ liệu mẫu 7 thành viên thành công!');

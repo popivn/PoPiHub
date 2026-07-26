@@ -8,6 +8,7 @@ export async function runMigration() {
       zalo: 'Admin Kịch Bản Hệ Thống',
       ingame: 'TôngSưKhởiTạo',
       createdAt: serverTimestamp(),
+      isDeleted: false,
       isSystemInit: true
     });
     console.log('✅ Khởi tạo Collection "submissions" thành công! Doc ID:', docRef.id);

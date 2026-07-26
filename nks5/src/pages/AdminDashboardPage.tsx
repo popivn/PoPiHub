@@ -6,7 +6,9 @@ import {
   query, 
   orderBy, 
   doc, 
-  deleteDoc 
+  updateDoc,
+  deleteDoc,
+  serverTimestamp
 } from '../firebase';
 import { SecurityTrustChecker } from '../components/SecurityTrustChecker';
 
@@ -25,13 +27,15 @@ interface SubmissionRecord {
   riskLevel: string;
   userAgent: string;
   timestamp: string;
+  isDeleted: boolean;
 }
 
 export function AdminDashboardPage() {
   const [submissions, setSubmissions] = useState<SubmissionRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [actionId, setActionId] = useState<string | null>(null);
+  const [viewTab, setViewTab] = useState<'active' | 'trash'>('active');
   
   // Modal soi chi tiết từng Guest
   const [inspectingGuest, setInspectingGuest] = useState<SubmissionRecord | null>(null);
@@ -61,6 +65,7 @@ export function AdminDashboardPage() {
           riskLevel: data.riskLevel || 'An toàn',
           userAgent: data.userAgent || 'N/A',
           timestamp: timeStr,
+          isDeleted: !!data.isDeleted,
         });
       });
 
@@ -76,24 +81,65 @@ export function AdminDashboardPage() {
     fetchAdminData();
   }, []);
 
-  const handleDelete = async (docId: string) => {
-    if (!window.confirm('Xác nhận xóa bản ghi này khỏi hệ thống bí mật?')) return;
-    setDeletingId(docId);
+  // Soft delete (Chuyển vào thùng rác)
+  const handleSoftDelete = async (docId: string) => {
+    if (!window.confirm('Chuyển bản ghi này vào thùng rác?')) return;
+    setActionId(docId);
+    try {
+      const docRef = doc(db, 'submissions', docId);
+      await updateDoc(docRef, {
+        isDeleted: true,
+        deletedAt: serverTimestamp(),
+      });
+      fetchAdminData();
+    } catch (err) {
+      console.error('Lỗi khi xóa tạm:', err);
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  // Restore (Khôi phục bản ghi từ thùng rác)
+  const handleRestore = async (docId: string) => {
+    setActionId(docId);
+    try {
+      const docRef = doc(db, 'submissions', docId);
+      await updateDoc(docRef, {
+        isDeleted: false,
+        restoredAt: serverTimestamp(),
+      });
+      fetchAdminData();
+    } catch (err) {
+      console.error('Lỗi khi khôi phục:', err);
+    } finally {
+      setActionId(null);
+    }
+  };
+
+  // Hard delete (Xóa vĩnh viễn khỏi DB)
+  const handleHardDelete = async (docId: string) => {
+    if (!window.confirm('CẢNH BÁO: Bạn có chắc chắn muốn XÓA VĨNH VIỄN bản ghi này khỏi Firestore? Không thể khôi phục lại!')) return;
+    setActionId(docId);
     try {
       await deleteDoc(doc(db, 'submissions', docId));
       fetchAdminData();
     } catch (err) {
-      console.error('Lỗi xóa:', err);
+      console.error('Lỗi khi xóa vĩnh viễn:', err);
     } finally {
-      setDeletingId(null);
+      setActionId(null);
     }
   };
 
-  const uniqueIps = new Set(submissions.map((s) => s.ip)).size;
-  const uniqueGuests = new Set(submissions.map((s) => s.guestId)).size;
-  const highRiskCount = submissions.filter((s) => s.riskScore < 50 || s.riskLevel.includes('Rủi ro')).length;
+  const activeSubmissions = submissions.filter((s) => !s.isDeleted);
+  const deletedSubmissions = submissions.filter((s) => s.isDeleted);
 
-  const filtered = submissions.filter((s) => {
+  const uniqueIps = new Set(activeSubmissions.map((s) => s.ip)).size;
+  const uniqueGuests = new Set(activeSubmissions.map((s) => s.guestId)).size;
+  const highRiskCount = activeSubmissions.filter((s) => s.riskScore < 50 || s.riskLevel.includes('Rủi ro')).length;
+
+  const currentList = viewTab === 'active' ? activeSubmissions : deletedSubmissions;
+
+  const filtered = currentList.filter((s) => {
     const q = search.toLowerCase().trim();
     if (!q) return true;
     return (
@@ -136,23 +182,23 @@ export function AdminDashboardPage() {
       {/* Stats Counter */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
-          <span className="text-[10px] text-slate-400 font-semibold block">TỔNG BẢN GHI SUBMIT</span>
-          <span className="text-xl font-black text-amber-400 font-mono">{submissions.length}</span>
+          <span className="text-[10px] text-slate-400 font-semibold block">TỔNG BẢN GHI KÍCH HOẠT</span>
+          <span className="text-xl font-black text-amber-400 font-mono">{activeSubmissions.length}</span>
         </div>
 
         <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
-          <span className="text-[10px] text-slate-400 font-semibold block">SỐ IP ĐỘC NHẤT (UNIQUE IP)</span>
+          <span className="text-[10px] text-slate-400 font-semibold block">SỐ IP ĐỘC NHẤT</span>
           <span className="text-xl font-black text-sky-400 font-mono">{uniqueIps}</span>
         </div>
 
         <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
-          <span className="text-[10px] text-slate-400 font-semibold block">SỐ GUEST / ĐẦU THIẾT BỊ</span>
+          <span className="text-[10px] text-slate-400 font-semibold block">SỐ GUEST / THIẾT BỊ</span>
           <span className="text-xl font-black text-emerald-400 font-mono">{uniqueGuests}</span>
         </div>
 
         <div className="bg-slate-900/90 border border-slate-800 p-3 rounded-xl">
           <span className="text-[10px] text-slate-400 font-semibold block">CẢNH BÁO RỦI RO (HIGH RISK)</span>
-          <span className="text-xl font-black text-rose-500 font-mono">{highRiskCount}</span>
+          <span className="text-xl font-black text-orange-400 font-mono">{highRiskCount}</span>
         </div>
       </div>
 
@@ -289,10 +335,33 @@ export function AdminDashboardPage() {
 
       {/* Main Table analysis */}
       <div className="bg-slate-900/90 border border-slate-800/90 rounded-xl p-3 sm:p-4 space-y-3">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-slate-800">
-          <h2 className="text-xs sm:text-sm font-bold text-slate-200">
-            Danh Sách Phân Tích Chi Tiết Từng Khách Hàng (IP / Guest ID / Risk Score)
-          </h2>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-2 border-b border-slate-800">
+          {/* Tabs: Danh Sách Hoạt Động vs Thùng Rác */}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setViewTab('active')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer flex items-center gap-1.5 transition-all ${
+                viewTab === 'active'
+                  ? 'bg-sky-500/20 text-sky-300 border border-sky-500/50 shadow-md'
+                  : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+              }`}
+            >
+              <i className="fa-solid fa-list-check"></i>
+              <span>Danh Sách Hoạt Động ({activeSubmissions.length})</span>
+            </button>
+
+            <button
+              onClick={() => setViewTab('trash')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-extrabold cursor-pointer flex items-center gap-1.5 transition-all ${
+                viewTab === 'trash'
+                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/50 shadow-md'
+                  : 'bg-slate-950 text-slate-400 hover:text-slate-200 border border-slate-800'
+              }`}
+            >
+              <i className="fa-solid fa-trash-can"></i>
+              <span>Thùng Rác ({deletedSubmissions.length})</span>
+            </button>
+          </div>
 
           <input
             type="text"
@@ -327,7 +396,7 @@ export function AdminDashboardPage() {
               ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-8 text-center text-slate-500">
-                    Chưa có bản ghi dữ liệu nào.
+                    {viewTab === 'trash' ? 'Thùng rác trống.' : 'Chưa có bản ghi dữ liệu nào.'}
                   </td>
                 </tr>
               ) : (
@@ -368,14 +437,36 @@ export function AdminDashboardPage() {
                           <i className="fa-solid fa-map-location-dot text-xs"></i>
                         </button>
 
-                        <button
-                          onClick={() => handleDelete(item.docId)}
-                          disabled={deletingId === item.docId}
-                          title="Xóa bản ghi"
-                          className="w-7 h-7 flex items-center justify-center rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-all cursor-pointer disabled:opacity-50"
-                        >
-                          <i className="fa-solid fa-trash-can text-xs"></i>
-                        </button>
+                        {viewTab === 'active' ? (
+                          <button
+                            onClick={() => handleSoftDelete(item.docId)}
+                            disabled={actionId === item.docId}
+                            title="Xóa tạm (Chuyển vào thùng rác)"
+                            className="w-7 h-7 flex items-center justify-center rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 transition-all cursor-pointer disabled:opacity-50"
+                          >
+                            <i className="fa-solid fa-trash-can text-xs"></i>
+                          </button>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => handleRestore(item.docId)}
+                              disabled={actionId === item.docId}
+                              title="Khôi phục bản ghi"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/40 transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              <i className="fa-solid fa-rotate-left text-xs"></i>
+                            </button>
+
+                            <button
+                              onClick={() => handleHardDelete(item.docId)}
+                              disabled={actionId === item.docId}
+                              title="Xóa vĩnh viễn khỏi Database"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg bg-rose-600 hover:bg-rose-700 text-white border border-rose-400 transition-all cursor-pointer disabled:opacity-50"
+                            >
+                              <i className="fa-solid fa-xmark text-xs"></i>
+                            </button>
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

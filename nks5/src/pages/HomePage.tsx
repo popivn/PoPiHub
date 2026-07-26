@@ -6,7 +6,6 @@ import {
   getDocs, 
   doc, 
   updateDoc, 
-  deleteDoc, 
   query, 
   orderBy, 
   serverTimestamp 
@@ -58,10 +57,10 @@ export function HomePage() {
       const querySnapshot = await getDocs(q);
       const items: SubmissionItem[] = [];
       
-      const docs = querySnapshot.docs;
-      const total = docs.length;
+      const activeDocs = querySnapshot.docs.filter((docSnap: any) => !docSnap.data().isDeleted);
+      const total = activeDocs.length;
 
-      docs.forEach((docSnap: any, idx: number) => {
+      activeDocs.forEach((docSnap: any, idx: number) => {
         const data = docSnap.data();
         let timeStr = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString('vi-VN') : '';
         items.push({
@@ -121,6 +120,7 @@ export function HomePage() {
         riskLevel: fp.riskLevel,
         userAgent: fp.userAgent,
         timezone: fp.timezone,
+        isDeleted: false,
       });
 
       showToast('Lưu thông tin thành công!', true);
@@ -180,7 +180,11 @@ export function HomePage() {
 
     setDeletingDocId(item.docId);
     try {
-      await deleteDoc(doc(db, 'submissions', item.docId));
+      const docRef = doc(db, 'submissions', item.docId);
+      await updateDoc(docRef, {
+        isDeleted: true,
+        deletedAt: serverTimestamp(),
+      });
       showToast('Xóa thành công!', true);
       fetchSubmissions();
     } catch (err) {
