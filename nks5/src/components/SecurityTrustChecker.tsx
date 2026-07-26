@@ -12,7 +12,7 @@ export interface DeviceAnalysis {
   language: string;
   screenSize: string;
   userAgent: string;
-  gps: { latitude: number; longitude: number } | null;
+  gps?: { latitude: number; longitude: number } | null;
   riskScore: number;
   riskLevel: 'Thấp (An toàn)' | 'Trung bình' | 'Cao (Rủi ro)';
   details: string[];
@@ -108,21 +108,11 @@ export async function getDeviceFingerprint(): Promise<DeviceAnalysis> {
     details.push(`✅ Trình duyệt quen thuộc (Guest ID: ${persistentId}) (+30)`);
   }
 
-  let gpsLocation: { latitude: number; longitude: number } | null = null;
-  if ('geolocation' in navigator) {
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
-      });
-      gpsLocation = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      };
-      score += 30;
-      details.push(`✅ Đã cấp quyền GPS chính xác (${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)}) (+30)`);
-    } catch {
-      details.push('ℹ️ Người dùng từ chối / Không bật GPS (+0)');
-    }
+  // GPS không yêu cầu quyền - dùng lat/lon từ IP thay thế
+  const gpsLocation = (lat && lon) ? { latitude: lat, longitude: lon } : null;
+  score += 15;
+  if (gpsLocation) {
+    details.push(`✅ Vị trí xác định từ IP (${lat.toFixed(2)}, ${lon.toFixed(2)}) (+15)`);
   }
 
   let riskLevel: 'Thấp (An toàn)' | 'Trung bình' | 'Cao (Rủi ro)' = 'Trung bình';
