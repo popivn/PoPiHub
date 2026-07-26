@@ -1,32 +1,34 @@
-# React + TypeScript + Vite
+# NKS5 - Quản Lý Zalo & InGame (Vite + React + TypeScript)
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Ứng dụng web hiện đại dùng **Vite**, **React**, **TypeScript**, **Tailwind CSS v4** & **Express**, hỗ trợ lưu thông tin Zalo & InGame vào file `.txt` trên server và tải về.
 
-Currently, two official plugins are available:
+## 🚀 Hướng Dẫn Chạy Cục Bộ (Local)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+### 1. Chạy chế độ Development (`npm run dev`)
+```bash
+cd nks5
+npm install
+npm run dev
 ```
+- Lệnh trên sẽ tự động chạy song song **Express Server** (`http://localhost:3000`) và **Vite Dev Server** (`http://localhost:5173`).
+- Mở trình duyệt truy cập: **`http://localhost:5173`**
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+---
+
+### 2. Chạy Build / Production local
+```bash
+npm run build
+npm start
+```
+Mở trình duyệt truy cập: **`http://localhost:3000`**
+
+---
+
+## 🌐 Deploy Đơn Lẻ Lên Render.com (Docker)
+
+1. Push mã nguồn dự án lên GitHub.
+2. Trên [Render Dashboard](https://dashboard.render.com/):
+   - Bấm **New +** -> **Web Service**.
+   - Chọn repository `PoPiHub` (Root directory: `nks5`).
+   - **Environment / Runtime**: Chọn **Docker**.
+3. Render sẽ tự động đọc `Dockerfile` xây dựng và kích hoạt ứng dụng live!

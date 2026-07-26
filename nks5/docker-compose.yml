@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  nks5-app:
+    build: .
+    container_name: nks5-app
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+    volumes:
+      - ./data:/app/data
+    restart: unless-stopped
