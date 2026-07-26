@@ -245,11 +245,14 @@ export const HomePage: React.FC = () => {
     <div className="w-full max-w-4xl mx-auto px-4 py-4 space-y-4">
       {/* Header Mobile & Desktop */}
       <header className="flex items-center justify-between py-3 border-b border-slate-800">
-        <div>
-          <h1 className="text-2xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">
-            {CONFIG.APP_NAME}
-          </h1>
-          <p className="text-xs text-slate-400 font-medium">Firebase Realtime Sync Active</p>
+        <div className="flex items-center gap-3">
+          <img src="/logo.jpg" alt="Logo" className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow-md" />
+          <div>
+            <h1 className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">
+              {CONFIG.APP_NAME}
+            </h1>
+            <p className="text-xs text-slate-400 font-medium">Firebase Realtime Sync Active</p>
+          </div>
         </div>
 
         <button
