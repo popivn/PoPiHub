@@ -15,11 +15,11 @@ const spatialBrain = new SpatialBrain(genAi1Identity, ollamaService);
 const relEngine   = new RelationshipEngine(ollamaService);
 
 const pool = new pg.Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'genai_life',
-  password: 'Hh123457a!',
-  port: 5432,
+  user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'popihub_db',
+  password: process.env.DB_PASSWORD || 'postgrespassword',
+  port: parseInt(process.env.DB_PORT || '5432', 10),
 });
 
 // Agent Brain Repository for GenAi1 (DB read/write for all brain tables)

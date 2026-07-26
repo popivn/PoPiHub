@@ -1,11 +1,11 @@
 import pg from 'pg';
 
 const pool = new pg.Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'genai_life',
-  password: 'Hh123457a!',
-  port: 5432,
+  user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'popihub_db',
+  password: process.env.DB_PASSWORD || 'postgrespassword',
+  port: parseInt(process.env.DB_PORT || '5432', 10),
 });
 
 export const getAgentChronicles = async (req, res) => {
