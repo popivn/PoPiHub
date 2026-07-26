@@ -242,7 +242,7 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 py-4 space-y-4">
+    <div className="w-full max-w-none px-4 sm:px-8 py-4 space-y-4">
       {/* Header Mobile & Desktop */}
       <header className="flex items-center justify-between py-3 border-b border-slate-800">
         <div className="flex items-center gap-3">
