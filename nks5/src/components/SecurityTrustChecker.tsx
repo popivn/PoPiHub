@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 export interface DeviceAnalysis {
   ip: string;
   isVpn: boolean;
+  city?: string;
+  region?: string;
+  country?: string;
+  lat?: number;
+  lon?: number;
   timezone: string;
   language: string;
   screenSize: string;
@@ -13,104 +18,118 @@ export interface DeviceAnalysis {
   details: string[];
 }
 
+export async function getDeviceFingerprint(): Promise<DeviceAnalysis> {
+  const details: string[] = [];
+  let score = 0;
+
+  const language = navigator.language || 'N/A';
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'N/A';
+  const screenSize = `${window.screen.width}x${window.screen.height}`;
+  const userAgent = navigator.userAgent;
+
+  details.push(`Timezone hệ thống: ${timezone}`);
+  details.push(`Ngôn ngữ trình duyệt: ${language}`);
+  details.push(`Màn hình: ${screenSize}`);
+
+  if (timezone.includes('Ho_Chi_Minh') || timezone.includes('Saigon') || timezone.includes('Asia')) {
+    score += 20;
+    details.push('✅ Timezone phù hợp khu vực Châu Á/Việt Nam (+20)');
+  } else {
+    details.push('⚠️ Timezone khác biệt (+0)');
+  }
+
+  let ip = 'N/A';
+  let isVpn = false;
+  let city = '';
+  let region = '';
+  let country = '';
+  let lat = 0;
+  let lon = 0;
+
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    const ipData = await res.json();
+    ip = ipData.ip || '127.0.0.1';
+    city = ipData.city || '';
+    region = ipData.region || '';
+    country = ipData.country_name || '';
+    lat = ipData.latitude || 0;
+    lon = ipData.longitude || 0;
+
+    if (ipData.country_code === 'VN') {
+      score += 20;
+      details.push(`✅ IP ở Việt Nam (${ip} - ${city}, ${region}) (+20)`);
+    } else {
+      isVpn = true;
+      details.push(`⚠️ IP ngoài nước / Nghi vấn VPN (${country} - ${ip})`);
+    }
+  } catch {
+    score += 10;
+    details.push('⚠️ Không thể kiểm tra VPN qua IP công cộng (+10)');
+  }
+
+  let persistentId = localStorage.getItem('__nks5_fp');
+  if (!persistentId) {
+    persistentId = 'guest_' + Math.random().toString(36).substring(2, 10) + '_' + Date.now().toString(36);
+    localStorage.setItem('__nks5_fp', persistentId);
+    score += 15;
+    details.push('ℹ️ Thiết bị mới (Khởi tạo Guest Device ID) (+15)');
+  } else {
+    score += 30;
+    details.push(`✅ Trình duyệt quen thuộc (Guest ID: ${persistentId}) (+30)`);
+  }
+
+  let gpsLocation: { latitude: number; longitude: number } | null = null;
+  if ('geolocation' in navigator) {
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 3000 });
+      });
+      gpsLocation = {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude,
+      };
+      score += 30;
+      details.push(`✅ Đã cấp quyền GPS chính xác (${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)}) (+30)`);
+    } catch {
+      details.push('ℹ️ Người dùng từ chối / Không bật GPS (+0)');
+    }
+  }
+
+  let riskLevel: 'Thấp (An toàn)' | 'Trung bình' | 'Cao (Rủi ro)' = 'Trung bình';
+  if (score >= 70) {
+    riskLevel = 'Thấp (An toàn)';
+  } else if (score < 40) {
+    riskLevel = 'Cao (Rủi ro)';
+  }
+
+  return {
+    ip,
+    isVpn,
+    city,
+    region,
+    country,
+    lat,
+    lon,
+    timezone,
+    language,
+    screenSize,
+    userAgent,
+    gps: gpsLocation,
+    riskScore: Math.min(score, 100),
+    riskLevel,
+    details,
+  };
+}
+
 export function SecurityTrustChecker() {
   const [loading, setLoading] = useState(true);
   const [analysis, setAnalysis] = useState<DeviceAnalysis | null>(null);
 
   const analyzeSecurity = async () => {
     setLoading(true);
-    const details: string[] = [];
-    let score = 0;
-
-    // 1. Browser Fingerprint & Signals
-    const language = navigator.language || 'N/A';
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'N/A';
-    const screenSize = `${window.screen.width}x${window.screen.height}`;
-    const userAgent = navigator.userAgent;
-
-    details.push(`Timezone hệ thống: ${timezone}`);
-    details.push(`Ngôn ngữ trình duyệt: ${language}`);
-    details.push(`Màn hình: ${screenSize}`);
-
-    // Timezone match (Việt Nam check example)
-    if (timezone.includes('Ho_Chi_Minh') || timezone.includes('Saigon') || timezone.includes('Asia')) {
-      score += 20;
-      details.push('✅ Timezone phù hợp khu vực Châu Á/Việt Nam (+20)');
-    } else {
-      details.push('⚠️ Timezone khác biệt (+0)');
-    }
-
-    // 2. Fetch IP & GeoInfo from public API
-    let ip = 'N/A';
-    let isVpn = false;
-    try {
-      const res = await fetch('https://ipapi.co/json/');
-      const ipData = await res.json();
-      ip = ipData.ip || '127.0.0.1';
-
-      if (ipData.country_code === 'VN') {
-        score += 20;
-        details.push(`✅ IP ở Việt Nam (${ip}) (+20)`);
-      } else {
-        isVpn = true;
-        details.push(`⚠️ IP ngoài nước / Nghi vấn VPN (${ipData.country_name} - ${ip})`);
-      }
-    } catch {
-      score += 10;
-      details.push('⚠️ Không thể kiểm tra VPN qua IP công cộng (+10)');
-    }
-
-    // 3. Cookie & LocalStorage Fingerprint check
-    const persistentId = localStorage.getItem('__nks5_fp');
-    if (persistentId) {
-      score += 30;
-      details.push('✅ Thiết bị quen thuộc (Đã có Session/Cookie cũ) (+30)');
-    } else {
-      const newFp = 'fp_' + Math.random().toString(36).substring(2);
-      localStorage.setItem('__nks5_fp', newFp);
-      score += 15;
-      details.push('ℹ️ Thiết bị mới truy cập lần đầu (+15)');
-    }
-
-    // 4. GPS Check (Optional)
-    let gpsLocation: { latitude: number; longitude: number } | null = null;
-    if ('geolocation' in navigator) {
-      try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 4000 });
-        });
-        gpsLocation = {
-          latitude: position.coords.latitude,
-          longitude: position.coords.longitude,
-        };
-        score += 30;
-        details.push(`✅ Đã cấp quyền GPS chính xác (${position.coords.latitude.toFixed(2)}, ${position.coords.longitude.toFixed(2)}) (+30)`);
-      } catch {
-        details.push('ℹ️ Người dùng từ chối / Không bật GPS (+0)');
-      }
-    }
-
-    // Risk level calculation
-    let riskLevel: 'Thấp (An toàn)' | 'Trung bình' | 'Cao (Rủi ro)' = 'Trung bình';
-    if (score >= 70) {
-      riskLevel = 'Thấp (An toàn)';
-    } else if (score < 40) {
-      riskLevel = 'Cao (Rủi ro)';
-    }
-
-    setAnalysis({
-      ip,
-      isVpn,
-      timezone,
-      language,
-      screenSize,
-      userAgent,
-      gps: gpsLocation,
-      riskScore: Math.min(score, 100),
-      riskLevel,
-      details,
-    });
-
+    const result = await getDeviceFingerprint();
+    setAnalysis(result);
     setLoading(false);
   };
 

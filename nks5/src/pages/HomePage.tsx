@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   db, 
   collection, 
@@ -11,7 +11,7 @@ import {
   orderBy, 
   serverTimestamp 
 } from '../firebase';
-import { SecurityTrustChecker } from '../components/SecurityTrustChecker';
+import { getDeviceFingerprint } from '../components/SecurityTrustChecker';
 
 export interface SubmissionItem {
   docId: string;
@@ -19,6 +19,11 @@ export interface SubmissionItem {
   timestamp?: string;
   zalo?: string;
   ingame?: string;
+  guestId?: string;
+  ip?: string;
+  riskScore?: number;
+  riskLevel?: string;
+  userAgent?: string;
 }
 
 export function HomePage() {
@@ -30,6 +35,9 @@ export function HomePage() {
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; isSuccess: boolean } | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+
+  // Modal Chi Tiết Guest / Device
+  const [viewingGuest, setViewingGuest] = useState<SubmissionItem | null>(null);
 
   // Modal Sửa state
   const [editingItem, setEditingItem] = useState<SubmissionItem | null>(null);
@@ -62,6 +70,11 @@ export function HomePage() {
           timestamp: timeStr,
           zalo: data.zalo || '',
           ingame: data.ingame || '',
+          guestId: data.guestId || 'Chưa định danh',
+          ip: data.ip || 'N/A',
+          riskScore: data.riskScore ?? 80,
+          riskLevel: data.riskLevel || 'An toàn',
+          userAgent: data.userAgent || '',
         });
       });
 
@@ -87,11 +100,29 @@ export function HomePage() {
 
     setSubmitting(true);
     try {
+      // 1. Quét Fingerprint tín hiệu Guest thiết bị
+      const fp = await getDeviceFingerprint();
+      const guestId = localStorage.getItem('__nks5_fp') || 'guest_unknown';
+
+      // 2. Lưu thông tin thành viên + Tín hiệu bảo mật Guest vào Database Firebase
       await addDoc(collection(db, 'submissions'), {
         zalo: zalo.trim(),
         ingame: ingame.trim(),
         createdAt: serverTimestamp(),
+        guestId,
+        ip: fp.ip,
+        city: fp.city || '',
+        region: fp.region || '',
+        country: fp.country || '',
+        lat: fp.lat || 0,
+        lon: fp.lon || 0,
+        gps: fp.gps || null,
+        riskScore: fp.riskScore,
+        riskLevel: fp.riskLevel,
+        userAgent: fp.userAgent,
+        timezone: fp.timezone,
       });
+
       showToast('Lưu thông tin thành công!', true);
       setZalo('');
       setInGame('');
@@ -239,9 +270,6 @@ export function HomePage() {
       {/* Main Layout */}
       <main className="max-w-7xl w-full mx-auto px-2.5 sm:px-4 pt-3 pb-6 space-y-3 z-10">
 
-        {/* Security & Risk Assessment Component */}
-        <SecurityTrustChecker />
-
         {/* Collapsible Form Section */}
         <div className="w-full">
           <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-xl shadow-lg overflow-hidden">
@@ -383,6 +411,60 @@ export function HomePage() {
           </div>
         )}
 
+        {/* Modal Xem Thông Tin Thiết Bị / Guest */}
+        {viewingGuest && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="bg-slate-900 border border-sky-500/40 rounded-xl p-4 max-w-md w-full shadow-2xl space-y-3">
+              <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                <h3 className="text-sm font-bold text-sky-400 flex items-center gap-1.5">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                  </svg>
+                  <span>Chi Tiết Guest & Bảo Mật #{viewingGuest.id}</span>
+                </h3>
+                <button
+                  onClick={() => setViewingGuest(null)}
+                  className="text-slate-400 hover:text-white text-xs font-bold px-2 py-1 bg-slate-800 rounded-lg cursor-pointer"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between p-2 bg-slate-950 rounded-lg border border-slate-800">
+                  <span className="text-slate-400">Guest ID:</span>
+                  <span className="font-mono font-bold text-amber-300">{viewingGuest.guestId}</span>
+                </div>
+                <div className="flex justify-between p-2 bg-slate-950 rounded-lg border border-slate-800">
+                  <span className="text-slate-400">Địa chỉ IP:</span>
+                  <span className="font-mono font-bold text-sky-400">{viewingGuest.ip}</span>
+                </div>
+                <div className="flex justify-between p-2 bg-slate-950 rounded-lg border border-slate-800">
+                  <span className="text-slate-400">Điểm độ tin cậy:</span>
+                  <span className="font-bold text-emerald-400">{viewingGuest.riskScore}/100 ({viewingGuest.riskLevel})</span>
+                </div>
+                <div className="p-2 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
+                  <span className="text-slate-400 block">User-Agent:</span>
+                  <span className="font-mono text-[10px] text-slate-300 block break-all">{viewingGuest.userAgent || 'Không ghi nhận'}</span>
+                </div>
+                <div className="flex justify-between p-2 bg-slate-950 rounded-lg border border-slate-800">
+                  <span className="text-slate-400">Thời gian Submit:</span>
+                  <span className="font-mono text-slate-300">{viewingGuest.timestamp}</span>
+                </div>
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <button
+                  onClick={() => setViewingGuest(null)}
+                  className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold cursor-pointer"
+                >
+                  Đóng
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Ultra-Compact Table */}
         <div className="w-full">
           <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-xl p-2.5 sm:p-4 shadow-xl">
@@ -431,7 +513,7 @@ export function HomePage() {
                     <th className="px-2 sm:px-3 py-2 text-sky-400 whitespace-nowrap">Tên Zalo</th>
                     <th className="px-2 sm:px-3 py-2 text-emerald-400 whitespace-nowrap">Tên InGame</th>
                     <th className="px-2 sm:px-3 py-2 text-slate-400 text-right whitespace-nowrap hidden sm:table-cell">Thời Gian</th>
-                    <th className="px-2 sm:px-3 py-2 text-center text-amber-300 whitespace-nowrap w-24">Thao Tác</th>
+                    <th className="px-2 sm:px-3 py-2 text-center text-amber-300 whitespace-nowrap w-20">Thao Tác</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 bg-slate-900/40">
@@ -473,23 +555,18 @@ export function HomePage() {
                             <button
                               onClick={() => startEdit(item)}
                               title="Sửa thông tin"
-                              className="px-2 py-1 rounded bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-all text-[10px] font-semibold flex items-center gap-1 cursor-pointer"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 transition-all cursor-pointer"
                             >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                              <span>Sửa</span>
+                              <i className="fa-solid fa-pen-to-square text-xs"></i>
                             </button>
+
                             <button
                               onClick={() => handleDelete(item)}
                               disabled={deletingDocId === item.docId}
                               title="Xóa thông tin"
-                              className="px-2 py-1 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 transition-all text-[10px] font-semibold flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                              className="w-7 h-7 flex items-center justify-center rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 transition-all cursor-pointer disabled:opacity-50"
                             >
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                              <span>{deletingDocId === item.docId ? '...' : 'Xóa'}</span>
+                              <i className="fa-solid fa-trash-can text-xs"></i>
                             </button>
                           </div>
                         </td>
