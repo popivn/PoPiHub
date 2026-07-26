@@ -1,0 +1,9 @@
+Current situation:
+
+{{situation}}
+
+Recent memories:
+
+{{memory}}
+
+What should the NPC do next?

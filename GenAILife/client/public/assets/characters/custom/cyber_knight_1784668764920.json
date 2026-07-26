@@ -1,0 +1,12 @@
+{
+  "name": "Cyber Knight",
+  "type": "hero",
+  "helmet": "knight_helm",
+  "shield": "neon_ring",
+  "weapon": "flame_greatsword",
+  "themeColor": 62206,
+  "hp": 100,
+  "maxHp": 100,
+  "attack": 30,
+  "speed": 5.5
+}

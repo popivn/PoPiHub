@@ -1,0 +1,13 @@
+{
+  "id": "char_cyber_knight",
+  "name": "Cyber Knight",
+  "type": "hero",
+  "helmet": "knight_helm",
+  "shield": "star_shield",
+  "weapon": "laser_blade",
+  "themeColor": "0x00f2fe",
+  "hp": 120,
+  "maxHp": 120,
+  "attack": 30,
+  "speed": 5.5
+}

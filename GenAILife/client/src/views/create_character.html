@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi" class="w-full h-full overflow-hidden">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tạo Nhân Vật Mới · GenAI Life Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="w-full h-full overflow-hidden flex items-center justify-center" style="background:#060a14">
+  
+  <div class="glass flex flex-col rounded-2xl overflow-hidden w-full max-w-4xl h-[90vh]" style="background:rgba(12,20,40,.97);border:1px solid rgba(0,242,254,.3);box-shadow:0 20px 60px rgba(0,0,0,.8)">
+    
+    <!-- Header -->
+    <div class="flex items-center justify-between px-5 py-3.5" style="border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(0,242,254,.1) 0%,transparent 100%)">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center w-9 h-9 rounded-xl shrink-0" style="background:rgba(0,242,254,.15);border:1px solid rgba(0,242,254,.4)">
+          <i class="fa-solid fa-wand-magic-sparkles text-lg" style="color:#00f2fe"></i>
+        </div>
+        <div>
+          <h1 class="text-sm font-bold text-white">Tạo Nhân Vật Đầu Tiên Cho Tài Khoản</h1>
+          <p class="text-[11px]" style="color:#64748b">Tùy chỉnh Nón, Khiên, Kiếm &amp; Lưu Nhân Vật vào Database (Tối đa 3 nhân vật)</p>
+        </div>
+      </div>
+      <div id="player-count-badge" class="text-xs font-bold px-3 py-1 rounded-xl" style="background:rgba(0,242,254,.1);border:1px solid rgba(0,242,254,.3);color:#00f2fe">
+        <i class="fa-solid fa-users mr-1"></i>Số nhân vật: 0 / 3
+      </div>
+    </div>
+
+    <!-- Body (2 Column Layout) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 flex-1 min-h-0 overflow-hidden">
+      
+      <!-- Left: Interactive Character Canvas Preview -->
+      <div class="relative flex flex-col items-center justify-center" style="background:linear-gradient(135deg,#060a14 0%,#08101f 100%);border-right:1px solid rgba(255,255,255,.07)">
+        <div id="create-canvas-container" class="w-full h-full flex items-center justify-center"></div>
+        <div class="absolute bottom-3 left-3 glass rounded-lg px-3 py-1">
+          <span class="text-[10px] font-semibold tracking-wide" style="color:#00f2fe;font-family:'JetBrains Mono',monospace">
+            <i class="fa-solid fa-circle-notch fa-spin text-[8px] mr-1" style="color:#00ff88"></i>
+            Character Canvas Preview
+          </span>
+        </div>
+      </div>
+
+      <!-- Right: Form Inputs -->
+      <form id="form-create-character" class="flex flex-col gap-4 p-5 overflow-y-auto" style="background:rgba(8,15,30,.6)">
+        
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold" style="color:#94a3b8">Tên nhân vật</label>
+          <input type="text" id="input-player-name" class="form-control" placeholder="Nhập tên nhân vật (ví dụ: Cyber Hero)..." value="Cyber Knight" required />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold" style="color:#94a3b8">Nón / Mũ bảo hiểm</label>
+          <select id="select-player-helmet" class="form-control">
+            <option value="tech_visor" selected>Tech Visor (Kính Sci-Fi Cyan)</option>
+            <option value="knight_helm">Knight Helmet (Mũ Hiệp sĩ Sắt)</option>
+            <option value="cyber_crown">Cyber Crown (Vương miện Năng lượng)</option>
+            <option value="tactical_goggles">Tactical Goggles (Kính Chiến thuật)</option>
+            <option value="none">Không đội mũ</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold" style="color:#94a3b8">Khiên phòng thủ</label>
+          <select id="select-player-shield" class="form-control">
+            <option value="star_shield" selected>Star Shield (Khiên Ngôi Sao)</option>
+            <option value="energy_aegis">Energy Aegis (Khiên Kim Cương)</option>
+            <option value="heavy_bulwark">Heavy Bulwark (Khiên Tháp Hạng Nặng)</option>
+            <option value="neon_ring">Neon Ring (Vòng Năng Lượng)</option>
+            <option value="none">Không dùng khiên</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold" style="color:#94a3b8">Vũ khí / Kiếm</label>
+          <select id="select-player-weapon" class="form-control">
+            <option value="laser_blade" selected>Laser Blade (Kiếm Laser Xanh)</option>
+            <option value="flame_greatsword">Flame Greatsword (Đại Kiếm Lửa)</option>
+            <option value="plasma_katana">Plasma Katana (Thanh Katana Năng lượng)</option>
+            <option value="double_saber">Double Saber (Kiếm Đôi Hai Đầu)</option>
+            <option value="none">Không trang bị</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs font-semibold" style="color:#94a3b8">Bảng màu Theme</label>
+          <select id="select-player-theme" class="form-control">
+            <option value="0x00f2fe" selected>Cyber Cyan (#00f2fe)</option>
+            <option value="0xff007f">Neon Crimson (#ff007f)</option>
+            <option value="0xffbb00">Royal Gold (#ffbb00)</option>
+            <option value="0x00ff88">Emerald Green (#00ff88)</option>
+            <option value="0x7f00ff">Shadow Purple (#7f00ff)</option>
+          </select>
+        </div>
+
+        <div id="create-error-alert" class="hidden text-xs text-red-400 p-2.5 rounded-lg" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2)"></div>
+
+        <div class="flex gap-3 mt-auto">
+          <button type="submit" id="btn-save-player" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold py-2.5 px-4 rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-95 text-slate-900" style="background:linear-gradient(135deg,#00f2fe,#00ff88);box-shadow:0 4px 16px rgba(0,242,254,.4)">
+            <i class="fa-solid fa-floppy-disk"></i> LƯU VÀ VÀO GAME
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="/src/create_character.js"></script>
+</body>
+</html>

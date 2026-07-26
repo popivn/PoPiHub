@@ -1,0 +1,13 @@
+{
+  "id": "char_neon_assassin",
+  "name": "Neon Assassin",
+  "type": "enemy",
+  "helmet": "tactical_goggles",
+  "shield": "none",
+  "weapon": "plasma_katana",
+  "themeColor": "0xff007f",
+  "hp": 80,
+  "maxHp": 80,
+  "attack": 45,
+  "speed": 7.0
+}

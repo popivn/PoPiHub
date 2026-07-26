@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="vi" class="w-full h-full overflow-hidden">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PixiJS 2.5D Isometric Hero Arena · Character Creator Studio</title>
+  <meta name="description" content="Isometric game arena với Character Creator & Bone Rigging Studio" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="./src/style.css" />
+</head>
+<body class="w-full h-full overflow-hidden">
+<div id="app">
+
+  <!-- ══════════════════════════════════════════════════════
+       HUD HEADER
+  ══════════════════════════════════════════════════════ -->
+  <header class="absolute top-2.5 left-2.5 right-2.5 z-10 flex justify-between items-center gap-2 pointer-events-none">
+
+    <!-- Brand Card -->
+    <div class="glass flex items-center gap-2.5 px-3 py-2 rounded-2xl pointer-events-auto shrink-0"
+         style="background:linear-gradient(135deg,rgba(15,25,46,.95),rgba(10,18,35,.95))">
+      <div class="flex items-center justify-center w-8 h-8 rounded-xl"
+           style="background:linear-gradient(135deg,rgba(0,242,254,.2),rgba(79,172,254,.15));border:1px solid rgba(0,242,254,.3)">
+        <i class="fa-solid fa-palette text-sm" style="color:#00f2fe"></i>
+      </div>
+      <div>
+        <h1 class="text-sm font-bold leading-tight tracking-tight"
+            style="background:linear-gradient(135deg,#e2e8f0 0%,#00f2fe 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent">
+          Base Character Studio
+        </h1>
+        <p class="text-[10px] tracking-wide" style="color:#64748b">Nón · Khiên · Kiếm · JSON</p>
+      </div>
+    </div>
+
+    <!-- Right side: buttons + stats -->
+    <div class="flex items-center gap-1.5 pointer-events-auto flex-wrap justify-end">
+
+      <!-- Tạo Nhân Vật Button -->
+      <button id="btn-open-creator"
+        class="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95"
+        style="background:linear-gradient(135deg,#00f2fe 0%,#00ff88 100%);color:#030d1a;box-shadow:0 2px 14px rgba(0,242,254,.35)">
+        <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i>
+        Tạo Nhân Vật Mới
+      </button>
+
+      <!-- Rigging Button -->
+      <button id="btn-open-rig"
+        class="flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95"
+        style="background:linear-gradient(135deg,#7c3aed 0%,#c026d3 100%);color:#fff;box-shadow:0 2px 14px rgba(124,58,237,.4);border:1px solid rgba(255,255,255,.15)">
+        <i class="fa-solid fa-bone text-[10px]"></i>
+        Rigging Studio
+      </button>
+
+      <!-- Select Active Player Dropdown -->
+      <div class="glass flex items-center gap-1.5 px-2.5 py-1 rounded-xl" style="border:1px solid rgba(0,242,254,.3)">
+        <i class="fa-solid fa-gamepad text-xs" style="color:#00f2fe"></i>
+        <select id="select-active-player" class="bg-transparent text-[11px] font-bold text-white outline-none cursor-pointer">
+          <option value="" class="bg-slate-900">Đang tải nhân vật...</option>
+        </select>
+        <button id="btn-add-new-player" title="Tạo thêm nhân vật mới (Tối đa 3)" class="text-xs px-1.5 py-0.5 rounded hover:bg-cyan-500/20 text-cyan-400">
+          <i class="fa-solid fa-plus"></i>
+        </button>
+      </div>
+
+      <!-- User Profile Badge -->
+      <div id="user-profile-badge" class="glass flex items-center gap-1.5 px-3 py-1.5 rounded-xl">
+        <i class="fa-solid fa-user-astronaut text-xs" style="color:#00f2fe"></i>
+        <span id="login-btn-text" class="text-[11px] font-bold text-white">Guest</span>
+      </div>
+
+      <!-- Logout Button -->
+      <button id="btn-hud-logout" title="Đăng Xuất"
+        class="flex items-center justify-center text-xs font-bold px-2.5 py-1.5 rounded-xl cursor-pointer transition-all duration-200 hover:scale-105 active:scale-95 text-red-400 hover:text-red-300"
+        style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);box-shadow:0 2px 10px rgba(239,68,68,.2)">
+        <i class="fa-solid fa-right-from-bracket mr-1 text-[10px]"></i> Log Out
+      </button>
+
+      <!-- Stat: FPS -->
+      <div class="glass flex flex-col items-center px-2.5 py-1.5 rounded-xl min-w-[46px]">
+        <span class="text-[9px] font-semibold tracking-widest uppercase" style="color:#475569">FPS</span>
+        <span id="fps-counter" class="stat-val cyan text-sm">60</span>
+      </div>
+
+      <!-- Stat: In Sight -->
+      <div class="glass flex flex-col items-center px-2.5 py-1.5 rounded-xl min-w-[80px]">
+        <span class="text-[9px] font-semibold tracking-widest uppercase" style="color:#475569">
+          <i class="fa-solid fa-eye mr-0.5"></i>Sight
+        </span>
+        <span id="scanned-units" class="stat-val cyan text-xs">0 In Sight</span>
+      </div>
+
+      <!-- Stat: Culled -->
+      <div class="glass flex flex-col items-center px-2.5 py-1.5 rounded-xl min-w-[72px]">
+        <span class="text-[9px] font-semibold tracking-widest uppercase" style="color:#475569">
+          <i class="fa-solid fa-scissors mr-0.5"></i>Culled
+        </span>
+        <span id="culled-units" class="stat-val green text-xs">0 Culled</span>
+      </div>
+
+      <!-- Stat: Total -->
+      <div class="glass flex flex-col items-center px-2.5 py-1.5 rounded-xl min-w-[66px]">
+        <span class="text-[9px] font-semibold tracking-widest uppercase" style="color:#475569">Total</span>
+        <span id="total-discovered" class="stat-val cyan text-xs">0 Total</span>
+      </div>
+
+      <!-- Stat: Renderer -->
+      <div class="glass flex flex-col items-center px-2.5 py-1.5 rounded-xl min-w-[58px]">
+        <span class="text-[9px] font-semibold tracking-widest uppercase" style="color:#475569">Renderer</span>
+        <span id="renderer-type" class="stat-val green text-xs">WebGL2</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════
+       CONTROL PANEL (Collapsible)
+  ══════════════════════════════════════════════════════ -->
+  <div class="glass absolute z-10 rounded-2xl overflow-hidden" style="top:60px;left:10px;width:210px">
+    <!-- Toggle Header -->
+    <button id="ctrl-panel-toggle"
+      class="collapse-btn w-full flex items-center justify-between px-3 py-2 cursor-pointer transition-colors duration-150 hover:bg-white/5"
+      style="border-bottom:1px solid rgba(255,255,255,.06)">
+      <span class="flex items-center gap-2 text-xs font-semibold" style="color:#e2e8f0">
+        <i class="fa-solid fa-gamepad text-[10px]" style="color:#00f2fe"></i>
+        Điều khiển
+      </span>
+      <i class="fa-solid fa-chevron-down chevron-icon text-[10px]"></i>
+    </button>
+
+    <!-- Collapsible Body -->
+    <div id="ctrl-panel-body" class="collapse-content">
+      <div class="flex flex-col gap-2 px-2.5 py-2.5">
+
+        <!-- WASD -->
+        <div class="flex flex-col gap-1.5 rounded-xl px-2.5 py-2"
+             style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2)">
+          <div class="flex items-center gap-1">
+            <span class="key-cap">W</span>
+            <span class="key-cap">A</span>
+            <span class="key-cap">S</span>
+            <span class="key-cap">D</span>
+          </div>
+          <p class="text-[10px] leading-snug" style="color:#64748b">Di chuyển 4 hướng</p>
+        </div>
+
+        <!-- Mouse -->
+        <div class="flex flex-col gap-1.5 rounded-xl px-2.5 py-2"
+             style="background:rgba(124,58,237,.08);border:1px solid rgba(124,58,237,.2)">
+          <span class="key-cap cyan w-fit">
+            <i class="fa-solid fa-computer-mouse text-[9px] mr-1"></i>Click
+          </span>
+          <p class="text-[10px] leading-snug" style="color:#64748b">Vung Kiếm Laser Chém!</p>
+        </div>
+
+        <!-- Tip -->
+        <div class="rounded-xl px-2.5 py-2 text-[10px] leading-snug"
+             style="background:rgba(0,242,254,.05);border:1px solid rgba(0,242,254,.15);color:#7dd3fc">
+          <i class="fa-solid fa-lightbulb mr-1" style="color:#00f2fe"></i>
+          Bấm <strong style="color:#00f2fe">Tạo Nhân Vật Mới</strong> để custom &amp; lưu JSON!
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Pixi Canvas Layer -->
+  <div id="pixi-container"></div>
+
+  <!-- ══════════════════════════════════════════════════════
+       🎨 CHARACTER CREATOR MODAL
+  ══════════════════════════════════════════════════════ -->
+  <div id="creator-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-4 py-2.5"
+           style="border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(0,242,254,.04) 0%,transparent 100%)">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-9 h-9 rounded-xl shrink-0"
+               style="background:rgba(0,242,254,.12);border:1px solid rgba(0,242,254,.3)">
+            <i class="fa-solid fa-palette" style="color:#00f2fe"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-white leading-tight">Character Component Creator</h2>
+            <p class="text-[10px]" style="color:#64748b">Tự thiết kế Nón · Khiên · Kiếm &amp; lưu nhân vật JSON</p>
+          </div>
+        </div>
+        <button id="btn-close-creator"
+          class="flex items-center justify-center w-7 h-7 rounded-lg cursor-pointer transition-all hover:bg-red-500/20 hover:text-red-400"
+          style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;font-size:1.1rem;line-height:1">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <!-- Left: Preview Canvas -->
+        <div class="relative flex flex-col items-center justify-center"
+             style="background:linear-gradient(135deg,#060a14 0%,#08101f 100%);border-right:1px solid rgba(255,255,255,.07)">
+          <div id="creator-canvas-container"></div>
+          <div class="absolute bottom-3 left-3 glass rounded-lg px-2.5 py-1">
+            <span class="text-[10px] font-semibold tracking-wide" style="color:#00f2fe;font-family:'JetBrains Mono',monospace">
+              <i class="fa-solid fa-circle-notch fa-spin text-[8px] mr-1" style="color:#00ff88"></i>
+              Live Preview
+            </span>
+          </div>
+        </div>
+
+        <!-- Right: Controls -->
+        <div class="flex flex-col gap-0 overflow-y-auto" style="background:rgba(8,15,30,.6)">
+
+          <!-- ─── Section: Nhân vật ─── -->
+          <div style="border-bottom:1px solid rgba(255,255,255,.06)">
+            <button class="collapse-btn w-full flex items-center justify-between px-3 py-2 cursor-pointer transition-colors hover:bg-white/[.03]"
+                    data-target="sec-charinfo">
+              <span class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style="color:#00f2fe">
+                <i class="fa-solid fa-id-card"></i> Thông tin Nhân vật
+              </span>
+              <i class="fa-solid fa-chevron-down chevron-icon text-[9px]"></i>
+            </button>
+            <div id="sec-charinfo" class="collapse-content">
+              <div class="flex gap-2 px-3 pb-3">
+                <div class="flex flex-col gap-1 flex-1 min-w-0">
+                  <label class="text-[10px] font-semibold" style="color:#64748b">Tên nhân vật</label>
+                  <input type="text" id="input-char-name" class="form-control" value="Cyber Paladin" />
+                </div>
+                <div class="flex flex-col gap-1" style="min-width:100px">
+                  <label class="text-[10px] font-semibold" style="color:#64748b">Vai trò</label>
+                  <select id="select-char-role" class="form-control">
+                    <option value="hero" selected>Hero (Đồng minh)</option>
+                    <option value="enemy">Enemy (Kẻ địch)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── Section: Trang bị ─── -->
+          <div style="border-bottom:1px solid rgba(255,255,255,.06)">
+            <button class="collapse-btn w-full flex items-center justify-between px-3 py-2 cursor-pointer transition-colors hover:bg-white/[.03]"
+                    data-target="sec-gear">
+              <span class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style="color:#00f2fe">
+                <i class="fa-solid fa-shield-halved"></i> Trang bị &amp; Vũ khí
+              </span>
+              <i class="fa-solid fa-chevron-down chevron-icon text-[9px]"></i>
+            </button>
+            <div id="sec-gear" class="collapse-content">
+              <div class="flex flex-col gap-2 px-3 pb-3">
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] font-semibold flex items-center gap-1" style="color:#64748b">
+                    <i class="fa-solid fa-helmet-safety text-[9px]"></i> Nón / Mũ bảo hiểm
+                  </label>
+                  <select id="select-helmet" class="form-control">
+                    <option value="tech_visor" selected>Tech Visor (Kính Sci-Fi)</option>
+                    <option value="knight_helm">Knight Helmet (Hiệp sĩ)</option>
+                    <option value="cyber_crown">Cyber Crown (Vương miện)</option>
+                    <option value="tactical_goggles">Tactical Goggles</option>
+                    <option value="none">Không đội mũ</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] font-semibold flex items-center gap-1" style="color:#64748b">
+                    <i class="fa-solid fa-shield text-[9px]"></i> Khiên phòng thủ
+                  </label>
+                  <select id="select-shield" class="form-control">
+                    <option value="star_shield" selected>Star Shield</option>
+                    <option value="energy_aegis">Energy Aegis</option>
+                    <option value="heavy_bulwark">Heavy Bulwark</option>
+                    <option value="neon_ring">Neon Ring</option>
+                    <option value="none">Không khiên</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] font-semibold flex items-center gap-1" style="color:#64748b">
+                    <i class="fa-solid fa-khanda text-[9px]"></i> Vũ khí / Kiếm
+                  </label>
+                  <select id="select-weapon" class="form-control">
+                    <option value="laser_blade" selected>Laser Blade</option>
+                    <option value="flame_greatsword">Flame Greatsword</option>
+                    <option value="plasma_katana">Plasma Katana</option>
+                    <option value="double_saber">Double Saber</option>
+                    <option value="none">Không trang bị</option>
+                  </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="text-[10px] font-semibold flex items-center gap-1" style="color:#64748b">
+                    <i class="fa-solid fa-palette text-[9px]"></i> Bảng màu Theme
+                  </label>
+                  <select id="select-theme-color" class="form-control">
+                    <option value="0x00f2fe" selected>Cyber Cyan (#00f2fe)</option>
+                    <option value="0xff007f">Neon Crimson (#ff007f)</option>
+                    <option value="0xffbb00">Royal Gold (#ffbb00)</option>
+                    <option value="0x00ff88">Emerald Green (#00ff88)</option>
+                    <option value="0x7f00ff">Shadow Purple (#7f00ff)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── Actions ─── -->
+          <div class="p-3 flex gap-2 mt-auto">
+            <button id="btn-save-json"
+              class="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
+              style="background:rgba(79,172,254,.1);border:1px solid rgba(79,172,254,.3);color:#4facfe">
+              <i class="fa-solid fa-floppy-disk"></i> Lưu JSON
+            </button>
+            <button id="btn-spawn-arena"
+              class="flex-1 flex items-center justify-center gap-1.5 text-[11px] font-bold py-2 px-3 rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
+              style="background:linear-gradient(135deg,#00f2fe,#7c3aed);color:#fff;box-shadow:0 3px 16px rgba(0,242,254,.25)">
+              <i class="fa-solid fa-rocket"></i> Spawn vào Arena
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════
+       🦴 BONE RIGGING MODAL
+  ══════════════════════════════════════════════════════ -->
+  <div id="rig-modal" class="modal-backdrop hidden">
+    <div class="modal-card">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between px-4 py-2.5"
+           style="border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(124,58,237,.06) 0%,transparent 100%)">
+        <div class="flex items-center gap-3">
+          <div class="flex items-center justify-center w-9 h-9 rounded-xl shrink-0"
+               style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4)">
+            <i class="fa-solid fa-bone" style="color:#a78bfa"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-white leading-tight">2D Skeletal Bone Rigging Studio</h2>
+            <p class="text-[10px]" style="color:#64748b">Tùy chỉnh góc xoay khung xương (FK) &amp; cử động nhân vật</p>
+          </div>
+        </div>
+        <button id="btn-close-rig"
+          class="flex items-center justify-center w-7 h-7 rounded-lg cursor-pointer transition-all hover:bg-red-500/20 hover:text-red-400"
+          style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#64748b;font-size:1rem">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <!-- Left: Canvas -->
+        <div class="relative flex flex-col items-center justify-center"
+             style="background:linear-gradient(135deg,#060a14,#08101f);border-right:1px solid rgba(255,255,255,.07)">
+          <div id="rig-canvas-container"></div>
+          <div class="absolute bottom-3 left-3 glass rounded-lg px-2.5 py-1.5">
+            <label class="toggle-label cursor-pointer">
+              <input type="checkbox" id="toggle-wireframe" checked class="accent-violet-500 w-3 h-3" />
+              <span><i class="fa-solid fa-vector-square mr-1 text-[9px]"></i>Bone Wireframe</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Right: Rigging Controls -->
+        <div class="flex flex-col gap-0 overflow-y-auto" style="background:rgba(8,15,30,.6)">
+
+          <!-- ─── Animation Presets ─── -->
+          <div style="border-bottom:1px solid rgba(255,255,255,.06)">
+            <button class="collapse-btn w-full flex items-center justify-between px-3 py-2 cursor-pointer transition-colors hover:bg-white/[.03]"
+                    data-target="sec-presets">
+              <span class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style="color:#a78bfa">
+                <i class="fa-solid fa-film"></i> Animation Presets
+              </span>
+              <i class="fa-solid fa-chevron-down chevron-icon text-[9px]"></i>
+            </button>
+            <div id="sec-presets" class="collapse-content">
+              <div class="flex flex-wrap gap-1.5 px-3 pb-3">
+                <button class="btn-preset active" data-anim="idle">
+                  <i class="fa-solid fa-person mr-1"></i>Idle
+                </button>
+                <button class="btn-preset" data-anim="slash">
+                  <i class="fa-solid fa-bolt mr-1"></i>Slash
+                </button>
+                <button class="btn-preset" data-anim="run">
+                  <i class="fa-solid fa-person-running mr-1"></i>Run
+                </button>
+                <button class="btn-preset" data-anim="guard">
+                  <i class="fa-solid fa-shield mr-1"></i>Guard
+                </button>
+                <button class="btn-preset" data-anim="wave">
+                  <i class="fa-regular fa-hand mr-1"></i>Wave
+                </button>
+                <button class="btn-preset" data-anim="eat">
+                  <i class="fa-solid fa-utensils mr-1"></i>Eat
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ─── FK Bone Sliders ─── -->
+          <div style="border-bottom:1px solid rgba(255,255,255,.06)">
+            <button class="collapse-btn w-full flex items-center justify-between px-3 py-2 cursor-pointer transition-colors hover:bg-white/[.03]"
+                    data-target="sec-bones">
+              <span class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style="color:#a78bfa">
+                <i class="fa-solid fa-sliders"></i> FK Bone Sliders
+              </span>
+              <i class="fa-solid fa-chevron-down chevron-icon text-[9px]"></i>
+            </button>
+            <div id="sec-bones" class="collapse-content">
+              <div class="flex flex-col gap-2 px-3 pb-3">
+
+                <!-- Head & Torso -->
+                <div class="bone-group">
+                  <p class="text-[9px] font-bold tracking-widest uppercase" style="color:#475569">
+                    <i class="fa-solid fa-circle-user mr-1"></i>Head &amp; Torso
+                  </p>
+                  <div class="flex flex-col gap-1">
+                    <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                      <span>Đầu</span>
+                      <span id="val-head" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">0°</span>
+                    </div>
+                    <input type="range" class="bone-slider" data-bone="head" min="-45" max="45" value="0">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                      <span>Thân</span>
+                      <span id="val-torso" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">-90°</span>
+                    </div>
+                    <input type="range" class="bone-slider" data-bone="torso" min="-135" max="-45" value="-90">
+                  </div>
+                </div>
+
+                <!-- Arms Left -->
+                <div class="bone-group">
+                  <p class="text-[9px] font-bold tracking-widest uppercase" style="color:#475569">
+                    <i class="fa-solid fa-shield mr-1"></i>Tay Trái (Shield)
+                  </p>
+                  <div class="flex flex-col gap-1">
+                    <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                      <span>Upper Arm L</span>
+                      <span id="val-upperArmL" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">170°</span>
+                    </div>
+                    <input type="range" class="bone-slider" data-bone="upperArmL" min="90" max="270" value="170">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                      <span>Forearm L</span>
+                      <span id="val-forearmL" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">15°</span>
+                    </div>
+                    <input type="range" class="bone-slider" data-bone="forearmL" min="-60" max="120" value="15">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                      <span>Hand L + Khiên</span>
+                      <span id="val-handL" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">0°</span>
+                    </div>
+                    <input type="range" class="bone-slider" data-bone="handL" min="-60" max="60" value="0">
+                  </div>
+                </div>
+
+                <!-- Arms Right -->
+                <div class="bone-group">
+                  <p class="text-[9px] font-bold tracking-widest uppercase" style="color:#475569">
+                    <i class="fa-solid fa-khanda mr-1"></i>Tay Phải (Sword)
+                  </p>
+                  <div class="flex flex-col gap-1">
+                    <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                      <span>Upper Arm R</span>
+                      <span id="val-upperArmR" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">170°</span>
+                    </div>
+                    <input type="range" class="bone-slider" data-bone="upperArmR" min="90" max="270" value="170">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                      <span>Forearm R</span>
+                      <span id="val-forearmR" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">15°</span>
+                    </div>
+                    <input type="range" class="bone-slider" data-bone="forearmR" min="-60" max="120" value="15">
+                  </div>
+                  <div class="flex flex-col gap-1">
+                    <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                      <span>Hand R + Kiếm</span>
+                      <span id="val-handR" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">-90°</span>
+                    </div>
+                    <input type="range" class="bone-slider" data-bone="handR" min="-150" max="0" value="-90">
+                  </div>
+                </div>
+
+                <!-- Legs -->
+                <div class="bone-group">
+                  <p class="text-[9px] font-bold tracking-widest uppercase" style="color:#475569">
+                    <i class="fa-solid fa-person-walking mr-1"></i>Chân (Legs)
+                  </p>
+                  <div class="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                    <div class="flex flex-col gap-1">
+                      <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                        <span>Thigh L</span>
+                        <span id="val-thighL" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">85°</span>
+                      </div>
+                      <input type="range" class="bone-slider" data-bone="thighL" min="45" max="135" value="85">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                      <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                        <span>Shin L</span>
+                        <span id="val-shinL" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">10°</span>
+                      </div>
+                      <input type="range" class="bone-slider" data-bone="shinL" min="-30" max="90" value="10">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                      <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                        <span>Thigh R</span>
+                        <span id="val-thighR" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">85°</span>
+                      </div>
+                      <input type="range" class="bone-slider" data-bone="thighR" min="45" max="135" value="85">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                      <div class="flex justify-between text-[10px]" style="color:#94a3b8">
+                        <span>Shin R</span>
+                        <span id="val-shinR" style="color:#00f2fe;font-family:'JetBrains Mono',monospace;font-size:9px">10°</span>
+                      </div>
+                      <input type="range" class="bone-slider" data-bone="shinR" min="-30" max="90" value="10">
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          <!-- Export Pose -->
+          <div class="p-3">
+            <button id="btn-export-pose"
+              class="w-full flex items-center justify-center gap-2 text-[11px] font-bold py-2 px-4 rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-95"
+              style="background:linear-gradient(135deg,#7c3aed,#c026d3);color:#fff;box-shadow:0 3px 16px rgba(124,58,237,.35)">
+              <i class="fa-solid fa-file-export"></i> Xuất Pose Data (JSON)
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  <!-- ══════════════════════════════════════════════════════
+       🔐 LOGIN MODAL
+  ══════════════════════════════════════════════════════ -->
+  <div id="login-modal" class="modal-backdrop hidden">
+    <div class="glass flex flex-col rounded-2xl overflow-hidden w-full max-w-sm" style="background:rgba(12,20,40,.97);border:1px solid rgba(59,130,246,.3);box-shadow:0 20px 60px rgba(0,0,0,.8)">
+      <!-- Header -->
+      <div class="flex items-center justify-between px-4 py-3" style="border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(59,130,246,.1) 0%,transparent 100%)">
+        <div class="flex items-center gap-2.5">
+          <div class="flex items-center justify-center w-8 h-8 rounded-xl shrink-0" style="background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.4)">
+            <i class="fa-solid fa-right-to-bracket text-blue-400"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-white">Đăng Nhập Tài Khoản</h2>
+            <p class="text-[10px]" style="color:#64748b">Kết nối PostgreSQL &amp; Redis Cache</p>
+          </div>
+        </div>
+        <!-- Mandatory Login Warning -->
+        <span class="text-[9px] font-bold px-2 py-0.5 rounded" style="background:rgba(239,68,68,.15);color:#f87171">Bắt buộc</span>
+      </div>
+
+      <!-- Form Body -->
+      <form id="form-login" class="flex flex-col gap-3 p-4">
+        <!-- Logged Out View -->
+        <div id="login-form-view" class="flex flex-col gap-3">
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] font-semibold" style="color:#94a3b8">Tên đăng nhập / Email</label>
+            <div class="relative flex items-center">
+              <i class="fa-solid fa-user absolute left-3 text-xs" style="color:#64748b"></i>
+              <input type="text" id="login-username" class="form-control pl-8" placeholder="Nhập admin hoặc hero..." value="admin" required />
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <label class="text-[11px] font-semibold" style="color:#94a3b8">Mật khẩu</label>
+            <div class="relative flex items-center">
+              <i class="fa-solid fa-lock absolute left-3 text-xs" style="color:#64748b"></i>
+              <input type="password" id="login-password" class="form-control pl-8" placeholder="Mật khẩu: Hh123457a!" value="Hh123457a!" required />
+            </div>
+          </div>
+
+          <div id="login-error-msg" class="hidden text-[11px] text-red-400 p-2 rounded-lg" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2)"></div>
+
+          <button type="submit" id="btn-submit-login" class="w-full flex items-center justify-center gap-2 text-xs font-bold py-2 px-4 rounded-xl cursor-pointer transition-all hover:scale-[1.02] active:scale-95 text-white" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);box-shadow:0 3px 14px rgba(59,130,246,.4)">
+            <i class="fa-solid fa-right-to-bracket"></i> Đăng Nhập
+          </button>
+        </div>
+
+        <!-- Logged In View -->
+        <div id="user-profile-view" class="hidden flex-col gap-3">
+          <div class="p-3 rounded-xl flex items-center gap-3" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08)">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg text-white" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">
+              <i class="fa-solid fa-user-astronaut"></i>
+            </div>
+            <div>
+              <div id="profile-username" class="text-xs font-bold text-white">Admin</div>
+              <div id="profile-email" class="text-[10px]" style="color:#64748b">admin@genailife.com</div>
+              <div id="profile-cache-tag" class="text-[9px] mt-0.5" style="color:#00ff88">
+                <i class="fa-solid fa-bolt mr-1"></i>Session Cached via Redis
+              </div>
+            </div>
+          </div>
+
+          <button type="button" id="btn-logout" class="w-full flex items-center justify-center gap-2 text-xs font-bold py-2 px-4 rounded-xl cursor-pointer transition-all hover:bg-red-500/20 text-red-400" style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2)">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i> Đăng Xuất
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══ Collapse toggle logic ══ -->
+<script>
+  document.querySelectorAll('.collapse-btn').forEach(btn => {
+    const targetId = btn.dataset.target;
+    const target = targetId
+      ? document.getElementById(targetId)
+      : btn.closest('[class*="glass"]')?.querySelector('.collapse-content');
+    if (!target) return;
+    btn.addEventListener('click', () => {
+      const isNowCollapsed = target.classList.toggle('collapsed');
+      btn.classList.toggle('collapsed', isNowCollapsed);
+    });
+  });
+</script>
+
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>

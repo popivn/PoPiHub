@@ -1,0 +1,1 @@
+{{senderName}} said to you: "{{message}}"

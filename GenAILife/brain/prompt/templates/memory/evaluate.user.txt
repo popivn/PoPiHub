@@ -1,0 +1,9 @@
+Conversation:
+
+{{conversation}}
+
+Current Memory:
+
+{{memory}}
+
+Should this be stored as long-term memory?

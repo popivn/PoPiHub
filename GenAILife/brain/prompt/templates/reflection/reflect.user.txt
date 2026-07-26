@@ -1,0 +1,9 @@
+Recent Experiences:
+
+{{experiences}}
+
+Current Goals:
+
+{{goals}}
+
+Generate a reflection insight.

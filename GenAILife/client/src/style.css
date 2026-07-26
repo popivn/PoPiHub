@@ -1,0 +1,267 @@
+@import "tailwindcss";
+
+/* ===== FORCE FULL HEIGHT (override Tailwind preflight) ===== */
+html, body {
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  background: #0b0f19 !important;
+  font-family: 'Outfit', -apple-system, sans-serif;
+  color: #f0f4f8;
+  user-select: none;
+}
+
+#app {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ===== PIXI CANVAS ===== */
+#pixi-container {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1;
+}
+#pixi-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== CUSTOM TOKENS ===== */
+:root {
+  --primary: #00f2fe;
+  --primary-glow: rgba(0, 242, 254, 0.4);
+  --panel-bg: rgba(15, 25, 46, 0.90);
+  --panel-border: rgba(255, 255, 255, 0.10);
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+/* ===== GLASS PANEL ===== */
+.glass {
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+
+/* ===== STAT VALUE ===== */
+.stat-val {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+}
+.stat-val.cyan {
+  color: var(--primary);
+  text-shadow: 0 0 12px var(--primary-glow);
+}
+.stat-val.green {
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0,255,136,.4);
+  font-size: 0.9rem;
+}
+
+/* ===== KEY CAP ===== */
+.key-cap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-bottom: 3px solid rgba(255,255,255,0.35);
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  min-width: 26px;
+  text-align: center;
+}
+.key-cap.cyan {
+  background: rgba(0,242,254,0.12);
+  border-color: var(--primary);
+  border-bottom-color: rgba(0,242,254,.5);
+  color: var(--primary);
+}
+
+/* ===== COLLAPSE ===== */
+.collapse-content {
+  overflow: hidden;
+  transition: max-height 0.32s cubic-bezier(.4,0,.2,1), opacity 0.25s ease;
+  max-height: 800px;
+  opacity: 1;
+}
+.collapse-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+.chevron-icon {
+  transition: transform 0.3s ease;
+  color: #8a99ad;
+}
+.collapse-btn.collapsed .chevron-icon {
+  transform: rotate(-90deg);
+}
+
+/* ===== MODAL ===== */
+.modal-backdrop {
+  position: fixed; top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(3, 6, 16, 0.85);
+  backdrop-filter: blur(14px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.modal-backdrop.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.modal-card {
+  width: 90vw;
+  max-width: 1020px;
+  height: 88vh;
+  max-height: 780px;
+  background: rgba(12, 20, 40, 0.97);
+  border: 1px solid rgba(0, 242, 254, 0.25);
+  border-radius: 20px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.8), 0 0 60px rgba(0,242,254,0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== MODAL BODY GRID ===== */
+.modal-body {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+@media (max-width: 850px) {
+  .modal-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: 220px 1fr;
+  }
+}
+
+/* ===== CANVAS CONTAINERS ===== */
+#creator-canvas-container, #rig-canvas-container {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+}
+#creator-canvas-container canvas, #rig-canvas-container canvas { display: block; }
+
+/* ===== RANGE SLIDER ===== */
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%; height: 3px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: var(--primary);
+  box-shadow: 0 0 8px var(--primary-glow);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.3); }
+
+/* ===== FORM CONTROL ===== */
+.form-control {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border: 1px solid rgba(0, 242, 254, 0.25) !important;
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: #f8fafc !important;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+.form-control:focus {
+  border-color: var(--primary) !important;
+  background: rgba(0, 242, 254, 0.08) !important;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.25);
+}
+.form-control option { 
+  background: #0f172a !important; 
+  color: #f8fafc !important;
+}
+
+/* Fix browser autofill white background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ===== SECTION CARD (inside modal) ===== */
+.bone-group {
+  border-radius: 10px;
+  padding: 10px;
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ===== PRESET BUTTONS ===== */
+.btn-preset {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  padding: 4px 10px;
+  color: #94a3b8;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  font-family: 'Outfit', sans-serif;
+}
+.btn-preset:hover {
+  background: rgba(0,242,254,0.1);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.btn-preset.active {
+  background: rgba(0,242,254,0.18);
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 0 8px rgba(0,242,254,0.2);
+}
+
+/* ===== DIVIDER ===== */
+.divider { border: none; border-top: 1px solid rgba(255,255,255,.07); }
+
+/* ===== TOGGLE ===== */
+.toggle-label {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
