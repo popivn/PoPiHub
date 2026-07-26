@@ -1,15 +1,24 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import authController from '../controllers/authController.js';
-import agentController from '../controllers/agentController.js';
-import ollamaService from '../../llm/OllamaService.js';
+
+// 📥 Import các Router nhóm theo chuẩn C, R, U, D
+import createAuthRoutes from './C/authRoutes.js';
+import createPlayerRoutes from './C/playerRoutes.js';
+import createSystemRoutes from './C/systemRoutes.js';
+
+import readAuthRoutes from './R/authRoutes.js';
+import readPlayerRoutes from './R/playerRoutes.js';
+import readSystemRoutes from './R/systemRoutes.js';
+
+import updateRoutes from './U/index.js';
+import deleteRoutes from './D/index.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// 📄 View Routes
+// 📄 View Routes (Render HTML Frontend Views)
 router.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../../client/index.html'));
 });
@@ -22,31 +31,20 @@ router.get('/create-character', (req, res) => {
   res.sendFile(path.join(__dirname, '../../client/src/views/create_character.html'));
 });
 
-// 🔑 Auth & Player API Routes
-router.post('/api/auth/register', authController.register);
-router.post('/api/auth/login', authController.login);
-router.get('/api/auth/me', authController.getMe);
-router.post('/api/auth/logout', authController.logout);
+// 📌 1. [CREATE Routes] - Các Endpoint Tạo Mới Dữ Liệu
+router.use('/api/auth', createAuthRoutes);
+router.use('/api', createPlayerRoutes);
+router.use('/api', createSystemRoutes);
 
-router.get('/api/players', authController.getPlayers);
-router.post('/api/players', authController.createPlayer);
+// 📌 2. [READ Routes] - Các Endpoint Truy Vấn Dữ Liệu
+router.use('/api/auth', readAuthRoutes);
+router.use('/api', readPlayerRoutes);
+router.use('/api', readSystemRoutes);
 
-// 💬 Chat Histories API Route
-router.get('/api/chat/history', authController.getChatHistory);
+// 📌 3. [UPDATE Routes] - Các Endpoint Cập Nhật Dữ Liệu
+router.use('/api', updateRoutes);
 
-// 🧠 Agent Brain & Chronicles API Route
-router.get('/api/agent/:agentId/chronicles', agentController.getAgentChronicles);
-
-// 🤖 Ollama Service API Routes
-router.get('/api/ollama/status', async (req, res) => {
-  const status = await ollamaService.checkStatus();
-  res.json(status);
-});
-
-router.post('/api/ollama/generate', async (req, res) => {
-  const { prompt, model, system } = req.body;
-  const result = await ollamaService.generateText(prompt, model, system);
-  res.json(result);
-});
+// 📌 4. [DELETE Routes] - Các Endpoint Xóa Dữ Liệu
+router.use('/api', deleteRoutes);
 
 export default router;

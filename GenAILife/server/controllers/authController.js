@@ -12,15 +12,17 @@ const __dirname = path.dirname(__filename);
 
 // PostgreSQL Pool
 const pool = new pg.Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'genai_life',
-  password: 'Hh123457a!',
-  port: 5432,
+  user: process.env.DB_USER || 'postgres',
+  host: process.env.DB_HOST || 'localhost',
+  database: process.env.DB_NAME || 'popihub_db',
+  password: process.env.DB_PASSWORD || 'postgrespassword',
+  port: parseInt(process.env.DB_PORT || '5432', 10),
 });
 
 // Redis Client
-const redisClient = createClient({ url: 'redis://localhost:6379' });
+const redisHost = process.env.REDIS_HOST || 'localhost';
+const redisPort = process.env.REDIS_PORT || 6379;
+const redisClient = createClient({ url: `redis://${redisHost}:${redisPort}` });
 let isRedisConnected = false;
 
 redisClient.on('error', (err) => {
@@ -179,7 +181,7 @@ export const authController = {
             const parsed = JSON.parse(cachedUser);
             return res.json({ authenticated: true, user: parsed, hasPlayers: parsed.players && parsed.players.length > 0, cached: true });
           }
-        } catch (err) {}
+        } catch (err) { }
       }
 
       const result = await pool.query('SELECT id, username, email, role, avatar_json FROM users WHERE id = $1', [userId]);
@@ -213,7 +215,7 @@ export const authController = {
         if (isRedisConnected) {
           await redisClient.del(`user:${decoded.id}`);
         }
-      } catch (e) {}
+      } catch (e) { }
     }
     res.json({ message: 'Đã đăng xuất!' });
   },

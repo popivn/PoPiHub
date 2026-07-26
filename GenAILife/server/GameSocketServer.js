@@ -3,6 +3,7 @@ import pg from 'pg';
 import { createRequire } from 'module';
 import ollamaService from '../llm/OllamaService.js';
 import { DialogueBrain } from '../brain/DialogueBrain.js';
+import { SpatialBrain, WORLD_POIS } from '../brain/SpatialBrain.js';
 import { AgentBrainRepository } from '../brain/AgentBrainRepository.js';
 import { RelationshipEngine } from '../brain/RelationshipEngine.js';
 
@@ -10,6 +11,7 @@ import { RelationshipEngine } from '../brain/RelationshipEngine.js';
 const require = createRequire(import.meta.url);
 const genAi1Identity = require('../brain/identity/genai1.identity.json');
 const genAi1Brain = new DialogueBrain(genAi1Identity, ollamaService);
+const spatialBrain = new SpatialBrain(genAi1Identity, ollamaService);
 const relEngine   = new RelationshipEngine(ollamaService);
 
 const pool = new pg.Pool({
@@ -28,8 +30,30 @@ export class GameSocketServer {
     this.wss = new WebSocketServer({ server, path: '/ws' });
     this.players = new Map(); // socket -> player data
 
+    this.spatialState = {
+      currentPos: { wx: 0, wy: 60 },
+      targetPoi: 'Khu Trung Tâm Spawn',
+      targetPos: { wx: 0, wy: 60 },
+      intentGoal: 'Đứng quan sát tại Khu Spawn',
+      isMoving: false,
+      lastPoi: null
+    };
+
+    // 🤖 Start Autonomous Agent Spatial Perception Loop (~25s)
+    this.startSpatialLoop();
+
     this.wss.on('connection', (ws) => {
       console.log('⚡ [WebSocket] Client connected');
+
+      // Send initial Agent Spatial Target to newly connected client
+      ws.send(JSON.stringify({
+        type: 'AGENT_SET_TARGET',
+        agentId: '00000000-0000-0000-0000-0000000000b1',
+        agentName: 'GenAi1',
+        targetPos: this.spatialState.targetPos,
+        targetPoi: this.spatialState.targetPoi,
+        goal: this.spatialState.intentGoal
+      }));
 
       ws.on('message', (message) => {
         try {
@@ -53,6 +77,75 @@ export class GameSocketServer {
         }
       });
     });
+  }
+
+  /**
+   * Autonomous Spatial Loop - Every 25 seconds LLM evaluates environment and picks new target
+   */
+  startSpatialLoop() {
+    const runLoop = async () => {
+      try {
+        if (this.spatialState.isMoving) return; // Do not recalculate if currently en route
+
+        const onlinePlayers = Array.from(this.players.values());
+        const recentMemories = await genAi1Repo.getRecentMemories(3).catch(() => []);
+
+        console.log(`🧠 [SPATIAL BRAIN] GenAi1 evaluating spatial environment...`);
+        const decision = await spatialBrain.decideNextDestination({
+          currentPos: this.spatialState.currentPos,
+          players: onlinePlayers,
+          memories: recentMemories,
+          lastPoi: this.spatialState.lastPoi
+        });
+
+        this.spatialState.targetPos = decision.targetPos;
+        this.spatialState.targetPoi = decision.targetPoi;
+        this.spatialState.intentGoal = decision.goal;
+        this.spatialState.isMoving = true;
+
+        console.log(`🗺️ [SPATIAL INTENT] GenAi1 heading to: ${decision.targetPoi} | Goal: "${decision.goal}"`);
+
+        // Save Intent to DB
+        const intentId = await genAi1Repo.createIntent({
+          goal: decision.goal,
+          target: decision.targetPoi,
+          priority: 0.8,
+          reason: decision.thought
+        }).catch((err) => console.error('[DB ERROR] createIntent:', err.message));
+
+        // Update Agent State in DB
+        await genAi1Repo.updateState({
+          current_action: 'walking',
+          current_intent: decision.goal,
+          current_target: decision.targetPoi
+        }).catch((err) => console.error('[DB ERROR] updateState:', err.message));
+
+        // Log Action
+        await genAi1Repo.logAction({
+          action: 'move_intent',
+          target: decision.targetPoi,
+          result: `Goal: ${decision.goal}`,
+          success: true
+        }).catch((err) => console.error('[DB ERROR] logAction:', err.message));
+
+        // Broadcast new target destination to all connected clients
+        this.broadcast({
+          type: 'AGENT_SET_TARGET',
+          agentId: '00000000-0000-0000-0000-0000000000b1',
+          agentName: 'GenAi1',
+          targetPos: decision.targetPos,
+          targetPoi: decision.targetPoi,
+          goal: decision.goal,
+          thought: decision.thought
+        });
+      } catch (err) {
+        console.error('❌ [SPATIAL LOOP ERROR]', err.message);
+      }
+    };
+
+    // Trigger initial run after 3s, then repeat every 10s
+    setTimeout(runLoop, 3000);
+    setInterval(runLoop, 10000);
   }
 
   handleMessage(ws, data) {
@@ -116,6 +209,37 @@ export class GameSocketServer {
             type: 'PLAYER_ATTACKED',
             playerId: player.id
           }, ws);
+        }
+        break;
+      }
+
+      case 'AGENT_ARRIVED': {
+        const { agentId, poiName, wx, wy } = data;
+        if (agentId === '00000000-0000-0000-0000-0000000000b1' || agentId === 'genai1') {
+          this.spatialState.isMoving = false;
+          this.spatialState.currentPos = { wx, wy };
+          this.spatialState.lastPoi = { id: poiName, name: poiName, wx, wy };
+
+          console.log(`📍 [AGENT ARRIVED] GenAi1 has reached destination: ${poiName} (wx:${wx}, wy:${wy})`);
+
+          // 🗄️ Save Episodic Spatial Memory into agent_memories
+          genAi1Repo.saveMemory({
+            type: 'observation',
+            summary: `Tôi đã hoàn thành di chuyển và đến địa điểm ${poiName} để khám phá.`,
+            importance: 0.6,
+            emotion: { joy: 0.7, curiosity: 0.8 },
+            location: { wx, wy, zone: poiName },
+            participants: ['agent:genai1'],
+            source_event: 'spatial_navigation'
+          }).catch(err => console.error('[SPATIAL MEMORY ERROR]', err.message));
+
+          // Update Agent State
+          genAi1Repo.updateState({
+            location_x: wx,
+            location_y: wy,
+            current_action: 'idle_observing',
+            current_intent: `Observing at ${poiName}`
+          }).catch(err => console.error('[SPATIAL STATE UPDATE ERROR]', err.message));
         }
         break;
       }

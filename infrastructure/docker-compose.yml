@@ -1,4 +1,55 @@
-version: '3.8'
+name: infrastructure
 
 services:
-  # Define infrastructure services (postgres, redis, ollama, minio) here
+  ollama:
+    image: ollama/ollama:latest
+    container_name: hub-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_storage:/root/.ollama
+    restart: always
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: hub-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_DB: popihub_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_storage:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    image: redis:7-alpine
+    container_name: hub-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_storage:/data
+    restart: always
+
+  tunnel:
+    image: ngrok/ngrok:latest
+    container_name: hub-tunnel
+    environment:
+      - NGROK_AUTHTOKEN=2tv1FpG30kmq9HmwJlbfvXfl95X_4jRS9sdgCa1BkXAvc82DM
+    command:
+      - "http"
+      - "--url=adapted-entirely-pangolin.ngrok-free.app"
+      - "genailife-app:5173"
+    ports:
+      - "4040:4040"
+    restart: always
+
+volumes:
+  ollama_storage:
+    driver: local
+  postgres_storage:
+    driver: local
+  redis_storage:
+    driver: local
+

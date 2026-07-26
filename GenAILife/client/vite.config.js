@@ -4,9 +4,10 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [tailwindcss()],
   server: {
-    port: 3000,
-    open: true,
+    port: 5173,
+    open: false,
     host: true,
+    allowedHosts: true,
     proxy: {
       '/login': {
         target: 'http://127.0.0.1:3001',

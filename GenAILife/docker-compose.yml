@@ -1,0 +1,29 @@
+name: genailife
+
+services:
+  genailife:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: genailife-app
+    ports:
+      - "3000:3000"
+      - "3001:3001"
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - APP_DOMAIN=${GENAILIFE_DOMAIN:-genailife.popihub.local}
+      - VITE_APP_DOMAIN=${GENAILIFE_DOMAIN:-genailife.popihub.local}
+      - OLLAMA_HOST=http://hub-ollama:11434
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=postgrespassword
+      - DB_NAME=popihub_db
+      - DATABASE_URL=postgres://postgres:postgrespassword@postgres:5432/popihub_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    restart: always

@@ -527,6 +527,14 @@ function handleServerNetworkMessage(msg) {
       break;
     }
 
+    case 'AGENT_SET_TARGET': {
+      if (guideNpcRef && (msg.agentId === '00000000-0000-0000-0000-0000000000b1' || msg.agentName === 'GenAi1')) {
+        console.log(`🤖 [CLIENT RECEIVED AGENT TARGET] Destination: ${msg.targetPoi} (${msg.targetPos?.wx}, ${msg.targetPos?.wy}) | Goal: ${msg.goal}`);
+        guideNpcRef.setTargetDestination(msg.targetPos, msg.targetPoi, msg.goal);
+      }
+      break;
+    }
+
     case 'PLAYER_LEFT': {
       const remoteChar = onlinePlayersMap.get(msg.playerId);
       if (remoteChar) {
@@ -539,6 +547,19 @@ function handleServerNetworkMessage(msg) {
     }
   }
 }
+
+// Listen for agent arrival event from AutoNpcBot and notify Server WS
+window.addEventListener('agent_arrived', (e) => {
+  if (networkClient && networkClient.isReady) {
+    networkClient.send({
+      type: 'AGENT_ARRIVED',
+      agentId: e.detail.agentId,
+      poiName: e.detail.poiName,
+      wx: e.detail.wx,
+      wy: e.detail.wy
+    });
+  }
+});
 
 // 💬 Send Chat Message over WebSocket when user chats with a character
 window.addEventListener('character_chat_sent', (e) => {

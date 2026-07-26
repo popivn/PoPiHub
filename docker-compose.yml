@@ -1,0 +1,5 @@
+# Master Docker Compose cho toàn bộ PoPiHub
+include:
+  - infrastructure/docker-compose.yml
+  - GenAILife/docker-compose.yml
+

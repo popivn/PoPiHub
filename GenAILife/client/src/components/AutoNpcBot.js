@@ -17,17 +17,32 @@ export class AutoNpcBot {
     };
 
     // Autonomous Wandering AI State
+    // Autonomous Navigation Target State (Driven by Server LLM)
+    this.targetWorldPos = null;
+    this.targetPoiName = null;
+    this.intentGoal = null;
+    this.hasArrived = true;
     this.moveTimer = 0;
     this.targetDir = { x: 0, y: 0 };
     this.actionCooldown = 0;
     this.lastState = 'idle';
   }
 
+  /**
+   * Set new navigation target received from Server LLM Spatial Brain
+   */
+  setTargetDestination(targetPos, poiName, goal) {
+    if (!targetPos) return;
+    this.targetWorldPos = { wx: targetPos.wx, wy: targetPos.wy };
+    this.targetPoiName = poiName || 'Địa điểm mới';
+    this.intentGoal = goal || `Di chuyển tới ${this.targetPoiName}`;
+    this.hasArrived = false;
+    this.broadcastAction('MOVE', `🚶 Đang đi tới: ${this.targetPoiName} (${this.intentGoal})`);
+  }
+
   update(delta, playerWx, playerWy) {
-    this.moveTimer -= delta;
     this.actionCooldown -= delta;
 
-    // 🧠 AI Autonomous Decision Making
     if (this.config.isStationary) {
       this.targetDir.x = 0;
       this.targetDir.y = 0;
@@ -36,40 +51,42 @@ export class AutoNpcBot {
       return;
     }
 
-    if (this.moveTimer <= 0) {
-      // Soft tether to spawn: If too far (>400 units), steer back towards spawn
-      const spawnWx = this.config.spawnWorldPos ? this.config.spawnWorldPos.wx : 0;
-      const spawnWy = this.config.spawnWorldPos ? this.config.spawnWorldPos.wy : 0;
-      const distFromSpawn = Math.hypot(this.worldPos.wx - spawnWx, this.worldPos.wy - spawnWy);
+    // 🧠 Navigation toward Server LLM Target Destination
+    if (this.targetWorldPos && !this.hasArrived) {
+      const dx = this.targetWorldPos.wx - this.worldPos.wx;
+      const dy = this.targetWorldPos.wy - this.worldPos.wy;
+      const dist = Math.hypot(dx, dy);
 
-      if (distFromSpawn > 400) {
-        // Steer back towards spawn
-        const angle = Math.atan2(spawnWy - this.worldPos.wy, spawnWx - this.worldPos.wx);
+      if (dist < 15) {
+        // Arrived at destination
+        this.hasArrived = true;
+        this.targetDir.x = 0;
+        this.targetDir.y = 0;
+        this.broadcastAction('ARRIVED', `📍 Đã đến: ${this.targetPoiName}`);
+
+        // Dispatch Custom Event to notify WebSocket network module
+        window.dispatchEvent(new CustomEvent('agent_arrived', {
+          detail: {
+            agentId: this.config.id,
+            poiName: this.targetPoiName,
+            wx: this.worldPos.wx,
+            wy: this.worldPos.wy
+          }
+        }));
+      } else {
+        // Steer directly toward targetWorldPos
+        const angle = Math.atan2(dy, dx);
         this.targetDir.x = Math.cos(angle);
         this.targetDir.y = Math.sin(angle);
-        this.moveTimer = 80 + Math.random() * 80;
-        this.broadcastAction('MOVE', `Quay trở lại khu vực trung tâm`);
-      } else {
-        const isMoving = Math.random() > 0.3;
-        if (isMoving) {
-          const angle = Math.random() * Math.PI * 2;
-          this.targetDir.x = Math.cos(angle);
-          this.targetDir.y = Math.sin(angle);
-          this.moveTimer = 60 + Math.random() * 120;
-          
-          this.broadcastAction('MOVE', `Di chuyển hướng (${this.targetDir.x.toFixed(2)}, ${this.targetDir.y.toFixed(2)})`);
-        } else {
-          this.targetDir.x = 0;
-          this.targetDir.y = 0;
-          this.moveTimer = 40 + Math.random() * 60;
-
-          this.broadcastAction('IDLE', 'Đứng yên quan sát xung quanh');
-        }
       }
+    } else {
+      // Idle at arrived destination
+      this.targetDir.x = 0;
+      this.targetDir.y = 0;
     }
 
     // Random auto slash attack animation
-    if (this.actionCooldown <= 0 && Math.random() < 0.008) {
+    if (this.actionCooldown <= 0 && Math.random() < 0.005) {
       this.character.riggedChar.currentAnim = 'slash';
       this.actionCooldown = 120;
       this.broadcastAction('ATTACK', 'Vung kiếm chém Laser!');

@@ -8,7 +8,7 @@
  */
 export class OllamaService {
   constructor(options = {}) {
-    this.baseUrl = options.baseUrl || 'http://localhost:11434';
+    this.baseUrl = process.env.OLLAMA_HOST || process.env.OLLAMA_URL || options.baseUrl || 'http://localhost:11434';
     this.defaultModel = options.defaultModel || 'qwen3:1.7b';
   }
 
