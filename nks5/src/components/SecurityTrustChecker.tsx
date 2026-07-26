@@ -46,26 +46,55 @@ export async function getDeviceFingerprint(): Promise<DeviceAnalysis> {
   let lat = 0;
   let lon = 0;
 
+  // Multi-service fallback IP Geo Location
   try {
     const res = await fetch('https://ipapi.co/json/');
-    const ipData = await res.json();
-    ip = ipData.ip || '127.0.0.1';
-    city = ipData.city || '';
-    region = ipData.region || '';
-    country = ipData.country_name || '';
-    lat = ipData.latitude || 0;
-    lon = ipData.longitude || 0;
-
-    if (ipData.country_code === 'VN') {
-      score += 20;
-      details.push(`✅ IP ở Việt Nam (${ip} - ${city}, ${region}) (+20)`);
+    if (res.ok) {
+      const ipData = await res.json();
+      ip = ipData.ip || '127.0.0.1';
+      city = ipData.city || '';
+      region = ipData.region || '';
+      country = ipData.country_name || '';
+      lat = ipData.latitude || 0;
+      lon = ipData.longitude || 0;
+      if (ipData.country_code === 'VN') {
+        score += 20;
+        details.push(`✅ IP ở Việt Nam (${ip} - ${city}, ${region}) (+20)`);
+      } else {
+        isVpn = true;
+        details.push(`⚠️ IP ngoài nước / Nghi vấn VPN (${country} - ${ip})`);
+      }
     } else {
-      isVpn = true;
-      details.push(`⚠️ IP ngoài nước / Nghi vấn VPN (${country} - ${ip})`);
+      throw new Error('ipapi.co rate limit or blocked');
     }
   } catch {
-    score += 10;
-    details.push('⚠️ Không thể kiểm tra VPN qua IP công cộng (+10)');
+    // Fallback Service 1: ipwho.is (Free without CORS issue)
+    try {
+      const res2 = await fetch('https://ipwho.is/');
+      const data2 = await res2.json();
+      if (data2 && data2.success) {
+        ip = data2.ip;
+        city = data2.city || '';
+        region = data2.region || '';
+        country = data2.country || '';
+        lat = data2.latitude || 0;
+        lon = data2.longitude || 0;
+        if (data2.country_code === 'VN') {
+          score += 20;
+          details.push(`✅ IP ở Việt Nam (${ip} - ${city}) (+20)`);
+        }
+      }
+    } catch {
+      // Fallback Service 2: ipify
+      try {
+        const res3 = await fetch('https://api.ipify.org?format=json');
+        const data3 = await res3.json();
+        ip = data3.ip || '127.0.0.1';
+        details.push(`ℹ️ Đã lấy IP thiết bị (${ip})`);
+      } catch {
+        details.push('⚠️ Không thể kiểm tra VPN qua IP công cộng (+10)');
+      }
+    }
   }
 
   let persistentId = localStorage.getItem('__nks5_fp');
