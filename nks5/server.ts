@@ -56,22 +56,86 @@ app.post('/api/save', (req: Request, res: Response) => {
   }
 });
 
+// Helper to write lines back to file preserving header
+const writeSubmissionsToFile = (items: SubmissionItem[]) => {
+  const header = '=== SERVER NGỌC KINH S5 - TA LÀM TÔNG SƯ (DANH SÁCH ZALO VÀ INGAME) ===\n\n';
+  // items stored newest first in memory for list API, so reverse when saving back to maintain chronological file order
+  const lines = [...items].reverse().map(item => {
+    if (item.timestamp && item.zalo && item.ingame) {
+      return `[${item.timestamp}] Zalo: ${item.zalo} | InGame: ${item.ingame}`;
+    }
+    return item.raw;
+  });
+  const content = header + lines.join('\n') + (lines.length ? '\n' : '');
+  fs.writeFileSync(FILE_PATH, content, 'utf8');
+};
+
+const readSubmissionsFromFile = (): SubmissionItem[] => {
+  if (!fs.existsSync(FILE_PATH)) return [];
+  const data = fs.readFileSync(FILE_PATH, 'utf8');
+  const lines = data.split('\n').filter(line => line.trim() && !line.startsWith('==='));
+  return lines.map(line => {
+    const parts = line.match(/^\[(.*?)\] Zalo: (.*?) \| InGame: (.*)$/);
+    if (parts) {
+      return { timestamp: parts[1], zalo: parts[2], ingame: parts[3], raw: line };
+    }
+    return { raw: line };
+  }).reverse();
+};
+
 // API: Get submission list
 app.get('/api/submissions', (_req: Request, res: Response) => {
   try {
+    const items = readSubmissionsFromFile();
     const data = fs.readFileSync(FILE_PATH, 'utf8');
-    const lines = data.split('\n').filter(line => line.trim() && !line.startsWith('==='));
-    const items: SubmissionItem[] = lines.map(line => {
-      const parts = line.match(/^\[(.*?)\] Zalo: (.*?) \| InGame: (.*)$/);
-      if (parts) {
-        return { timestamp: parts[1], zalo: parts[2], ingame: parts[3], raw: line };
-      }
-      return { raw: line };
-    }).reverse();
-
     return res.json({ success: true, count: items.length, data: items, fullText: data });
   } catch (err) {
     return res.status(500).json({ success: false, message: 'Không thể đọc file dữ liệu' });
+  }
+});
+
+// API: Edit submission by index (0-based from latest list)
+app.put('/api/submissions/:index', (req: Request, res: Response) => {
+  const index = parseInt(req.params.index, 10);
+  const { zalo, ingame } = req.body;
+
+  if (!zalo || !ingame) {
+    return res.status(400).json({ success: false, message: 'Vui lòng nhập đầy đủ Zalo và InGame!' });
+  }
+
+  try {
+    const items = readSubmissionsFromFile();
+    if (isNaN(index) || index < 0 || index >= items.length) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy dòng cần sửa!' });
+    }
+
+    items[index].zalo = String(zalo).trim();
+    items[index].ingame = String(ingame).trim();
+
+    writeSubmissionsToFile(items);
+    return res.json({ success: true, message: 'Cập nhật thành công!' });
+  } catch (err) {
+    console.error('Lỗi khi sửa dữ liệu:', err);
+    return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi cập nhật!' });
+  }
+});
+
+// API: Delete submission by index
+app.delete('/api/submissions/:index', (req: Request, res: Response) => {
+  const index = parseInt(req.params.index, 10);
+
+  try {
+    const items = readSubmissionsFromFile();
+    if (isNaN(index) || index < 0 || index >= items.length) {
+      return res.status(404).json({ success: false, message: 'Không tìm thấy dòng cần xóa!' });
+    }
+
+    items.splice(index, 1);
+    writeSubmissionsToFile(items);
+    return res.json({ success: true, message: 'Xóa thành công!' });
+  } catch (err) {
+    console.error('Lỗi khi xóa dữ liệu:', err);
+    return res.status(500).json({ success: false, message: 'Lỗi máy chủ khi xóa!' });
   }
 });
 
