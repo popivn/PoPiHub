@@ -212,11 +212,24 @@ export function HomePage() {
 
   return (
     <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col justify-start selection:bg-amber-500 selection:text-white relative overflow-x-hidden">
+      {/* Background Emblem Watermark */}
+      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
+        <img
+          src="/nks5dadide.png"
+          alt="Guild Emblem Watermark"
+          className="w-[380px] sm:w-[620px] md:w-[720px] max-w-none opacity-35 mix-blend-screen filter brightness-125 contrast-125 rounded-full drop-shadow-[0_0_60px_rgba(245,158,11,0.35)]"
+          style={{
+            maskImage: 'radial-gradient(circle, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 75%)',
+            WebkitMaskImage: 'radial-gradient(circle, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 75%)'
+          }}
+        />
+      </div>
+
       {/* Background Lighting */}
       <div className="fixed -top-24 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-gradient-to-r from-amber-600/15 via-orange-600/10 to-red-600/15 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Header / Navbar */}
-      <header className="w-full border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-xl sticky top-0 z-50 shadow-2xl">
+      <header className="w-full border-b border-slate-800/60 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 shadow-2xl">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex justify-between items-center gap-2">
           <div className="flex items-center space-x-2.5 min-w-0">
             <img
@@ -323,10 +336,10 @@ export function HomePage() {
       <main className="max-w-7xl w-full mx-auto px-2.5 sm:px-4 pt-3 pb-6 space-y-3 z-10">
         {/* Collapsible Form Section */}
         <div className="w-full">
-          <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-xl shadow-lg overflow-hidden">
+          <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 rounded-xl shadow-lg overflow-hidden">
             <button
               onClick={() => setIsFormOpen(!isFormOpen)}
-              className="w-full px-3 py-2.5 flex items-center justify-between bg-slate-900 hover:bg-slate-800/70 transition-colors text-left cursor-pointer"
+              className="w-full px-3 py-2.5 flex items-center justify-between bg-slate-900/50 hover:bg-slate-800/50 transition-colors text-left cursor-pointer"
             >
               <div className="flex items-center space-x-2 min-w-0">
                 <div className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
@@ -518,7 +531,7 @@ export function HomePage() {
 
         {/* Ultra-Compact Table */}
         <div className="w-full">
-          <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-xl p-2.5 sm:p-4 shadow-xl">
+          <div className="bg-slate-900/40 backdrop-blur-md border border-slate-800/60 rounded-xl p-2.5 sm:p-4 shadow-xl">
             
             {/* Header Controls */}
             <div className="flex items-center justify-between gap-2 pb-2.5 mb-2.5 border-b border-slate-800/80">
@@ -556,9 +569,9 @@ export function HomePage() {
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto rounded-lg border border-slate-800/80">
+            <div className="overflow-x-auto rounded-lg border border-slate-800/60 bg-slate-950/20 backdrop-blur-sm">
               <table className="w-full text-left text-[11px] sm:text-xs">
-                <thead className="bg-slate-950 text-slate-300 font-bold uppercase tracking-wider border-b border-slate-800">
+                <thead className="bg-slate-950/50 text-slate-300 font-bold uppercase tracking-wider border-b border-slate-800/70">
                   <tr>
                     <th className="px-2 sm:px-3 py-2 text-center text-amber-400 whitespace-nowrap w-10 sm:w-14">STT</th>
                     <th className="px-2 sm:px-3 py-2 text-sky-400 whitespace-nowrap">Tên Zalo</th>
@@ -567,7 +580,7 @@ export function HomePage() {
                     <th className="px-2 sm:px-3 py-2 text-center text-amber-300 whitespace-nowrap w-20">Thao Tác</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/60 bg-slate-900/40">
+                <tbody className="divide-y divide-slate-800/50 bg-slate-900/20">
                   {loading ? (
                     <tr>
                       <td colSpan={5} className="text-center py-8 text-slate-500">
@@ -582,8 +595,8 @@ export function HomePage() {
                     </tr>
                   ) : (
                     filteredSubmissions.map((item) => (
-                      <tr key={item.docId} className="hover:bg-amber-500/10 transition-colors">
-                        <td className="px-2 sm:px-3 py-2 text-center font-mono font-bold text-amber-400 bg-slate-950/40 whitespace-nowrap">
+                      <tr key={item.docId} className="hover:bg-amber-500/15 transition-colors">
+                        <td className="px-2 sm:px-3 py-2 text-center font-mono font-bold text-amber-400 bg-slate-950/30 whitespace-nowrap">
                           #{item.id}
                         </td>
                         <td className="px-2 sm:px-3 py-2 font-bold text-sky-300 whitespace-nowrap">
@@ -706,7 +719,7 @@ function PlayerRegionChart({ submissions }: { submissions: SubmissionItem[] }) {
   });
 
   return (
-    <div className="w-full bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-xl p-3 sm:p-5 shadow-xl">
+    <div className="w-full bg-slate-900/40 backdrop-blur-md border border-slate-800/60 rounded-xl p-3 sm:p-5 shadow-xl">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
