@@ -11,6 +11,9 @@ import {
   serverTimestamp 
 } from '../firebase';
 import { getDeviceFingerprint } from '../components/SecurityTrustChecker';
+import AppLayout from '../components/AppLayout';
+import IdentityModal from '../components/IdentityModal';
+import { getStoredIdentity, UserIdentity } from '../utils/identityJWT';
 
 export interface SubmissionItem {
   docId: string;
@@ -29,6 +32,8 @@ export interface SubmissionItem {
 }
 
 export function HomePage() {
+  const [identity, setIdentity] = useState<UserIdentity | null>(null);
+  const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
   const [zalo, setZalo] = useState('');
   const [ingame, setInGame] = useState('');
   const [submissions, setSubmissions] = useState<SubmissionItem[]>([]);
@@ -94,6 +99,8 @@ export function HomePage() {
 
   useEffect(() => {
     fetchSubmissions();
+    const stored = getStoredIdentity();
+    if (stored) setIdentity(stored);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -211,124 +218,44 @@ export function HomePage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col justify-start selection:bg-amber-500 selection:text-white relative overflow-x-hidden">
-      {/* Background Emblem Watermark */}
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden">
-        <img
-          src="/nks5dadide.png"
-          alt="Guild Emblem Watermark"
-          className="w-[380px] sm:w-[620px] md:w-[720px] max-w-none opacity-35 mix-blend-screen filter brightness-125 contrast-125 rounded-full drop-shadow-[0_0_60px_rgba(245,158,11,0.35)]"
-          style={{
-            maskImage: 'radial-gradient(circle, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 75%)',
-            WebkitMaskImage: 'radial-gradient(circle, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 75%)'
-          }}
-        />
-      </div>
-
-      {/* Background Lighting */}
-      <div className="fixed -top-24 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-gradient-to-r from-amber-600/15 via-orange-600/10 to-red-600/15 rounded-full blur-[100px] pointer-events-none" />
-
-      {/* Header / Navbar */}
-      <header className="w-full border-b border-slate-800/60 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex justify-between items-center gap-2">
-          <div className="flex items-center space-x-2.5 min-w-0">
-            <img
-              src="/logo.jpg"
-              alt="Logo Server Ngọc Kinh S5"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border border-amber-400/40 shadow-md shadow-orange-500/30 shrink-0 cursor-pointer"
-              onClick={() => {
-                window.history.pushState({}, '', '/guild');
-                window.dispatchEvent(new Event('popstate'));
-              }}
-            />
-            <div 
-              className="min-w-0 cursor-pointer" 
-              onClick={() => {
-                window.history.pushState({}, '', '/guild');
-                window.dispatchEvent(new Event('popstate'));
-              }}
-            >
-              <h1 className="text-xs sm:text-base font-black tracking-wide bg-gradient-to-r from-amber-200 via-amber-400 to-orange-400 bg-clip-text text-transparent truncate">
-                SERVER NGỌC KINH S5
-              </h1>
-              <p className="text-[9px] sm:text-[11px] text-amber-400/80 font-medium truncate flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                Ta Làm Tông Sư
-              </p>
-            </div>
-          </div>
-
-          {/* Navigation Controls */}
-          <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-            {/* Nút Home (Mạng Xã Hội) */}
-            <button
-              onClick={() => {
-                window.history.pushState({}, '', '/social');
-                window.dispatchEvent(new Event('popstate'));
-              }}
-              title="Mạng Xã Hội (Feature Pending)"
-              className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border bg-slate-800/90 hover:bg-slate-700 text-amber-300 border-slate-700/80 hover:border-amber-500/40"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span className="hidden xs:inline">Home</span>
-            </button>
-
-            {/* Nút Khiên (Quay về Guild / Danh sách Bang Hội) */}
-            <button
-              onClick={() => {
-                window.history.pushState({}, '', '/guild');
-                window.dispatchEvent(new Event('popstate'));
-              }}
-              title="Danh Sách Bang Hội"
-              className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-              <span className="hidden xs:inline">Bang Hội</span>
-            </button>
-
-            {/* Nút Thêm Thành Viên */}
-            <button
-              onClick={() => setIsFormOpen(!isFormOpen)}
-              title={isFormOpen ? 'Đóng khung nhập' : 'Thêm thành viên mới'}
-              className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer border ${
-                isFormOpen
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-lg shadow-amber-500/20'
-                  : 'bg-slate-800/90 hover:bg-slate-700 text-amber-400 border-slate-700/80'
-              }`}
-            >
-              <svg className="w-4 h-4 sm:w-4.5 sm:h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Floating Global Toast Notification */}
-      {toast && (
-        <div className="fixed top-14 right-4 z-50 animate-bounce">
-          <div
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold border shadow-2xl backdrop-blur-xl flex items-center gap-2 ${
-              toast.isSuccess
-                ? 'bg-slate-900/95 border-emerald-500/60 text-emerald-300 shadow-emerald-500/20'
-                : 'bg-slate-900/95 border-rose-500/60 text-rose-300 shadow-rose-500/20'
+    <AppLayout
+      currentRoute="guild"
+      identity={identity}
+      onOpenIdentityModal={() => setIsIdentityModalOpen(true)}
+      headerActions={
+        <button
+          onClick={() => setIsFormOpen(!isFormOpen)}
+          title={isFormOpen ? 'Đóng khung nhập' : 'Thêm thành viên mới'}
+          className={`w-7 h-7 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer border ${
+            isFormOpen
+              ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-lg shadow-amber-500/20'
+              : 'bg-slate-800/90 hover:bg-slate-700 text-amber-400 border-slate-700/80'
+          }`}
+        >
+          <svg
+            className={`w-4 h-4 sm:w-5 sm:h-5 transition-transform duration-300 ${
+              isFormOpen ? 'rotate-45' : ''
             }`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            {toast.isSuccess ? (
-              <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-              </svg>
-            ) : (
-              <svg className="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            )}
-            <span>{toast.message}</span>
-          </div>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+          </svg>
+        </button>
+      }
+    >
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed top-16 right-4 z-50 px-4 py-3 rounded-2xl shadow-2xl border backdrop-blur-md flex items-center space-x-2 animate-bounce ${
+            toast.isSuccess
+              ? 'bg-emerald-950/80 border-emerald-500/50 text-emerald-200'
+              : 'bg-rose-950/80 border-rose-500/50 text-rose-200'
+          }`}
+        >
+          <span className="text-lg">{toast.isSuccess ? '✨' : '⚠️'}</span>
+          <span className="text-xs font-semibold">{toast.message}</span>
         </div>
       )}
 
@@ -651,11 +578,17 @@ export function HomePage() {
         <PlayerRegionChart submissions={submissions} />
       </main>
 
-      {/* Footer */}
-      <footer className="w-full border-t border-slate-800/60 py-2 text-center text-[10px] text-slate-500">
-        Server Ngọc Kinh S5 &bull; Game Ta Làm Tông Sư
-      </footer>
-    </div>
+      {/* Identity Modal */}
+      <IdentityModal
+        isOpen={isIdentityModalOpen}
+        onClose={() => setIsIdentityModalOpen(false)}
+        currentIdentity={identity}
+        onIdentityCreated={(newIdent) => {
+          setIdentity(newIdent);
+          setIsIdentityModalOpen(false);
+        }}
+      />
+    </AppLayout>
   );
 }
 

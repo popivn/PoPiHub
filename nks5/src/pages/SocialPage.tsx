@@ -2,10 +2,8 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Sparkles, 
-  Shield, 
   Send, 
   MessageSquare, 
-  Zap, 
   RefreshCw,
   Video,
   Image as ImageIcon,
@@ -30,6 +28,7 @@ import {
 import IdentityModal, { CULTIVATION_CLASSES } from '../components/IdentityModal';
 import CreatePostModal from '../components/CreatePostModal';
 import PostComments from '../components/PostComments';
+import AppLayout from '../components/AppLayout';
 
 export interface SocialPost {
   docId: string;
@@ -39,6 +38,7 @@ export interface SocialPost {
   jwtToken: string;
   content: string;
   imageUrl?: string;
+  imageUrls?: string[];
   likes: number;
   likedBy: string[]; // Danh sách sub sư tôn đã thích
   createdAt?: string;
@@ -87,6 +87,14 @@ export function SocialPage() {
           timeStr = new Date(data.createdAt.seconds * 1000).toLocaleString('vi-VN');
         }
 
+        // Backward compatibility
+        let imgs: string[] = [];
+        if (Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
+          imgs = data.imageUrls;
+        } else if (data.imageUrl) {
+          imgs = [data.imageUrl];
+        }
+
         items.push({
           docId: docSnap.id,
           authorName: data.authorName || 'Sư Tôn Ẩn Danh',
@@ -95,6 +103,7 @@ export function SocialPage() {
           jwtToken: data.jwtToken || '',
           content: data.content || '',
           imageUrl: data.imageUrl || undefined,
+          imageUrls: imgs.length > 0 ? imgs : undefined,
           likes: data.likes || 0,
           likedBy: data.likedBy || [],
           createdAt: timeStr,
@@ -110,8 +119,8 @@ export function SocialPage() {
     }
   };
 
-  const handleCreatePost = async (content: string, imageUrl?: string) => {
-    if (!content.trim() && !imageUrl) return;
+  const handleCreatePost = async (content: string, imageUrls?: string[]) => {
+    if (!content.trim() && (!imageUrls || imageUrls.length === 0)) return;
 
     // Nếu chưa có danh tính thì yêu cầu nhập
     if (!identity) {
@@ -134,7 +143,8 @@ export function SocialPage() {
         authorAvatarId: identity.avatarId,
         jwtToken: identity.token,
         content: content.trim(),
-        imageUrl: imageUrl || null,
+        imageUrl: imageUrls && imageUrls.length > 0 ? imageUrls[0] : null,
+        imageUrls: imageUrls || [],
         likes: 0,
         likedBy: [],
         createdAt: serverTimestamp(),
@@ -186,94 +196,11 @@ export function SocialPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] text-slate-100 flex flex-col justify-start selection:bg-amber-500 selection:text-white relative overflow-x-hidden">
-      {/* Background AAA Fantasy Emblem & Lighting */}
-      <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-0 overflow-hidden opacity-25">
-        <img
-          src="/nks5dadide.png"
-          alt="Guild Emblem Watermark"
-          className="w-[450px] sm:w-[750px] max-w-none mix-blend-screen filter brightness-125 contrast-125 rounded-full drop-shadow-[0_0_80px_rgba(245,158,11,0.3)]"
-          style={{
-            maskImage: 'radial-gradient(circle, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 78%)',
-            WebkitMaskImage: 'radial-gradient(circle, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 78%)'
-          }}
-        />
-      </div>
-      <div className="fixed -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-r from-amber-600/15 via-orange-600/10 to-red-600/15 rounded-full blur-[120px] pointer-events-none" />
-
-      {/* AAA Header / Navbar */}
-      <header className="w-full border-b border-amber-500/20 bg-[#0b0f19]/80 backdrop-blur-md sticky top-0 z-40 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2.5 flex justify-between items-center gap-1.5">
-          <div 
-            className="flex items-center space-x-2 sm:space-x-3 min-w-0 cursor-pointer group"
-            onClick={() => {
-              window.history.pushState({}, '', '/guild');
-              window.dispatchEvent(new Event('popstate'));
-            }}
-          >
-            <img
-              src="/logo.jpg"
-              alt="Logo Server Ngọc Kinh S5"
-              className="w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 rounded-xl object-cover border border-amber-400/50 shadow-md shadow-orange-500/30 shrink-0 group-hover:scale-105 transition-transform"
-            />
-            <div className="min-w-0">
-              <h1 className="text-[11px] xs:text-xs sm:text-base font-black font-cinzel tracking-wider bg-gradient-to-r from-amber-200 via-amber-400 to-orange-400 bg-clip-text text-transparent truncate">
-                SERVER NGỌC KINH S5
-              </h1>
-              <p className="text-[8px] xs:text-[10px] sm:text-xs text-amber-400/80 font-medium truncate flex items-center gap-1">
-                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 inline-block animate-pulse shadow-[0_0_8px_#10b981]" />
-                Mạng Xã Hội Tông Sư
-              </p>
-            </div>
-          </div>
-
-          {/* User Controls & Navigation */}
-          <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
-            {identity ? (
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setIsIdentityModalOpen(true)}
-                className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent hover:from-amber-500/25 border border-amber-500/40 rounded-xl sm:rounded-2xl px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-bold font-cinzel text-amber-300 transition-all cursor-pointer shadow-lg shadow-amber-500/10"
-                title="Thay đổi danh tính Sư Tôn"
-              >
-                {(() => {
-                  const currentClass = getClassInfo(identity.avatarId);
-                  const Icon = currentClass.icon;
-                  return <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />;
-                })()}
-                <span className="max-w-[70px] xs:max-w-[90px] sm:max-w-[110px] truncate">{identity.name}</span>
-              </motion.button>
-            ) : (
-              <motion.button
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => setIsIdentityModalOpen(true)}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black font-cinzel px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs shadow-lg shadow-amber-500/20 cursor-pointer flex items-center gap-1"
-              >
-                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                <span>Nhập Danh Tính</span>
-              </motion.button>
-            )}
-
-            {/* Nút Khiên (Quay về Guild) */}
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => {
-                window.history.pushState({}, '', '/guild');
-                window.dispatchEvent(new Event('popstate'));
-              }}
-              title="Danh Sách Bang Hội"
-              className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold font-cinzel flex items-center gap-1 transition-all cursor-pointer border bg-slate-900/80 hover:bg-slate-800 text-amber-300 border-slate-700/80"
-            >
-              <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
-              <span className="hidden sm:inline">Bang Hội</span>
-            </motion.button>
-          </div>
-        </div>
-      </header>
-
+    <AppLayout
+      currentRoute="social"
+      identity={identity}
+      onOpenIdentityModal={() => setIsIdentityModalOpen(true)}
+    >
       {/* Main Feed */}
       <main className="max-w-7xl w-full mx-auto px-3 sm:px-4 pt-5 pb-16 space-y-4 z-10">
         
@@ -431,8 +358,20 @@ export function SocialPage() {
                     </p>
                   )}
 
-                  {/* Fullwidth Image Display (Sắp xếp 1 cột từ trên xuống giới hạn container) */}
-                  {post.imageUrl && (
+                  {/* Fullwidth Image Display (Hỗ trợ Đăng Nhiều Ảnh Xếp 1 Cột) */}
+                  {post.imageUrls && post.imageUrls.length > 0 ? (
+                    <div className="space-y-3">
+                      {post.imageUrls.map((imgSrc, imgIdx) => (
+                        <div key={imgIdx} className="w-full rounded-2xl overflow-hidden border border-slate-800/80 bg-slate-950/60 max-h-[500px] flex items-center justify-center">
+                          <img
+                            src={imgSrc}
+                            alt={`Hình ảnh bài đăng ${imgIdx + 1}`}
+                            className="w-full h-full object-contain max-h-[500px] rounded-2xl"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  ) : post.imageUrl ? (
                     <div className="w-full rounded-2xl overflow-hidden border border-slate-800/80 bg-slate-950/60 max-h-[500px] flex items-center justify-center">
                       <img
                         src={post.imageUrl}
@@ -440,7 +379,7 @@ export function SocialPage() {
                         className="w-full h-full object-contain max-h-[500px] rounded-2xl"
                       />
                     </div>
-                  )}
+                  ) : null}
 
                   {/* Facebook Style Comment System */}
                   <PostComments
@@ -474,12 +413,7 @@ export function SocialPage() {
         onSubmitPost={handleCreatePost}
         onOpenIdentityModal={() => setIsIdentityModalOpen(true)}
       />
-
-      {/* Footer */}
-      <footer className="w-full border-t border-slate-800/60 py-3 text-center text-[10px] text-slate-500 font-cinzel">
-        Server Ngọc Kinh S5 &bull; Game Ta Làm Tông Sư
-      </footer>
-    </div>
+    </AppLayout>
   );
 }
 

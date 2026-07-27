@@ -18,7 +18,7 @@ export interface CreatePostModalProps {
   isOpen: boolean;
   onClose: () => void;
   identity: UserIdentity | null;
-  onSubmitPost: (content: string, imageUrl?: string) => Promise<void>;
+  onSubmitPost: (content: string, imageUrls?: string[]) => Promise<void>;
   onOpenIdentityModal: () => void;
 }
 
@@ -30,37 +30,38 @@ export function CreatePostModal({
   onOpenIdentityModal,
 }: CreatePostModalProps) {
   const [content, setContent] = useState('');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setSelectedImage(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (reader.result) {
+          setSelectedImages((prev) => [...prev, reader.result as string]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+  const handleRemoveImage = (indexToRemove: number) => {
+    setSelectedImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!content.trim() && !selectedImage) return;
+    if (!content.trim() && selectedImages.length === 0) return;
 
     setIsSubmitting(true);
     try {
-      await onSubmitPost(content, selectedImage || undefined);
+      await onSubmitPost(content, selectedImages.length > 0 ? selectedImages : undefined);
       setContent('');
-      setSelectedImage(null);
+      setSelectedImages([]);
       onClose();
     } catch (err) {
       console.error('Lỗi đăng bài:', err);
@@ -93,10 +94,10 @@ export function CreatePostModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 15 }}
             transition={{ type: 'spring', damping: 25, stiffness: 320 }}
-            className="relative w-full max-w-lg bg-[#242526] border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden z-10 my-auto text-slate-100"
+            className="relative w-full max-w-lg bg-[#242526] border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden z-10 my-auto text-slate-100 max-h-[90vh] flex flex-col"
           >
             {/* Modal Header */}
-            <div className="relative border-b border-slate-700/80 px-4 py-3 text-center">
+            <div className="relative border-b border-slate-700/80 px-4 py-3 text-center shrink-0">
               <h3 className="text-base font-bold font-cinzel text-slate-100">
                 Tạo bài viết
               </h3>
@@ -109,8 +110,8 @@ export function CreatePostModal({
               </button>
             </div>
 
-            {/* Author Info */}
-            <div className="p-4 space-y-3">
+            {/* Scrollable Content */}
+            <div className="p-4 space-y-3 overflow-y-auto flex-1">
               <div className="flex items-center gap-3">
                 <div 
                   onClick={onOpenIdentityModal}
@@ -146,7 +147,7 @@ export function CreatePostModal({
               {/* Text Area */}
               <div className="relative">
                 <textarea
-                  rows={selectedImage ? 2 : 4}
+                  rows={selectedImages.length > 0 ? 2 : 4}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder={
@@ -164,45 +165,51 @@ export function CreatePostModal({
                 </button>
               </div>
 
-              {/* Image Preview Area */}
-              {selectedImage && (
-                <div className="relative rounded-xl border border-slate-700 bg-slate-900/60 p-2 overflow-hidden group">
-                  {/* Image Edit & Remove Overlay Buttons */}
-                  <div className="absolute top-4 left-4 z-10">
+              {/* Multiple Image Preview Stack Grid */}
+              {selectedImages.length > 0 && (
+                <div className="relative rounded-xl border border-slate-700 bg-slate-900/60 p-2 overflow-hidden space-y-2">
+                  <div className="flex justify-between items-center px-1">
+                    <span className="text-xs font-semibold text-slate-300">
+                      Đã chọn {selectedImages.length} hình ảnh
+                    </span>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900/80 hover:bg-slate-950 text-slate-100 text-xs font-semibold backdrop-blur-md shadow-md cursor-pointer border border-slate-700"
+                      className="inline-flex items-center gap-1 text-xs text-amber-400 hover:underline cursor-pointer font-semibold"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
-                      <span>Chỉnh sửa</span>
+                      <span>Thêm ảnh</span>
                     </button>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={handleRemoveImage}
-                    className="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-slate-900/80 hover:bg-slate-950 text-slate-200 flex items-center justify-center backdrop-blur-md shadow-md cursor-pointer border border-slate-700"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-
-                  {/* Fullwidth Image 1 Column Stacked */}
-                  <div className="w-full max-h-[380px] rounded-lg overflow-hidden flex items-center justify-center bg-black/40">
-                    <img
-                      src={selectedImage}
-                      alt="Preview đăng bài"
-                      className="w-full h-full object-contain max-h-[380px] rounded-lg"
-                    />
+                  <div className="space-y-2 max-h-[350px] overflow-y-auto pr-1">
+                    {selectedImages.map((imgSrc, idx) => (
+                      <div key={idx} className="relative rounded-lg overflow-hidden border border-slate-800 bg-black/40 group">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="absolute top-2 right-2 z-10 w-7 h-7 rounded-full bg-black/70 hover:bg-black text-slate-200 flex items-center justify-center backdrop-blur-md cursor-pointer border border-slate-700 transition-colors"
+                          title="Xóa ảnh này"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <img
+                          src={imgSrc}
+                          alt={`Preview ${idx + 1}`}
+                          className="w-full h-auto max-h-[320px] object-contain rounded-lg"
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
 
-              {/* Hidden File Input */}
+              {/* Hidden File Input (Multiple files) */}
               <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/*"
+                multiple
                 onChange={handleImageChange}
                 className="hidden"
               />
@@ -216,7 +223,7 @@ export function CreatePostModal({
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    title="Ảnh/video"
+                    title="Thêm nhiều ảnh"
                     className="p-1.5 text-emerald-500 hover:bg-slate-800 rounded-full transition-colors cursor-pointer"
                   >
                     <ImageIcon className="w-5 h-5" />
@@ -258,7 +265,7 @@ export function CreatePostModal({
                 whileTap={{ scale: 0.99 }}
                 type="submit"
                 onClick={handleSubmit}
-                disabled={isSubmitting || (!content.trim() && !selectedImage)}
+                disabled={isSubmitting || (!content.trim() && selectedImages.length === 0)}
                 className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-40 text-white font-bold text-sm cursor-pointer shadow-lg shadow-blue-600/20 transition-all"
               >
                 {isSubmitting ? 'Đang Đăng...' : 'Đăng'}
