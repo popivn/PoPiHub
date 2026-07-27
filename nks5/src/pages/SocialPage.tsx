@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { 
   Sparkles, 
   Shield, 
-  Heart, 
   Send, 
   MessageSquare, 
   Zap, 
@@ -30,6 +29,7 @@ import {
 } from '../utils/identityJWT';
 import IdentityModal, { CULTIVATION_CLASSES } from '../components/IdentityModal';
 import CreatePostModal from '../components/CreatePostModal';
+import PostComments from '../components/PostComments';
 
 export interface SocialPost {
   docId: string;
@@ -202,10 +202,10 @@ export function SocialPage() {
       <div className="fixed -top-24 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-gradient-to-r from-amber-600/15 via-orange-600/10 to-red-600/15 rounded-full blur-[120px] pointer-events-none" />
 
       {/* AAA Header / Navbar */}
-      <header className="w-full border-b border-amber-500/20 bg-[#0b0f19]/70 backdrop-blur-md sticky top-0 z-40 shadow-2xl">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex justify-between items-center gap-2">
+      <header className="w-full border-b border-amber-500/20 bg-[#0b0f19]/80 backdrop-blur-md sticky top-0 z-40 shadow-2xl">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-4 py-2.5 flex justify-between items-center gap-1.5">
           <div 
-            className="flex items-center space-x-3 min-w-0 cursor-pointer group"
+            className="flex items-center space-x-2 sm:space-x-3 min-w-0 cursor-pointer group"
             onClick={() => {
               window.history.pushState({}, '', '/guild');
               window.dispatchEvent(new Event('popstate'));
@@ -214,44 +214,44 @@ export function SocialPage() {
             <img
               src="/logo.jpg"
               alt="Logo Server Ngọc Kinh S5"
-              className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl object-cover border border-amber-400/50 shadow-md shadow-orange-500/30 shrink-0 group-hover:scale-105 transition-transform"
+              className="w-7 h-7 xs:w-8 xs:h-8 sm:w-10 sm:h-10 rounded-xl object-cover border border-amber-400/50 shadow-md shadow-orange-500/30 shrink-0 group-hover:scale-105 transition-transform"
             />
             <div className="min-w-0">
-              <h1 className="text-xs sm:text-base font-black font-cinzel tracking-wider bg-gradient-to-r from-amber-200 via-amber-400 to-orange-400 bg-clip-text text-transparent truncate">
+              <h1 className="text-[11px] xs:text-xs sm:text-base font-black font-cinzel tracking-wider bg-gradient-to-r from-amber-200 via-amber-400 to-orange-400 bg-clip-text text-transparent truncate">
                 SERVER NGỌC KINH S5
               </h1>
-              <p className="text-[10px] sm:text-xs text-amber-400/80 font-medium truncate flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse shadow-[0_0_8px_#10b981]" />
+              <p className="text-[8px] xs:text-[10px] sm:text-xs text-amber-400/80 font-medium truncate flex items-center gap-1">
+                <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-400 inline-block animate-pulse shadow-[0_0_8px_#10b981]" />
                 Mạng Xã Hội Tông Sư
               </p>
             </div>
           </div>
 
           {/* User Controls & Navigation */}
-          <div className="flex items-center space-x-2 shrink-0">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
             {identity ? (
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setIsIdentityModalOpen(true)}
-                className="flex items-center gap-2 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent hover:from-amber-500/25 border border-amber-500/40 rounded-2xl px-3 py-1.5 text-xs font-bold font-cinzel text-amber-300 transition-all cursor-pointer shadow-lg shadow-amber-500/10"
+                className="flex items-center gap-1.5 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-transparent hover:from-amber-500/25 border border-amber-500/40 rounded-xl sm:rounded-2xl px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-bold font-cinzel text-amber-300 transition-all cursor-pointer shadow-lg shadow-amber-500/10"
                 title="Thay đổi danh tính Sư Tôn"
               >
                 {(() => {
                   const currentClass = getClassInfo(identity.avatarId);
                   const Icon = currentClass.icon;
-                  return <Icon className="w-4 h-4 text-amber-400" />;
+                  return <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />;
                 })()}
-                <span className="max-w-[110px] truncate">{identity.name}</span>
+                <span className="max-w-[70px] xs:max-w-[90px] sm:max-w-[110px] truncate">{identity.name}</span>
               </motion.button>
             ) : (
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => setIsIdentityModalOpen(true)}
-                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black font-cinzel px-3.5 py-1.5 rounded-2xl text-xs shadow-lg shadow-amber-500/20 cursor-pointer flex items-center gap-1.5"
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black font-cinzel px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs shadow-lg shadow-amber-500/20 cursor-pointer flex items-center gap-1"
               >
-                <Zap className="w-3.5 h-3.5" />
+                <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                 <span>Nhập Danh Tính</span>
               </motion.button>
             )}
@@ -265,10 +265,10 @@ export function SocialPage() {
                 window.dispatchEvent(new Event('popstate'));
               }}
               title="Danh Sách Bang Hội"
-              className="px-3 py-1.5 rounded-2xl text-xs font-bold font-cinzel flex items-center gap-1.5 transition-all cursor-pointer border bg-slate-900/80 hover:bg-slate-800 text-amber-300 border-slate-700/80"
+              className="p-1.5 sm:px-3 sm:py-1.5 rounded-xl sm:rounded-2xl text-[10px] sm:text-xs font-bold font-cinzel flex items-center gap-1 transition-all cursor-pointer border bg-slate-900/80 hover:bg-slate-800 text-amber-300 border-slate-700/80"
             >
-              <Shield className="w-4 h-4 text-amber-400" />
-              <span className="hidden xs:inline">Bang Hội</span>
+              <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+              <span className="hidden sm:inline">Bang Hội</span>
             </motion.button>
           </div>
         </div>
@@ -278,8 +278,8 @@ export function SocialPage() {
       <main className="max-w-7xl w-full mx-auto px-3 sm:px-4 pt-5 pb-16 space-y-4 z-10">
         
         {/* Facebook Style Post Creation Bar */}
-        <div className="bg-[#18191a]/90 border border-slate-800/80 rounded-2xl p-3 sm:p-4 shadow-xl backdrop-blur-md">
-          <div className="flex items-center gap-2.5 sm:gap-3">
+        <div className="bg-[#18191a]/90 border border-slate-800/80 rounded-2xl p-2.5 sm:p-4 shadow-xl backdrop-blur-md">
+          <div className="flex items-center gap-2 sm:gap-3">
             {/* Avatar */}
             <div 
               onClick={() => setIsIdentityModalOpen(true)}
@@ -288,17 +288,17 @@ export function SocialPage() {
             >
               {identity ? (
                 <div 
-                  className="w-10 h-10 rounded-full bg-slate-900 border border-amber-400/50 flex items-center justify-center text-amber-300 shadow-md"
+                  className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-900 border border-amber-400/50 flex items-center justify-center text-amber-300 shadow-md"
                   style={{ color: getClassInfo(identity.avatarId).color }}
                 >
                   {(() => {
                     const Icon = getClassInfo(identity.avatarId).icon;
-                    return <Icon className="w-5 h-5" />;
+                    return <Icon className="w-4 h-4 sm:w-5 sm:h-5" />;
                   })()}
                 </div>
               ) : (
-                <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
-                  <UserCheck className="w-5 h-5" />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                  <UserCheck className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
               )}
             </div>
@@ -308,39 +308,39 @@ export function SocialPage() {
               onClick={() => setIsCreatePostModalOpen(true)}
               className="flex-1 min-w-0 cursor-pointer"
             >
-              <div className="w-full bg-[#3a3b3c]/60 hover:bg-[#3a3b3c] border border-transparent hover:border-amber-500/40 rounded-full px-4 py-2.5 text-xs sm:text-sm text-slate-400 select-none transition-all">
+              <div className="w-full bg-[#3a3b3c]/60 hover:bg-[#3a3b3c] border border-transparent hover:border-amber-500/40 rounded-full px-3 py-2 sm:px-4 sm:py-2.5 text-[11px] sm:text-sm text-slate-400 select-none transition-all truncate">
                 {identity
-                  ? `${identity.name} ơi, Sư Tôn đang nghĩ gì thế?`
+                  ? `${identity.name} ơi, bạn đang nghĩ gì thế?`
                   : 'Sư Tôn ơi, bạn đang nghĩ gì thế?'
                 }
               </div>
             </div>
 
             {/* Quick Action Icons & Submit Button */}
-            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            <div className="flex items-center gap-0.5 sm:gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setIsCreatePostModalOpen(true)}
                 title="Video trực tiếp"
-                className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-full transition-colors cursor-pointer"
+                className="p-1.5 sm:p-2 text-rose-500 hover:bg-rose-500/10 rounded-full transition-colors cursor-pointer"
               >
-                <Video className="w-5 h-5 stroke-[2.2]" />
+                <Video className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
               </button>
               <button
                 type="button"
                 onClick={() => setIsCreatePostModalOpen(true)}
                 title="Ảnh/video"
-                className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-full transition-colors cursor-pointer"
+                className="p-1.5 sm:p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-full transition-colors cursor-pointer"
               >
-                <ImageIcon className="w-5 h-5 stroke-[2.2]" />
+                <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
               </button>
               <button
                 type="button"
                 onClick={() => setIsCreatePostModalOpen(true)}
                 title="Thước phim (Reels)"
-                className="p-2 text-pink-500 hover:bg-pink-500/10 rounded-full transition-colors cursor-pointer"
+                className="p-1.5 sm:p-2 text-pink-500 hover:bg-pink-500/10 rounded-full transition-colors cursor-pointer"
               >
-                <Clapperboard className="w-5 h-5 stroke-[2.2]" />
+                <Clapperboard className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
               </button>
 
               <motion.button
@@ -348,7 +348,7 @@ export function SocialPage() {
                 whileTap={{ scale: 0.95 }}
                 type="button"
                 onClick={() => setIsCreatePostModalOpen(true)}
-                className="ml-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black px-4 py-2 rounded-full text-xs cursor-pointer shadow-md shadow-amber-500/20 flex items-center gap-1.5 uppercase font-cinzel"
+                className="ml-0.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black p-2 sm:px-4 sm:py-2 rounded-full text-xs cursor-pointer shadow-md shadow-amber-500/20 flex items-center gap-1.5 uppercase font-cinzel"
               >
                 <Send className="w-3.5 h-3.5 stroke-[2.5]" />
                 <span className="hidden sm:inline">Đăng</span>
@@ -442,27 +442,15 @@ export function SocialPage() {
                     </div>
                   )}
 
-                  {/* Actions Bar */}
-                  <div className="pt-2.5 border-t border-slate-800/70 flex justify-between items-center text-xs">
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => handleLikePost(post)}
-                      className={`flex items-center gap-2 px-3.5 py-1.5 rounded-2xl transition-all font-semibold cursor-pointer ${
-                        isLiked
-                          ? 'bg-rose-500/20 text-rose-400 border border-rose-500/40 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
-                          : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800 border border-slate-800'
-                      }`}
-                    >
-                      <Heart className={`w-4 h-4 ${isLiked ? 'fill-rose-500 text-rose-500' : ''}`} />
-                      <span className="font-cinzel">{post.likes}</span>
-                    </motion.button>
-
-                    <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
-                      <span>Mã Khế Ước:</span>
-                      <span className="text-slate-400">{post.authorSub.slice(0, 15)}...</span>
-                    </div>
-                  </div>
+                  {/* Facebook Style Comment System */}
+                  <PostComments
+                    postId={post.docId}
+                    identity={identity}
+                    likes={post.likes}
+                    isLiked={isLiked}
+                    onLikePost={() => handleLikePost(post)}
+                    onOpenIdentityModal={() => setIsIdentityModalOpen(true)}
+                  />
                 </motion.div>
               );
             })
