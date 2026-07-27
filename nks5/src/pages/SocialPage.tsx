@@ -6,9 +6,12 @@ import {
   Heart, 
   Send, 
   MessageSquare, 
-  ScrollText, 
   Zap, 
-  RefreshCw
+  RefreshCw,
+  Video,
+  Image as ImageIcon,
+  Clapperboard,
+  UserCheck
 } from 'lucide-react';
 import { 
   db, 
@@ -26,6 +29,7 @@ import {
   UserIdentity 
 } from '../utils/identityJWT';
 import IdentityModal, { CULTIVATION_CLASSES } from '../components/IdentityModal';
+import CreatePostModal from '../components/CreatePostModal';
 
 export interface SocialPost {
   docId: string;
@@ -34,6 +38,7 @@ export interface SocialPost {
   authorAvatarId: number;
   jwtToken: string;
   content: string;
+  imageUrl?: string;
   likes: number;
   likedBy: string[]; // Danh sách sub sư tôn đã thích
   createdAt?: string;
@@ -43,12 +48,11 @@ export interface SocialPost {
 export function SocialPage() {
   const [identity, setIdentity] = useState<UserIdentity | null>(null);
   const [isIdentityModalOpen, setIsIdentityModalOpen] = useState(false);
+  const [isCreatePostModalOpen, setIsCreatePostModalOpen] = useState(false);
 
   // Form bài viết
-  const [postContent, setPostContent] = useState('');
   const [posts, setPosts] = useState<SocialPost[]>([]);
   const [loading, setLoading] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     // 1. Tự động đọc JWT Token đã lưu hoặc tạo mới timestamp JWT ID nếu chưa có
@@ -90,6 +94,7 @@ export function SocialPage() {
           authorAvatarId: data.authorAvatarId || 1,
           jwtToken: data.jwtToken || '',
           content: data.content || '',
+          imageUrl: data.imageUrl || undefined,
           likes: data.likes || 0,
           likedBy: data.likedBy || [],
           createdAt: timeStr,
@@ -105,9 +110,8 @@ export function SocialPage() {
     }
   };
 
-  const handleCreatePost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!postContent.trim()) return;
+  const handleCreatePost = async (content: string, imageUrl?: string) => {
+    if (!content.trim() && !imageUrl) return;
 
     // Nếu chưa có danh tính thì yêu cầu nhập
     if (!identity) {
@@ -115,7 +119,6 @@ export function SocialPage() {
       return;
     }
 
-    setSubmitting(true);
     try {
       // Decode JWT token sub id
       const tokenParts = identity.token.split('.');
@@ -130,18 +133,16 @@ export function SocialPage() {
         authorSub: sub,
         authorAvatarId: identity.avatarId,
         jwtToken: identity.token,
-        content: postContent.trim(),
+        content: content.trim(),
+        imageUrl: imageUrl || null,
         likes: 0,
         likedBy: [],
         createdAt: serverTimestamp(),
       });
 
-      setPostContent('');
       await fetchPosts();
     } catch (err) {
       console.error('Lỗi khi đăng bài viết:', err);
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -202,7 +203,7 @@ export function SocialPage() {
 
       {/* AAA Header / Navbar */}
       <header className="w-full border-b border-amber-500/20 bg-[#0b0f19]/70 backdrop-blur-md sticky top-0 z-40 shadow-2xl">
-        <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 flex justify-between items-center gap-2">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-3 flex justify-between items-center gap-2">
           <div 
             className="flex items-center space-x-3 min-w-0 cursor-pointer group"
             onClick={() => {
@@ -274,65 +275,86 @@ export function SocialPage() {
       </header>
 
       {/* Main Feed */}
-      <main className="max-w-2xl w-full mx-auto px-3 sm:px-4 pt-5 pb-16 space-y-4 z-10">
+      <main className="max-w-7xl w-full mx-auto px-3 sm:px-4 pt-5 pb-16 space-y-4 z-10">
         
-        {/* AAA Create Post Box */}
-        <div className="bg-[#0b0f19]/50 backdrop-blur-md border border-amber-500/30 rounded-3xl p-4 sm:p-5 shadow-[0_0_30px_rgba(245,158,11,0.08)] space-y-4 relative overflow-hidden">
-          <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-amber-500/40 to-transparent" />
+        {/* Facebook Style Post Creation Bar */}
+        <div className="bg-[#18191a]/90 border border-slate-800/80 rounded-2xl p-3 sm:p-4 shadow-xl backdrop-blur-md">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            {/* Avatar */}
+            <div 
+              onClick={() => setIsIdentityModalOpen(true)}
+              className="cursor-pointer shrink-0"
+              title="Nhấn để đổi danh tính Sư Tôn"
+            >
+              {identity ? (
+                <div 
+                  className="w-10 h-10 rounded-full bg-slate-900 border border-amber-400/50 flex items-center justify-center text-amber-300 shadow-md"
+                  style={{ color: getClassInfo(identity.avatarId).color }}
+                >
+                  {(() => {
+                    const Icon = getClassInfo(identity.avatarId).icon;
+                    return <Icon className="w-5 h-5" />;
+                  })()}
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+                  <UserCheck className="w-5 h-5" />
+                </div>
+              )}
+            </div>
 
-          <div className="flex items-center gap-3">
-            {identity ? (
-              <div 
-                className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-amber-400/50 flex items-center justify-center shadow-inner shrink-0"
-                style={{ color: getClassInfo(identity.avatarId).color }}
+            {/* Pill Shaped Input Field -> Triggers Facebook CreatePostModal */}
+            <div 
+              onClick={() => setIsCreatePostModalOpen(true)}
+              className="flex-1 min-w-0 cursor-pointer"
+            >
+              <div className="w-full bg-[#3a3b3c]/60 hover:bg-[#3a3b3c] border border-transparent hover:border-amber-500/40 rounded-full px-4 py-2.5 text-xs sm:text-sm text-slate-400 select-none transition-all">
+                {identity
+                  ? `${identity.name} ơi, Sư Tôn đang nghĩ gì thế?`
+                  : 'Sư Tôn ơi, bạn đang nghĩ gì thế?'
+                }
+              </div>
+            </div>
+
+            {/* Quick Action Icons & Submit Button */}
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsCreatePostModalOpen(true)}
+                title="Video trực tiếp"
+                className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-full transition-colors cursor-pointer"
               >
-                {(() => {
-                  const Icon = getClassInfo(identity.avatarId).icon;
-                  return <Icon className="w-6 h-6 filter drop-shadow-[0_0_6px_currentColor]" />;
-                })()}
-              </div>
-            ) : (
-              <div className="w-11 h-11 rounded-2xl bg-slate-900 border border-slate-700 flex items-center justify-center text-amber-400 shrink-0">
-                <Sparkles className="w-6 h-6 animate-pulse" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold font-cinzel text-amber-300 truncate">
-                {identity ? identity.name : 'Sư Tôn Ẩn Danh'}
-              </p>
-              <p className="text-[10px] text-slate-400 font-inter">Đăng truyền tin công khai tới toàn thể Tông Sư</p>
-            </div>
-          </div>
-
-          <form onSubmit={handleCreatePost} className="space-y-3">
-            <div className="relative">
-              <textarea
-                rows={3}
-                value={postContent}
-                onChange={(e) => setPostContent(e.target.value)}
-                placeholder="Sư Tôn muốn truyền đạt tâm pháp hay kinh nghiệm gì với chư vị Tông Sư hôm nay?..."
-                className="w-full bg-slate-950/80 border border-slate-700/80 focus:border-amber-500 rounded-2xl p-3.5 text-xs sm:text-sm text-slate-100 placeholder-slate-500 outline-none resize-none transition-all focus:shadow-[0_0_20px_rgba(245,158,11,0.15)]"
-              />
-            </div>
-
-            <div className="flex justify-between items-center pt-2 border-t border-slate-800/80">
-              <div className="flex items-center gap-1.5 text-slate-400 text-xs font-inter">
-                <ScrollText className="w-4 h-4 text-amber-400" />
-                <span className="text-[11px]">Ký tự khắc ghi bằng JWT</span>
-              </div>
+                <Video className="w-5 h-5 stroke-[2.2]" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCreatePostModalOpen(true)}
+                title="Ảnh/video"
+                className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-full transition-colors cursor-pointer"
+              >
+                <ImageIcon className="w-5 h-5 stroke-[2.2]" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsCreatePostModalOpen(true)}
+                title="Thước phim (Reels)"
+                className="p-2 text-pink-500 hover:bg-pink-500/10 rounded-full transition-colors cursor-pointer"
+              >
+                <Clapperboard className="w-5 h-5 stroke-[2.2]" />
+              </button>
 
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                type="submit"
-                disabled={submitting || !postContent.trim()}
-                className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-400 disabled:opacity-50 text-slate-950 font-black font-cinzel px-5 py-2 rounded-2xl text-xs cursor-pointer shadow-lg shadow-amber-500/20 flex items-center gap-1.5 uppercase tracking-wider"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                type="button"
+                onClick={() => setIsCreatePostModalOpen(true)}
+                className="ml-1 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black px-4 py-2 rounded-full text-xs cursor-pointer shadow-md shadow-amber-500/20 flex items-center gap-1.5 uppercase font-cinzel"
               >
                 <Send className="w-3.5 h-3.5 stroke-[2.5]" />
-                <span>{submitting ? 'Đang Đăng...' : 'Đăng Bài'}</span>
+                <span className="hidden sm:inline">Đăng</span>
               </motion.button>
             </div>
-          </form>
+          </div>
         </div>
 
         {/* AAA Post Feed List */}
@@ -402,10 +424,23 @@ export function SocialPage() {
                     </div>
                   </div>
 
-                  {/* Post Content */}
-                  <p className="text-xs sm:text-sm text-slate-200 font-inter whitespace-pre-wrap leading-relaxed">
-                    {post.content}
-                  </p>
+                  {/* Post Text Content */}
+                  {post.content && (
+                    <p className="text-xs sm:text-sm text-slate-200 font-inter whitespace-pre-wrap leading-relaxed">
+                      {post.content}
+                    </p>
+                  )}
+
+                  {/* Fullwidth Image Display (Sắp xếp 1 cột từ trên xuống giới hạn container) */}
+                  {post.imageUrl && (
+                    <div className="w-full rounded-2xl overflow-hidden border border-slate-800/80 bg-slate-950/60 max-h-[500px] flex items-center justify-center">
+                      <img
+                        src={post.imageUrl}
+                        alt="Hình ảnh bài đăng"
+                        className="w-full h-full object-contain max-h-[500px] rounded-2xl"
+                      />
+                    </div>
+                  )}
 
                   {/* Actions Bar */}
                   <div className="pt-2.5 border-t border-slate-800/70 flex justify-between items-center text-xs">
@@ -424,7 +459,7 @@ export function SocialPage() {
                     </motion.button>
 
                     <div className="text-[10px] text-slate-500 font-mono flex items-center gap-1">
-                      <span>Mã JWT:</span>
+                      <span>Mã Khế Ước:</span>
                       <span className="text-slate-400">{post.authorSub.slice(0, 15)}...</span>
                     </div>
                   </div>
@@ -441,6 +476,15 @@ export function SocialPage() {
         onClose={() => setIsIdentityModalOpen(false)}
         currentIdentity={identity}
         onIdentityCreated={handleIdentityCreated}
+      />
+
+      {/* Facebook Create Post Popup Modal */}
+      <CreatePostModal
+        isOpen={isCreatePostModalOpen}
+        onClose={() => setIsCreatePostModalOpen(false)}
+        identity={identity}
+        onSubmitPost={handleCreatePost}
+        onOpenIdentityModal={() => setIsIdentityModalOpen(true)}
       />
 
       {/* Footer */}

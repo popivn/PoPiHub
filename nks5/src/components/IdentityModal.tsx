@@ -178,7 +178,7 @@ export function IdentityModal({
                   Xin Hỏi Danh Tính Sư Tôn
                 </h2>
                 <p className="text-xs text-slate-400 font-inter mt-1 max-w-sm mx-auto leading-relaxed">
-                  Thiết lập danh xưng và Thiên Mệnh để tự động khắc ghi <strong className="text-amber-300">JWT Token ID</strong> huyền bí.
+                  Thiết lập danh xưng và Thiên Mệnh để tự động khắc ghi <strong className="text-amber-300">Khế Ước Thần Thông</strong> huyền bí.
                 </p>
               </div>
             </div>
