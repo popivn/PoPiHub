@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import HomePage from './pages/HomePage';
+import SocialPage from './pages/SocialPage';
 import AdminDashboardPage from './pages/AdminDashboardPage';
 
 export function App() {
@@ -19,6 +20,11 @@ export function App() {
     return <AdminDashboardPage />;
   }
 
+  if (currentPath === '/social') {
+    return <SocialPage />;
+  }
+
+  // /guild hoặc đường dẫn mặc định (/)
   return <HomePage />;
 }
 

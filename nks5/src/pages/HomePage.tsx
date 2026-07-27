@@ -23,6 +23,9 @@ export interface SubmissionItem {
   riskScore?: number;
   riskLevel?: string;
   userAgent?: string;
+  city?: string;
+  region?: string;
+  country?: string;
 }
 
 export function HomePage() {
@@ -74,6 +77,9 @@ export function HomePage() {
           riskScore: data.riskScore ?? 80,
           riskLevel: data.riskLevel || 'An toàn',
           userAgent: data.userAgent || '',
+          city: data.city || '',
+          region: data.region || '',
+          country: data.country || '',
         });
       });
 
@@ -216,9 +222,19 @@ export function HomePage() {
             <img
               src="/logo.jpg"
               alt="Logo Server Ngọc Kinh S5"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border border-amber-400/40 shadow-md shadow-orange-500/30 shrink-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl object-cover border border-amber-400/40 shadow-md shadow-orange-500/30 shrink-0 cursor-pointer"
+              onClick={() => {
+                window.history.pushState({}, '', '/guild');
+                window.dispatchEvent(new Event('popstate'));
+              }}
             />
-            <div className="min-w-0">
+            <div 
+              className="min-w-0 cursor-pointer" 
+              onClick={() => {
+                window.history.pushState({}, '', '/guild');
+                window.dispatchEvent(new Event('popstate'));
+              }}
+            >
               <h1 className="text-xs sm:text-base font-black tracking-wide bg-gradient-to-r from-amber-200 via-amber-400 to-orange-400 bg-clip-text text-transparent truncate">
                 SERVER NGỌC KINH S5
               </h1>
@@ -229,7 +245,39 @@ export function HomePage() {
             </div>
           </div>
 
-          <div className="flex items-center space-x-2 shrink-0">
+          {/* Navigation Controls */}
+          <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
+            {/* Nút Home (Mạng Xã Hội) */}
+            <button
+              onClick={() => {
+                window.history.pushState({}, '', '/social');
+                window.dispatchEvent(new Event('popstate'));
+              }}
+              title="Mạng Xã Hội (Feature Pending)"
+              className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border bg-slate-800/90 hover:bg-slate-700 text-amber-300 border-slate-700/80 hover:border-amber-500/40"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span className="hidden xs:inline">Home</span>
+            </button>
+
+            {/* Nút Khiên (Quay về Guild / Danh sách Bang Hội) */}
+            <button
+              onClick={() => {
+                window.history.pushState({}, '', '/guild');
+                window.dispatchEvent(new Event('popstate'));
+              }}
+              title="Danh Sách Bang Hội"
+              className="px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer border bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span className="hidden xs:inline">Bang Hội</span>
+            </button>
+
+            {/* Nút Thêm Thành Viên */}
             <button
               onClick={() => setIsFormOpen(!isFormOpen)}
               title={isFormOpen ? 'Đóng khung nhập' : 'Thêm thành viên mới'}
@@ -273,7 +321,6 @@ export function HomePage() {
 
       {/* Main Layout */}
       <main className="max-w-7xl w-full mx-auto px-2.5 sm:px-4 pt-3 pb-6 space-y-3 z-10">
-
         {/* Collapsible Form Section */}
         <div className="w-full">
           <div className="bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-xl shadow-lg overflow-hidden">
@@ -587,6 +634,8 @@ export function HomePage() {
           </div>
         </div>
 
+        {/* Player Region Distribution Chart */}
+        <PlayerRegionChart submissions={submissions} />
       </main>
 
       {/* Footer */}
@@ -596,4 +645,198 @@ export function HomePage() {
     </div>
   );
 }
+
+// ──────────────────────────────────────────────────────────
+// Component: Biểu đồ phân bổ khu vực người chơi
+// ──────────────────────────────────────────────────────────
+interface RegionEntry { label: string; count: number; color: string; }
+
+const REGION_COLORS = [
+  '#f59e0b', '#fb923c', '#ef4444', '#a78bfa', '#38bdf8',
+  '#34d399', '#f472b6', '#fbbf24', '#60a5fa', '#4ade80',
+];
+
+function PlayerRegionChart({ submissions }: { submissions: SubmissionItem[] }) {
+  // Tổng hợp theo city → region → country → fallback
+  // Dữ liệu cũ có thể thiếu city/region/country — thử đọc thêm từ ip
+  const regionMap: Record<string, number> = {};
+  submissions.forEach((s) => {
+    const city = s.city?.trim();
+    const region = s.region?.trim();
+    const country = s.country?.trim();
+    // Ưu tiên: thành phố → tỉnh → quốc gia → "Việt Nam" nếu ip có → "Chưa xác định"
+    const label =
+      city ||
+      region ||
+      country ||
+      (s.ip && s.ip !== 'N/A' ? 'Việt Nam' : 'Chưa xác định');
+    regionMap[label] = (regionMap[label] || 0) + 1;
+  });
+
+  const total = submissions.length;
+
+  if (total === 0) return null;
+
+  // Sắp xếp giảm dần, lấy top 8, gom phần còn lại vào "Khác"
+  const sorted = Object.entries(regionMap).sort((a, b) => b[1] - a[1]);
+  const top = sorted.slice(0, 8);
+  const others = sorted.slice(8).reduce((acc, [, v]) => acc + v, 0);
+  if (others > 0) top.push(['Khác', others]);
+
+  const entries: RegionEntry[] = top.map(([label, count], i) => ({
+    label,
+    count,
+    color: REGION_COLORS[i % REGION_COLORS.length],
+  }));
+
+  const maxCount = Math.max(...entries.map((e) => e.count));
+
+  // ── Donut SVG ──
+  const cx = 80; const cy = 80; const r = 60; const strokeW = 22;
+  let cumulPct = 0;
+  const circumference = 2 * Math.PI * r;
+
+  const donutSegments = entries.map((e) => {
+    const pct = e.count / total;
+    const dash = pct * circumference;
+    const gap = circumference - dash;
+    const offset = circumference - cumulPct * circumference;
+    cumulPct += pct;
+    return { ...e, dash, gap, offset, pct };
+  });
+
+  return (
+    <div className="w-full bg-slate-900/90 backdrop-blur-xl border border-slate-800/90 rounded-xl p-3 sm:p-5 shadow-xl">
+      {/* Header */}
+      <div className="flex items-center gap-2 mb-4">
+        <div className="p-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" />
+          </svg>
+        </div>
+        <div>
+          <h2 className="text-xs sm:text-sm font-extrabold text-white">
+            Phân Bổ Khu Vực Người Chơi
+          </h2>
+          <p className="text-[10px] text-slate-400">
+            Tổng {total} thành viên · {entries.length} khu vực
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-5 items-center lg:items-start">
+
+        {/* ── Donut Chart ── */}
+        <div className="flex flex-col items-center gap-2 shrink-0">
+          <svg width="160" height="160" viewBox="0 0 160 160" className="drop-shadow-xl">
+            {/* bg track */}
+            <circle cx={cx} cy={cy} r={r} fill="none" stroke="#1e293b" strokeWidth={strokeW} />
+
+            {donutSegments.map((seg, i) => (
+              <circle
+                key={i}
+                cx={cx} cy={cy} r={r}
+                fill="none"
+                stroke={seg.color}
+                strokeWidth={strokeW}
+                strokeDasharray={`${seg.dash - 1.5} ${seg.gap + 1.5}`}
+                strokeDashoffset={seg.offset}
+                strokeLinecap="round"
+                transform={`rotate(-90 ${cx} ${cy})`}
+                style={{ transition: 'stroke-dasharray 0.6s ease', filter: `drop-shadow(0 0 6px ${seg.color}55)` }}
+              />
+            ))}
+
+            {/* Center label */}
+            <text x={cx} y={cy - 8} textAnchor="middle" fill="#f1f5f9" fontSize="22" fontWeight="800">
+              {total}
+            </text>
+            <text x={cx} y={cy + 10} textAnchor="middle" fill="#94a3b8" fontSize="9">
+              THÀNH VIÊN
+            </text>
+          </svg>
+
+          {/* Legend pills */}
+          <div className="flex flex-wrap justify-center gap-1.5 max-w-[200px]">
+            {entries.map((e, i) => (
+              <div key={i} className="flex items-center gap-1 text-[9px] text-slate-300">
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
+                <span className="truncate max-w-[70px]">{e.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Horizontal Bar Chart ── */}
+        <div className="flex-1 w-full space-y-2.5">
+          {entries.map((e, i) => {
+            const barPct = (e.count / maxCount) * 100;
+            const pctOfTotal = ((e.count / total) * 100).toFixed(1);
+            return (
+              <div key={i} className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: e.color }} />
+                    <span className="text-[11px] font-semibold text-slate-200 truncate max-w-[120px] sm:max-w-[200px]">
+                      {e.label}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] font-bold" style={{ color: e.color }}>
+                      {e.count} người
+                    </span>
+                    <span className="text-[9px] text-slate-500 w-9 text-right">
+                      {pctOfTotal}%
+                    </span>
+                  </div>
+                </div>
+                <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{
+                      width: `${barPct}%`,
+                      background: `linear-gradient(90deg, ${e.color}cc, ${e.color})`,
+                      boxShadow: `0 0 8px ${e.color}66`,
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Summary badges */}
+          <div className="pt-2 flex flex-wrap gap-2">
+            {entries.slice(0, 3).map((e, i) => (
+              <div
+                key={i}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-bold"
+                style={{
+                  borderColor: `${e.color}50`,
+                  backgroundColor: `${e.color}15`,
+                  color: e.color,
+                }}
+              >
+                <span>{i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉'}</span>
+                <span>{e.label}</span>
+                <span className="text-slate-400 font-normal">· {e.count}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Note about legacy data */}
+          {submissions.some((s) => !s.city && !s.region && !s.country) && (
+            <p className="mt-2 text-[9px] text-slate-600 flex items-center gap-1">
+              <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Một số thành viên đăng ký sớm chưa có dữ liệu khu vực chi tiết.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default HomePage;
