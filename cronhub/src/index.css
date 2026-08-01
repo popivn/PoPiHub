@@ -1,0 +1,74 @@
+@import 'tailwindcss';
+
+/* Bật dark mode tự động theo hệ điều hành */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  /* Brand colors */
+  --color-brand: #6d5efc;
+  --color-brand-strong: #5a4ae0;
+  --color-brand-soft: rgba(109, 94, 252, 0.1);
+  --color-brand-border: rgba(109, 94, 252, 0.4);
+
+  /* Status */
+  --color-warn: #f59e0b;
+  --color-warn-soft: rgba(245, 158, 11, 0.12);
+  --color-warn-border: rgba(245, 158, 11, 0.45);
+  --color-ok: #10b981;
+  --color-err: #ef4444;
+
+  /* Surfaces (light) */
+  --color-bg: #f6f7fb;
+  --color-surface: #ffffff;
+  --color-surface-2: #f1f2f7;
+  --color-border: #e5e7eb;
+  --color-border-strong: #d1d5db;
+  --color-text: #4b5563;
+  --color-text-h: #0b0d12;
+  --color-text-muted: #8a93a3;
+
+  --font-sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  --radius-card: 12px;
+  --radius-sm: 8px;
+}
+
+/* Dark mode tokens — override @theme colors khi hệ điều hành tối */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #0b0d12;
+    --color-surface: #14161d;
+    --color-surface-2: #1b1e27;
+    --color-border: #23262f;
+    --color-border-strong: #2e323d;
+    --color-text: #a4adbd;
+    --color-text-h: #f3f4f6;
+    --color-text-muted: #6b7280;
+    --color-brand: #8b7dff;
+    --color-brand-soft: rgba(139, 125, 255, 0.15);
+    --color-brand-border: rgba(139, 125, 255, 0.45);
+    --color-warn: #fbbf24;
+    --color-warn-soft: rgba(251, 191, 36, 0.15);
+    --color-warn-border: rgba(251, 191, 36, 0.45);
+  }
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100svh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+}

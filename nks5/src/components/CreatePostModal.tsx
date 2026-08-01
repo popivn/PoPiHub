@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -20,6 +20,12 @@ export interface CreatePostModalProps {
   identity: UserIdentity | null;
   onSubmitPost: (content: string, imageUrls?: string[]) => Promise<void>;
   onOpenIdentityModal: () => void;
+  editingPost?: {
+    docId: string;
+    content: string;
+    imageUrls?: string[];
+    imageUrl?: string;
+  } | null;
 }
 
 export function CreatePostModal({
@@ -28,11 +34,28 @@ export function CreatePostModal({
   identity,
   onSubmitPost,
   onOpenIdentityModal,
+  editingPost,
 }: CreatePostModalProps) {
   const [content, setContent] = useState('');
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (editingPost) {
+      setContent(editingPost.content || '');
+      if (editingPost.imageUrls && editingPost.imageUrls.length > 0) {
+        setSelectedImages(editingPost.imageUrls);
+      } else if (editingPost.imageUrl) {
+        setSelectedImages([editingPost.imageUrl]);
+      } else {
+        setSelectedImages([]);
+      }
+    } else {
+      setContent('');
+      setSelectedImages([]);
+    }
+  }, [editingPost, isOpen]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -99,7 +122,7 @@ export function CreatePostModal({
             {/* Modal Header */}
             <div className="relative border-b border-slate-700/80 px-4 py-3 text-center shrink-0">
               <h3 className="text-base font-bold font-cinzel text-slate-100">
-                Tạo bài viết
+                {editingPost ? 'Chỉnh sửa bài viết' : 'Tạo bài viết'}
               </h3>
               <button
                 type="button"
@@ -268,7 +291,7 @@ export function CreatePostModal({
                 disabled={isSubmitting || (!content.trim() && selectedImages.length === 0)}
                 className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-40 text-white font-bold text-sm cursor-pointer shadow-lg shadow-blue-600/20 transition-all"
               >
-                {isSubmitting ? 'Đang Đăng...' : 'Đăng'}
+                {isSubmitting ? 'Đang Lưu...' : editingPost ? 'Lưu Thay Đổi' : 'Đăng'}
               </motion.button>
             </div>
           </motion.div>

@@ -8,7 +8,9 @@ import {
   Video,
   Image as ImageIcon,
   Clapperboard,
-  UserCheck
+  UserCheck,
+  Edit,
+  Trash2
 } from 'lucide-react';
 import { 
   db, 
@@ -82,6 +84,7 @@ export function SocialPage() {
 
       snapshot.docs.forEach((docSnap) => {
         const data = docSnap.data();
+        if (data.isDeleted) return;
         let timeStr = 'Vừa xong';
         if (data.createdAt && data.createdAt.seconds) {
           timeStr = new Date(data.createdAt.seconds * 1000).toLocaleString('vi-VN');
@@ -119,7 +122,9 @@ export function SocialPage() {
     }
   };
 
-  const handleCreatePost = async (content: string, imageUrls?: string[]) => {
+  const [editingPost, setEditingPost] = useState<SocialPost | null>(null);
+
+  const handleCreateOrUpdatePost = async (content: string, imageUrls?: string[]) => {
     if (!content.trim() && (!imageUrls || imageUrls.length === 0)) return;
 
     // Nếu chưa có danh tính thì yêu cầu nhập
@@ -129,30 +134,54 @@ export function SocialPage() {
     }
 
     try {
-      // Decode JWT token sub id
-      const tokenParts = identity.token.split('.');
-      let sub = `su_ton_${Date.now()}`;
-      try {
-        const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
-        if (payload.sub) sub = payload.sub;
-      } catch {}
+      if (editingPost) {
+        // Cập nhật bài viết có sẵn
+        const postRef = doc(db, 'social_posts', editingPost.docId);
+        await updateDoc(postRef, {
+          content: content.trim(),
+          imageUrl: imageUrls && imageUrls.length > 0 ? imageUrls[0] : null,
+          imageUrls: imageUrls || [],
+        });
+        setEditingPost(null);
+      } else {
+        // Tạo mới bài viết
+        const tokenParts = identity.token.split('.');
+        let sub = `su_ton_${Date.now()}`;
+        try {
+          const payload = JSON.parse(atob(tokenParts[1].replace(/-/g, '+').replace(/_/g, '/')));
+          if (payload.sub) sub = payload.sub;
+        } catch {}
 
-      await addDoc(collection(db, 'social_posts'), {
-        authorName: identity.name,
-        authorSub: sub,
-        authorAvatarId: identity.avatarId,
-        jwtToken: identity.token,
-        content: content.trim(),
-        imageUrl: imageUrls && imageUrls.length > 0 ? imageUrls[0] : null,
-        imageUrls: imageUrls || [],
-        likes: 0,
-        likedBy: [],
-        createdAt: serverTimestamp(),
-      });
+        await addDoc(collection(db, 'social_posts'), {
+          authorName: identity.name,
+          authorSub: sub,
+          authorAvatarId: identity.avatarId,
+          jwtToken: identity.token,
+          content: content.trim(),
+          imageUrl: imageUrls && imageUrls.length > 0 ? imageUrls[0] : null,
+          imageUrls: imageUrls || [],
+          likes: 0,
+          likedBy: [],
+          createdAt: serverTimestamp(),
+        });
+      }
 
       await fetchPosts();
     } catch (err) {
-      console.error('Lỗi khi đăng bài viết:', err);
+      console.error('Lỗi khi lưu bài viết:', err);
+    }
+  };
+
+  const handleDeletePost = async (postDocId: string) => {
+    if (!window.confirm('Sư Tôn có chắc chắn muốn thu hồi bài đăng này?')) return;
+    try {
+      const postRef = doc(db, 'social_posts', postDocId);
+      await updateDoc(postRef, {
+        isDeleted: true,
+      });
+      await fetchPosts();
+    } catch (err) {
+      console.error('Lỗi xóa bài viết:', err);
     }
   };
 
@@ -349,6 +378,31 @@ export function SocialPage() {
                         <p className="text-[10px] text-slate-400 font-mono mt-0.5">{post.createdAt}</p>
                       </div>
                     </div>
+
+                    {/* Edit & Delete Action Buttons (If owner) */}
+                    {(currentSub === post.authorSub || !post.authorSub) && (
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingPost(post);
+                            setIsCreatePostModalOpen(true);
+                          }}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-amber-300 hover:bg-slate-800 transition-colors cursor-pointer"
+                          title="Chỉnh sửa bài đăng"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleDeletePost(post.docId)}
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
+                          title="Thu hồi bài đăng"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Post Text Content */}
@@ -408,9 +462,13 @@ export function SocialPage() {
       {/* Facebook Create Post Popup Modal */}
       <CreatePostModal
         isOpen={isCreatePostModalOpen}
-        onClose={() => setIsCreatePostModalOpen(false)}
+        onClose={() => {
+          setIsCreatePostModalOpen(false);
+          setEditingPost(null);
+        }}
         identity={identity}
-        onSubmitPost={handleCreatePost}
+        onSubmitPost={handleCreateOrUpdatePost}
+        editingPost={editingPost}
         onOpenIdentityModal={() => setIsIdentityModalOpen(true)}
       />
     </AppLayout>
