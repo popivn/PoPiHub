@@ -1,0 +1,125 @@
+/* Aira Character Modal */
+.aira-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.aira-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.aira-modal {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border: 2px solid #e94560;
+  border-radius: 16px;
+  padding: 24px;
+  width: 520px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 0 40px rgba(233, 69, 96, 0.4);
+  transform: scale(0.8);
+  transition: transform 0.3s ease;
+  color: #eee;
+}
+
+.aira-modal-overlay.active .aira-modal {
+  transform: scale(1);
+}
+
+.aira-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.aura-name {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #e94560;
+  text-shadow: 0 0 10px rgba(233, 69, 96, 0.5);
+}
+
+.aira-close-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #aaa;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.aira-close-btn:hover {
+  color: #e94560;
+}
+
+.aira-canvas-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+#airaBoneCanvas {
+  border: 1px solid #333;
+  border-radius: 4px;
+  background: #0d1117;
+}
+
+.aira-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.aira-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border-left: 3px solid #e94560;
+}
+
+.aira-stat .label {
+  color: #aaa;
+}
+
+.aira-stat .value {
+  color: #e94560;
+  font-weight: bold;
+}
+
+.aira-bone-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.aira-bone-controls button {
+  padding: 6px 16px;
+  background: #16213e;
+  border: 1px solid #e94560;
+  border-radius: 6px;
+  color: #eee;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.aira-bone-controls button:hover {
+  background: #e94560;
+}
