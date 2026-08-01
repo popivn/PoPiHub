@@ -5,26 +5,31 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "tsx server/index.ts",
     "build": "tsc -b && vite build",
-    "start": "serve dist -l $PORT",
+    "start": "tsx server/index.ts",
     "lint": "oxlint",
     "preview": "vite preview"
   },
   "dependencies": {
+    "express": "^4.21.2",
     "firebase": "^12.17.0",
+    "node-cron": "^3.0.3",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "serve": "^14.2.5",
     "sweetalert2": "^11.26.25"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
+    "@types/express": "^5.0.0",
     "@types/node": "^24.13.3",
+    "@types/node-cron": "^3.0.11",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
     "oxlint": "^1.75.0",
     "tailwindcss": "^4.2.2",
+    "tsx": "^4.19.2",
     "typescript": "~6.0.2",
     "vite": "^8.2.0"
   }
