@@ -1,0 +1,200 @@
+.ara-card {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 340px;
+  z-index: 10;
+  background:
+    linear-gradient(180deg, rgba(40,28,18,0.92) 0%, rgba(25,16,8,0.95) 100%),
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 1px, transparent 1px, transparent 3px);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 2px rgba(180,140,60,0.3),
+    0 0 0 3px rgba(120,80,30,0.4),
+    0 0 40px rgba(200,160,60,0.1),
+    0 12px 40px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+
+.ara-card-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 14px;
+  pointer-events: none;
+  border: 2px solid transparent;
+  background: linear-gradient(135deg, #e8c860 0%, #c09830 25%, #8b6020 50%, #c09830 75%, #e8c860 100%) border-box;
+  -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: 0.7;
+}
+
+/* Corner ornaments */
+.ara-card-corner {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  z-index: 5;
+}
+.ara-card-corner::before {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #c09830;
+  opacity: 0.6;
+}
+.ara-card-corner.tl { top: 4px; left: 4px; }
+.ara-card-corner.tl::before { border-right: none; border-bottom: none; border-radius: 10px 2px 0 0; }
+.ara-card-corner.tr { top: 4px; right: 4px; }
+.ara-card-corner.tr::before { border-left: none; border-bottom: none; border-radius: 2px 10px 0 0; }
+.ara-card-corner.bl { bottom: 4px; left: 4px; }
+.ara-card-corner.bl::before { border-right: none; border-top: none; border-radius: 0 0 2px 10px; }
+.ara-card-corner.br { bottom: 4px; right: 4px; }
+.ara-card-corner.br::before { border-left: none; border-top: none; border-radius: 0 0 10px 2px; }
+
+/* Card header */
+.ara-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px 8px;
+  border-bottom: 1px solid rgba(192,152,48,0.2);
+  background: linear-gradient(180deg, rgba(60,40,20,0.4) 0%, transparent 100%);
+}
+
+.ara-card-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #e8c860;
+  text-shadow: 0 0 8px rgba(232,200,96,0.3);
+  letter-spacing: 1px;
+}
+
+.ara-card-realm {
+  font-size: 0.7rem;
+  color: #8ec5a0;
+  letter-spacing: 1px;
+}
+
+/* Character display area inside card */
+.ara-card-display {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  height: 320px;
+  padding: 0;
+}
+
+/* Card footer */
+.ara-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 16px 12px;
+  border-top: 1px solid rgba(192,152,48,0.2);
+  background: linear-gradient(180deg, transparent 0%, rgba(40,28,18,0.4) 100%);
+}
+
+.ara-card-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.ara-card-stat .label {
+  font-size: 0.55rem;
+  color: rgba(192,152,48,0.6);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.ara-card-stat .value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #e8dcc8;
+}
+
+.ara-card-divider {
+  width: 1px;
+  height: 24px;
+  background: linear-gradient(180deg, transparent, rgba(192,152,48,0.3), transparent);
+}
+
+/* Attack button row */
+.ara-card-btn-row {
+  display: flex;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+
+.ara-card-attack-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: linear-gradient(180deg, #d4a840 0%, #c09830 40%, #a07820 80%, #8b6020 100%);
+  border: 2px solid #e8c860;
+  border-radius: 8px;
+  color: #1a1208;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-shadow: 0 1px 1px rgba(255,240,180,0.3);
+  box-shadow:
+    0 3px 8px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,240,180,0.4),
+    inset 0 -2px 4px rgba(120,80,20,0.3);
+}
+
+.ara-card-attack-btn:hover {
+  background: linear-gradient(180deg, #e8c860 0%, #d4a840 40%, #b08820 80%, #a07040 100%);
+  box-shadow:
+    0 0 16px rgba(232,200,96,0.4),
+    0 4px 10px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,240,180,0.5);
+  transform: translateY(-1px);
+}
+
+.ara-card-attack-btn:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 4px rgba(0,0,0,0.4),
+    inset 0 2px 4px rgba(120,80,20,0.4);
+}
+
+.ara-card-attack-btn-2 {
+  background: linear-gradient(180deg, #8ec5a0 0%, #6ba87e 40%, #4a8a60 80%, #3a7048 100%);
+  border-color: #a8d8b8;
+  color: #0a1a0e;
+  text-shadow: 0 1px 1px rgba(180,240,200,0.3);
+}
+
+.ara-card-attack-btn-2:hover {
+  background: linear-gradient(180deg, #a8d8b8 0%, #8ec5a0 40%, #6ba87e 80%, #5a9870 100%);
+  box-shadow:
+    0 0 16px rgba(142,197,160,0.4),
+    0 4px 10px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(180,240,200,0.5);
+}
+
+.ara-card-spec-btn {
+  background: linear-gradient(180deg, #9a6ad4 0%, #7a4ab8 40%, #5a2e98 80%, #4a1e80 100%);
+  border-color: #c8a8f0;
+  color: #0e0818;
+  text-shadow: 0 1px 1px rgba(220,200,255,0.3);
+}
+
+.ara-card-spec-btn:hover {
+  background: linear-gradient(180deg, #c8a8f0 0%, #9a6ad4 40%, #7a4ab8 80%, #6a3ea8 100%);
+  box-shadow:
+    0 0 20px rgba(154,106,212,0.5),
+    0 4px 10px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(220,200,255,0.5);
+}
