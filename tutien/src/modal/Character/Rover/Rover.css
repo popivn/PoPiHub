@@ -1,0 +1,243 @@
+/* === Dash tới enemy khi tấn công basic === */
+.rover-view.is-dashing {
+  animation: rover-dash var(--dash-duration, 300ms) cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes rover-dash {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(var(--dash-distance, -200px));
+  }
+}
+
+/* === Rover view === */
+.rover-view {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  height: 100%;
+}
+
+.rover-view-frame {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 2;
+}
+
+.rover-view-sprite {
+  display: block;
+  height: 280px;
+  width: auto;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+  animation: rover-idle 3s ease-in-out infinite;
+  user-select: none;
+  pointer-events: none;
+}
+
+@keyframes rover-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.rover-view-shadow {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90px;
+  height: 12px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.5) 0%, transparent 70%);
+  border-radius: 50%;
+  z-index: 1;
+  animation: rover-shadow 3s ease-in-out infinite;
+}
+
+@keyframes rover-shadow {
+  0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+  50% { opacity: 0.3; transform: translateX(-50%) scale(0.85); }
+}
+
+/* Attack animation */
+.rover-view-sprite.rover-attacking {
+  animation: rover-attack 0.3s ease-out;
+  filter: drop-shadow(0 4px 12px rgba(200,160,60,0.5));
+}
+
+.rover-view-sprite.rover-attacking-2 {
+  animation: rover-attack-2 0.4s ease-out;
+  filter: drop-shadow(0 4px 12px rgba(142,197,160,0.5));
+}
+
+@keyframes rover-attack {
+  0% { transform: translateX(0) scale(1); }
+  30% { transform: translateX(-8px) scale(1.05); }
+  60% { transform: translateX(12px) scale(1.08); }
+  100% { transform: translateX(0) scale(1); }
+}
+
+@keyframes rover-attack-2 {
+  0% { transform: translateX(0) scale(1) rotate(0deg); }
+  25% { transform: translateX(-6px) scale(1.05) rotate(-3deg); }
+  50% { transform: translateX(10px) scale(1.1) rotate(2deg); }
+  75% { transform: translateX(-4px) scale(1.06) rotate(-1deg); }
+  100% { transform: translateX(0) scale(1) rotate(0deg); }
+}
+
+.rover-view-sprite.rover-spec-skill {
+  animation: rover-spec-skill 0.6s ease-out;
+  filter: drop-shadow(0 0 20px rgba(154,106,212,0.7)) drop-shadow(0 4px 12px rgba(200,160,60,0.5));
+}
+
+@keyframes rover-spec-skill {
+  0% { transform: scale(1) translateY(0); }
+  20% { transform: scale(1.12) translateY(-10px); }
+  40% { transform: scale(1.18) translateY(-15px) rotate(-2deg); }
+  60% { transform: scale(1.15) translateY(-12px) rotate(2deg); }
+  80% { transform: scale(1.08) translateY(-6px) rotate(-1deg); }
+  100% { transform: scale(1) translateY(0) rotate(0deg); }
+}
+
+.rover-view-shadow.rover-shadow-spec {
+  animation: rover-shadow-spec 0.6s ease-out;
+}
+
+@keyframes rover-shadow-spec {
+  0% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+  40% { transform: translateX(-50%) scale(1.5); opacity: 0.15; }
+  100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+}
+
+.rover-view-shadow.rover-shadow-attacking {
+  animation: rover-shadow-attack 0.3s ease-out;
+}
+
+@keyframes rover-shadow-attack {
+  0% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+  50% { transform: translateX(-50%) scale(1.2); opacity: 0.3; }
+  100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+}
+
+/* === Thanh kiếm spec skill (2.webp) — bay từ trên xuống enemy theo góc 45° === */
+.rover-spec-sword {
+  position: fixed;
+  z-index: 200;
+  width: 600px;
+  height: auto;
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 0 12px rgba(154, 106, 212, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+  transform-origin: center center;
+  left: 0;
+  top: 0;
+}
+
+/* Animation: kiếm xuất hiện phía trên + lệch phải, lao xuống-trái 45° vào enemy */
+.rover-spec-sword.is-flying {
+  animation: rover-sword-dive var(--sword-duration, 5000ms) cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes rover-sword-dive {
+  0% {
+    left: var(--sword-start-x);
+    top: var(--sword-start-y);
+    transform: translate(-50%, -50%) scale(0.6);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  /* === Giai đoạn bay: 0% → flyEnd% === */
+  /* flyEnd = SWORD_FLY_DURATION / SWORD_DURATION * 100 = 3500/5000 = 70% */
+  70% {
+    left: var(--sword-target-x);
+    top: var(--sword-target-y);
+    transform: translate(-50%, -50%) scale(1.1);
+    opacity: 1;
+  }
+  /* === Giai đoạn tồn tại + nhấp nháy: 70% → 100% === */
+  73% { opacity: 0.3; }
+  76% { opacity: 1; }
+  79% { opacity: 0.4; }
+  82% { opacity: 0.9; }
+  85% { opacity: 0.2; }
+  88% { opacity: 0.8; }
+  91% { opacity: 0.3; }
+  94% { opacity: 0.6; }
+  97% { opacity: 0.2; }
+  100% {
+    left: var(--sword-target-x);
+    top: var(--sword-target-y);
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 0;
+  }
+}
+
+/* === Hiệu ứng flash sáng khi kiếm va chạm enemy === */
+.rover-sword-impact {
+  position: fixed;
+  z-index: 250;
+  width: 400px;
+  height: 400px;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(200, 160, 255, 0.7) 20%,
+    rgba(154, 106, 212, 0.4) 40%,
+    transparent 70%
+  );
+  filter: blur(8px);
+  mix-blend-mode: screen;
+}
+
+.rover-sword-impact.is-active {
+  animation: rover-impact-flash 0.6s ease-out forwards;
+}
+
+@keyframes rover-impact-flash {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
+  20% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.5);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+/* === Mobile: tắt hiệu ứng nặng để tăng FPS === */
+@media (max-width: 900px) {
+  .rover-view-sprite {
+    animation: none;
+    filter: none;
+  }
+  .rover-view-shadow {
+    animation: none;
+  }
+  .rover-view-sprite.rover-attacking,
+  .rover-view-sprite.rover-attacking-2,
+  .rover-view-sprite.rover-spec-skill {
+    animation: rover-attack 0.3s ease-out;
+  }
+}

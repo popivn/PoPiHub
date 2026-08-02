@@ -1,9 +1,5 @@
+/* Màu chính được định nghĩa ở src/theme/colors.css (import trong main.ts) */
 :root {
-  --kh-bg: #0a0a1a;
-  --kh-accent: #e94560;
-  --kh-gold: #d4af37;
-  --kh-blue: #4a9eff;
-  --kh-text: #c8c8d8;
   font: 16px/1.5 system-ui, 'Segoe UI', sans-serif;
   color: var(--kh-text);
   background: var(--kh-bg);
@@ -123,106 +119,8 @@ body { margin: 0; }
   background: linear-gradient(180deg, transparent, rgba(13,13,42,0.8) 50%, #08081a);
 }
 
-/* Platform (đài tu tiên) */
-.kh-platform {
-  position: absolute;
-  bottom: 80px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 280px;
-  height: 40px;
-  perspective: 200px;
-}
-
-.kh-platform-ring {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%) rotateX(72deg);
-  width: 200px;
-  height: 200px;
-  border: 3px solid var(--kh-gold);
-  border-radius: 50%;
-  box-shadow: 0 0 30px rgba(212,175,55,0.3), inset 0 0 30px rgba(212,175,55,0.1);
-  animation: ringPulse 3s ease-in-out infinite;
-}
-
-@keyframes ringPulse {
-  0%, 100% { box-shadow: 0 0 30px rgba(212,175,55,0.3), inset 0 0 30px rgba(212,175,55,0.1); }
-  50% { box-shadow: 0 0 50px rgba(212,175,55,0.5), inset 0 0 40px rgba(212,175,55,0.2); }
-}
-
-.kh-platform-glyph {
-  position: absolute;
-  bottom: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 32px;
-  color: var(--kh-gold);
-  opacity: 0.4;
-  text-shadow: 0 0 20px rgba(212,175,55,0.5);
-  animation: glyphFloat 4s ease-in-out infinite;
-}
-
-@keyframes glyphFloat {
-  0%, 100% { transform: translateX(-50%) translateY(0); opacity: 0.3; }
-  50% { transform: translateX(-50%) translateY(-5px); opacity: 0.5; }
-}
-
-/* Title */
-.kh-title {
-  position: absolute;
-  top: 15%;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  z-index: 5;
-}
-
-.kh-title h1 {
-  font-size: 3.5rem;
-  color: var(--kh-gold);
-  text-shadow: 0 0 20px rgba(212,175,55,0.5), 0 0 40px rgba(212,175,55,0.2);
-  margin: 0;
-  letter-spacing: 8px;
-}
-
-.kh-title p {
-  color: var(--kh-text);
-  font-size: 1rem;
-  letter-spacing: 4px;
-  margin-top: 8px;
-  opacity: 0.7;
-}
-
-/* Floating action button */
-.kh-open-modal-btn {
-  position: absolute;
-  bottom: 30px;
-  right: 30px;
-  padding: 12px 24px;
-  background: linear-gradient(180deg, #d4a840 0%, #c09830 50%, #8b6020 100%);
-  border: 2px solid #e8c860;
-  border-radius: 10px;
-  color: #1a1208;
-  font-family: 'Noto Serif SC', serif;
-  font-size: 0.9rem;
-  font-weight: 700;
-  letter-spacing: 2px;
-  cursor: pointer;
-  z-index: 20;
-  transition: all 0.25s ease;
-  text-shadow: 0 1px 1px rgba(255,240,180,0.3);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,240,180,0.4);
-}
-
-.kh-open-modal-btn:hover {
-  background: linear-gradient(180deg, #e8c860 0%, #d4a840 50%, #a07040 100%);
-  box-shadow: 0 0 20px rgba(232,200,96,0.4), 0 6px 16px rgba(0,0,0,0.4);
-  transform: translateY(-2px);
-}
-
 @media (max-width: 768px) {
-  .kh-title h1 { font-size: 2rem; }
   .kh-moon { width: 80px; height: 80px; }
+  /* Tắt animation nền trên mobile để giảm tải GPU */
+  .kh-cloud, .kh-stars { animation: none !important; }
 }

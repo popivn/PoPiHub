@@ -1,0 +1,51 @@
+/* === FPS Meter === */
+.kh-fps-meter {
+  position: fixed;
+  bottom: 8px;
+  left: 8px;
+  z-index: 9000;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 8px;
+  background: rgba(15, 15, 30, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 6px;
+  backdrop-filter: blur(4px);
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.5rem;
+  line-height: 1.1;
+  pointer-events: none;
+  user-select: none;
+}
+
+.kh-fps-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.kh-fps-label {
+  color: var(--kh-text-dim, #8a8a9c);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.kh-fps-value {
+  font-weight: 700;
+  min-width: 22px;
+  text-align: right;
+}
+
+.kh-fps-value.is-good { color: #4ade80; }
+.kh-fps-value.is-mid  { color: #fbbf24; }
+.kh-fps-value.is-bad  { color: #ef4444; }
+
+/* Mobile: tắt backdrop-filter */
+@media (max-width: 900px) {
+  .kh-fps-meter {
+    backdrop-filter: none;
+    background: rgba(15, 15, 30, 0.9);
+  }
+}

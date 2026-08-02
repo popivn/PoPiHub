@@ -1,8 +1,8 @@
-import { createAraCard } from './Card'
-import { createAraView } from './View'
+import { createRoverCard } from './Card'
+import { createRoverView } from './View'
 import { GameplayController } from '../base/GameplayController'
 
-export interface AraControllerConfig {
+export interface RoverControllerConfig {
   /** Mount inside this container */
   container: HTMLElement
   /** Display mode: 'card' = card frame + sprite, 'sprite' = sprite only, 'card-only' = card frame without sprite */
@@ -25,8 +25,8 @@ export interface AraControllerConfig {
   onSpecSkill?: () => void
 }
 
-export class AraController extends GameplayController {
-  protected name = 'Ara'
+export class RoverController extends GameplayController {
+  protected name = 'Rover'
   protected hasMp = true
   protected colliderClass = 'demo-collider-player'
   protected statusClass = 'demo-status-player'
@@ -35,29 +35,27 @@ export class AraController extends GameplayController {
   protected mp = 500
   protected maxMp = 500
 
-  private card: ReturnType<typeof createAraCard> | null = null
-  private view: ReturnType<typeof createAraView> | null = null
+  private card: ReturnType<typeof createRoverCard> | null = null
+  private view: ReturnType<typeof createRoverView> | null = null
 
-  mount(container: HTMLElement, config?: Omit<AraControllerConfig, 'container'>): void {
+  mount(container: HTMLElement, config?: Omit<RoverControllerConfig, 'container'>): void {
     this.container = container
     const mode = config?.mode ?? 'card'
 
     if (config?.name) this.name = config.name
 
     if (mode === 'sprite') {
-      this.view = createAraView({ container })
-      // Cấu hình container cho demo scene
+      this.view = createRoverView({ container })
       this.configureSpriteContainer(container)
     } else if (mode === 'card-only') {
-      this.card = createAraCard({ container, ...config })
+      this.card = createRoverCard({ container, ...config })
     } else {
       // 'card' mode - card frame with sprite inside
-      // Wire onAttack to play attack animation on the view
       const onAttack = config?.onAttack ?? (() => this.playAttack())
       const onAttack2 = config?.onAttack2 ?? (() => this.playAttack2())
       const onSpecSkill = config?.onSpecSkill ?? (() => this.playSpecSkill())
-      this.card = createAraCard({ container, ...config, onAttack, onAttack2, onSpecSkill })
-      this.view = createAraView({ container: this.card.displayEl })
+      this.card = createRoverCard({ container, ...config, onAttack, onAttack2, onSpecSkill })
+      this.view = createRoverView({ container: this.card.displayEl })
     }
   }
 
@@ -70,6 +68,8 @@ export class AraController extends GameplayController {
     if (this.card && this.container) {
       this.container.removeChild(this.card.el)
     }
+    // Cleanup sword element + timers
+    this.view?.destroy()
     if (this.colliderEl) {
       this.colliderEl.remove()
       this.colliderEl = null
@@ -95,16 +95,16 @@ export class AraController extends GameplayController {
     this.view?.setImage(src)
   }
 
-  playAttack(_targetPos?: { x: number; y: number }): void {
-    this.view?.playAttack()
+  playAttack(targetPos?: { x: number; y: number }): void {
+    this.view?.playAttack(targetPos)
   }
 
-  playAttack2(_targetPos?: { x: number; y: number }): void {
-    this.view?.playAttack2()
+  playAttack2(targetPos?: { x: number; y: number }): void {
+    this.view?.playAttack2(targetPos)
   }
 
-  playSpecSkill(_targetPos?: { x: number; y: number }): void {
-    this.view?.playSpecSkill()
+  playSpecSkill(targetPos?: { x: number; y: number }): void {
+    this.view?.playSpecSkill(targetPos)
   }
 
   playIdle(): void {
@@ -140,7 +140,6 @@ export class AraController extends GameplayController {
     container.style.justifyContent = 'center'
     container.style.zIndex = '2'
     container.style.pointerEvents = 'none'
-    // Scale sprite (280px gốc) để vừa collider height
     const spriteNaturalHeight = 280
     const scale = this.colliderHeight / spriteNaturalHeight
     container.style.setProperty('--char-scale', scale.toFixed(3))

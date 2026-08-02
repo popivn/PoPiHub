@@ -17,6 +17,8 @@ export function createAraView(config: AraViewConfig): {
   playAttack2: () => void
   playSpecSkill: () => void
   playIdle: () => void
+  getPosition: () => { x: number; y: number }
+  getBounds: () => { left: number; top: number; width: number; height: number }
 } {
   const el = document.createElement('div')
   el.className = 'ara-view'
@@ -95,5 +97,21 @@ export function createAraView(config: AraViewConfig): {
     playAttack2,
     playSpecSkill,
     playIdle,
+    getPosition: () => {
+      const rect = img.getBoundingClientRect()
+      return {
+        x: Math.round(rect.left + rect.width / 2),
+        y: Math.round(rect.top),
+      }
+    },
+    getBounds: () => {
+      const rect = img.getBoundingClientRect()
+      return {
+        left: rect.left,
+        top: rect.top,
+        width: rect.width,
+        height: rect.height,
+      }
+    },
   }
 }

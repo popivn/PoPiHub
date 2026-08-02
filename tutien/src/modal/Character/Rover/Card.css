@@ -199,14 +199,3 @@
   border-color: #9a6ad4;
   box-shadow: 0 0 14px rgba(154, 106, 212, 0.3);
 }
-
-/* Mobile: tắt backdrop-filter trên nút + tắt hover transform */
-@media (max-width: 900px) {
-  .ara-card-attack-btn {
-    backdrop-filter: none;
-    transition: background 0.2s ease, border-color 0.2s ease;
-  }
-  .ara-card-attack-btn:hover {
-    transform: none;
-  }
-}

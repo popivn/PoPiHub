@@ -1,0 +1,140 @@
+/* === Swiper carousel === */
+.kh-swiper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  outline: none;
+}
+
+.kh-swiper-track {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  /* Dùng transform 3D để ép GPU compositing, tránh re-paint */
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+  transform: translateZ(0);
+  touch-action: pan-y;
+  backface-visibility: hidden;
+}
+
+.kh-swiper-track.is-dragging {
+  transition: none;
+  cursor: grabbing;
+}
+
+.kh-swiper-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  /* Mỗi slide là layer riêng để GPU composite */
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Ẩn LUÔN slide không active (không chỉ khi animating) -> GPU không vẽ dư */
+.kh-swiper-slide:not(.is-active) {
+  visibility: hidden;
+}
+
+/* Khi đang chuyển slide, hiện lại slide để thấy trượt mượt */
+.kh-swiper-track.is-animating .kh-swiper-slide {
+  visibility: visible;
+}
+
+/* Tạm dừng animation sprite của slide không active -> giảm CPU/GPU */
+.kh-swiper-slide:not(.is-active) .ara-view-sprite,
+.kh-swiper-slide:not(.is-active) .rover-view-sprite,
+.kh-swiper-slide:not(.is-active) .ara-view-shadow,
+.kh-swiper-slide:not(.is-active) .rover-view-shadow {
+  animation: none !important;
+}
+
+/* === Tab indicators === */
+.kh-swiper-tabs {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 50;
+}
+
+.kh-swiper-tab {
+  padding: 4px 14px;
+  background: rgba(20, 20, 40, 0.6);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 20px;
+  color: var(--kh-text-dim, #8a8a9c);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.kh-swiper-tab:hover {
+  border-color: rgba(212, 175, 55, 0.5);
+  color: var(--kh-text, #c8c8d8);
+}
+
+.kh-swiper-tab.is-active {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: var(--kh-gold, #d4af37);
+  color: var(--kh-gold, #d4af37);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
+}
+
+/* === Nút prev/next === */
+.kh-swiper-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 20, 40, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 50%;
+  color: var(--kh-gold, #d4af37);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 50;
+  backdrop-filter: blur(4px);
+  transition: all 0.2s ease;
+}
+
+.kh-swiper-nav:hover:not(:disabled) {
+  background: rgba(40, 40, 70, 0.85);
+  border-color: var(--kh-gold, #d4af37);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.3);
+}
+
+.kh-swiper-nav:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.kh-swiper-prev { left: 8px; }
+.kh-swiper-next { right: 8px; }
+
+/* Mobile: tắt backdrop-filter trên tab + nav */
+@media (max-width: 900px) {
+  .kh-swiper-tab,
+  .kh-swiper-nav {
+    backdrop-filter: none;
+  }
+  .kh-swiper-tab {
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+}
