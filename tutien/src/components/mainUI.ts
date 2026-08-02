@@ -5,6 +5,8 @@ import { createSwiper } from './swiper'
 import { fitCardScale } from '../utils/cardFit'
 import { mountFpsMeter, unmountFpsMeter } from '../utils/fpsMeter'
 import { mountDemoScene, unmountDemoScene, type DemoCharacter } from '../scenes/demoScene'
+import { mountMapScene } from '../scenes/mapScene'
+import { mountEditorScene } from '../scenes/editorScene'
 
 /**
  * MainUI — component chính chịu trách nhiệm render toàn bộ giao diện homepage.
@@ -92,6 +94,22 @@ function renderHomepage(app: HTMLElement): void {
     })
     slideEl.appendChild(demoBtn)
     demoBtns.push(demoBtn)
+
+    // Nút "Vào Map"
+    const mapBtn = document.createElement('button')
+    mapBtn.className = 'kh-demo-btn'
+    mapBtn.style.bottom = `calc(60px + var(--card-height, 400px) + 60px)`
+    mapBtn.textContent = 'Vào Map'
+    mapBtn.addEventListener('click', () => goToMap(app))
+    slideEl.appendChild(mapBtn)
+
+    // Nút "Map Editor"
+    const editorBtn = document.createElement('button')
+    editorBtn.className = 'kh-demo-btn'
+    editorBtn.style.bottom = `calc(60px + var(--card-height, 400px) + 100px)`
+    editorBtn.textContent = 'Map Editor'
+    editorBtn.addEventListener('click', () => goToEditor(app))
+    slideEl.appendChild(editorBtn)
   })
 
   // Đo chiều cao card thực tế (sau scale) để căn nút Demo trên đỉnh card
@@ -124,6 +142,24 @@ function goToDemo(app: HTMLElement, character: DemoCharacter): void {
   // Mount demo scene, khi bấm "Quay lại" → render lại homepage
   mountDemoScene(app, character, () => {
     unmountDemoScene()
+    renderHomepage(app)
+  })
+}
+
+function goToMap(app: HTMLElement): void {
+  unmountFpsMeter()
+  app.innerHTML = ''
+
+  mountMapScene(app, () => {
+    renderHomepage(app)
+  })
+}
+
+function goToEditor(app: HTMLElement): void {
+  unmountFpsMeter()
+  app.innerHTML = ''
+
+  mountEditorScene(app, () => {
     renderHomepage(app)
   })
 }

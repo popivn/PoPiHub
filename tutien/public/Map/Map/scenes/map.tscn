@@ -1,0 +1,1344 @@
+[gd_scene load_steps=29 format=3]
+
+[ext_resource type="Script" path="res://scripts/map_root.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/tiles/2-1.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/3-0.png" id="3_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/3-0-mask-10.png" id="4_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/3-1.png" id="5_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/3-1-mask-7.png" id="6_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/3-3.png" id="7_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/3-3-mask-1.png" id="8_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/0-2.png" id="9_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/0-2-mask-4.png" id="10_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/0-0.png" id="11_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/0-0-mask-2.png" id="12_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/0-1.png" id="13_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/0-1-mask-9.png" id="14_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/2-2.png" id="15_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/2-2-mask-13.png" id="16_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/1-3.png" id="17_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/1-3-mask-8.png" id="18_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/1-0.png" id="19_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/1-0-mask-12.png" id="20_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/1-2.png" id="21_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/1-2-mask-5.png" id="22_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/2-0.png" id="23_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/2-0-mask-11.png" id="24_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/3-2.png" id="25_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/3-2-mask-3.png" id="26_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/1-1.png" id="27_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/1-1-mask-14.png" id="28_tex"]
+
+[node name="Map" type="Node2D"]
+script = ExtResource("1_script")
+meowa_map_json_path = "res://meowa-map.json"
+map_name = "Map Editor"
+map_type = "topdown"
+map_width_tiles = 24
+map_height_tiles = 16
+tile_size = 64
+pixel_size = Vector2(1536.0, 1024.0)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(768.0, 512.0)
+zoom = Vector2(0.5078, 0.5078)
+enabled = true
+metadata/meowa_kind = "camera"
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1536.0
+offset_bottom = 1024.0
+color = Color(0.5647, 0.5647, 0.5647, 1.0)
+metadata/meowa_kind = "background"
+metadata/meowa_layer_id = "map-background-layer"
+
+[node name="1_map_layer" type="Node2D" parent="."]
+z_index = 0
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_layer_name = "map layer"
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_352" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_352" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_608_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(608.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("3_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_608_224_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(608.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("4_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 10.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_608_480" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(608.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("5_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_608_480_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(608.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("6_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 7.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_608_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(608.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("7_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_608_544_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(608.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("8_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 1.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_672_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(672.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("9_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_672_544_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(672.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("10_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 4.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("7_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_544_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("8_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 1.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_480" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("11_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_480_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("12_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 2.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("9_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_544_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("10_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 4.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("7_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_544_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("8_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 1.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_416" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("5_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_416_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("6_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 7.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_480" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("13_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_480_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("14_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 9.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_672_416" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(672.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_416" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_672_480" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(672.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("15_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_672_480_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(672.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("16_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 13.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_480" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("5_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_480_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("6_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 7.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_608_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(608.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_672_352" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(672.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_672_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(672.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("3_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_672_224_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(672.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("4_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 10.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_672_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(672.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_608_352" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(608.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_608_416" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(608.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("17_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_224_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("18_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 8.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_544_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(544.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("3_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_544_224_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(544.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("4_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 10.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("19_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_288_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("20_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 12.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_544_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(544.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_352" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("19_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_352_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("20_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 12.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_544_352" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(544.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_416" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("19_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_416_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("20_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 12.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_544_416" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(544.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_480" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("19_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_480_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("20_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 12.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_544_480" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(544.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("9_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_480_544_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(480.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("10_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 4.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_544_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(544.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("21_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_544_544_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(544.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("22_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 5.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("9_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_544_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("10_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 4.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("7_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_544_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("8_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 1.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_480" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("19_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_480_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("20_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 12.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("11_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_160_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("12_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 2.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("23_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_224_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("24_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 11.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_1056_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1056.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("11_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_1056_224_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1056.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("12_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 2.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_1056_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1056.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("25_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_1056_288_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1056.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("26_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 3.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_352" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_1056_352" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1056.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("25_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_1056_352_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1056.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("26_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 3.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_416" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_1056_416" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1056.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("25_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_1056_416_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1056.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("26_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 3.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_480" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("5_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_992_480_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(992.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("6_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 7.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_1056_480" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1056.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("7_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_1056_480_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1056.0, 480.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("8_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 1.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_352" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_352" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 352.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_416" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("21_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_416_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("22_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 5.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_416" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("15_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_416_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 416.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("16_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 13.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("3_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_160_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("4_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 10.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_928_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("3_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_160_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("4_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 10.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_864_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("17_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_160_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("18_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 8.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("3_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_160_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("4_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 10.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("27_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_736_224_1" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("28_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 14.0
+
+[node name="tile_texture_job_588abcca22eb4f8aa1243c608074889e_800_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("2_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "texture-job_588abcca22eb4f8aa1243c608074889e"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+
+[node name="2_object_layer" type="Node2D" parent="."]
+z_index = 1
+metadata/meowa_layer_id = "map-object-layer"
+metadata/meowa_layer_name = "object layer"
+
+[node name="3_wall_layer" type="Node2D" parent="."]
+z_index = 2
+metadata/meowa_layer_id = "map-wall-layer"
+metadata/meowa_layer_name = "wall layer"
+

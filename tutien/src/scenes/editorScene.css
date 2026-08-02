@@ -1,0 +1,154 @@
+.editor-wrapper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #1a1a1a;
+  overflow: hidden;
+}
+
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: #222;
+  border-bottom: 1px solid #333;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.editor-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #e8c860;
+  letter-spacing: 1px;
+}
+
+.editor-spacer {
+  flex: 1;
+}
+
+.editor-btn {
+  padding: 6px 14px;
+  background: #333;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #ccc;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.editor-btn:hover {
+  background: #444;
+  border-color: #555;
+  color: #fff;
+}
+
+.editor-btn-primary {
+  background: #2a6b3e;
+  border-color: #3a8b4e;
+  color: #a8d8b8;
+}
+
+.editor-btn-primary:hover {
+  background: #3a8b4e;
+  color: #fff;
+}
+
+.editor-btn-danger {
+  background: #6b2a2a;
+  border-color: #8b3a3a;
+  color: #d8a8a8;
+}
+
+.editor-btn-danger:hover {
+  background: #8b3a3a;
+  color: #fff;
+}
+
+.editor-input {
+  padding: 6px 10px;
+  background: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  color: #ccc;
+  font-size: 0.75rem;
+  width: 120px;
+}
+
+.editor-input:focus {
+  outline: none;
+  border-color: #e8c860;
+}
+
+.editor-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.editor-palette {
+  width: 200px;
+  flex-shrink: 0;
+  background: #1e1e1e;
+  border-right: 1px solid #333;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.editor-palette-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #e8c860;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.editor-tileset-preview {
+  width: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  border: 1px solid #444;
+  border-radius: 4px;
+  background: #2a2a2a;
+}
+
+.editor-palette-hint {
+  font-size: 0.7rem;
+  color: #888;
+  line-height: 1.6;
+  padding: 8px;
+  background: #2a2a2a;
+  border-radius: 6px;
+  border: 1px solid #333;
+}
+
+.editor-canvas-container {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background: #2a2a2a;
+}
+
+.editor-canvas-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+
+.editor-status {
+  padding: 6px 12px;
+  background: #222;
+  border-top: 1px solid #333;
+  color: #888;
+  font-size: 0.7rem;
+  flex-shrink: 0;
+}

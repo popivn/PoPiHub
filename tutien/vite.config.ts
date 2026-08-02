@@ -1,4 +1,5 @@
 import { defineConfig, type Plugin } from 'vite'
+import mapApiPlugin from './src/server/mapApi'
 
 /**
  * Vite plugin: nhận log từ browser (POST /__devlog) và in ra terminal
@@ -40,5 +41,5 @@ export default defineConfig({
     host: true,
     allowedHosts: true,
   },
-  plugins: [devLogPlugin()],
+  plugins: [devLogPlugin(), mapApiPlugin()],
 })
