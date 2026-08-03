@@ -1,0 +1,35 @@
+/* MainUI import style.css từ src/style.css (đã import ở main.ts). */
+
+/* Nút "Vào Demo" — nằm trên đầu thẻ card (bên trên) */
+.kh-demo-btn {
+  position: absolute;
+  /* Card: bottom 60px, rộng 340px, căn giữa. Nút nằm ngay trên đỉnh card */
+  bottom: calc(60px + var(--card-height, 400px) + 20px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 8px 18px;
+  background: linear-gradient(180deg, rgba(74, 158, 255, 0.2) 0%, rgba(74, 158, 255, 0.08) 100%);
+  border: 1px solid rgba(74, 158, 255, 0.5);
+  border-radius: 8px;
+  color: #6bb6ff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.kh-demo-btn:hover {
+  background: linear-gradient(180deg, rgba(74, 158, 255, 0.3) 0%, rgba(74, 158, 255, 0.15) 100%);
+  border-color: #4a9eff;
+  box-shadow: 0 0 10px rgba(74, 158, 255, 0.3);
+}
+
+@media (max-width: 900px) {
+  .kh-demo-btn {
+    font-size: 0.6rem;
+    padding: 6px 12px;
+  }
+}

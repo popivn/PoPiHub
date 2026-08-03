@@ -1,0 +1,32 @@
+/**
+ * Bảng màu chính của dự án.
+ * Đổi giá trị tại đây -> toàn bộ giao diện cập nhật theo.
+ *
+ * Quy ước đặt tên: --kh-<tên-màu>
+ * Mọi file CSS khác chỉ nên dùng var(--kh-...), KHÔNG hardcode mã hex.
+ */
+:root {
+  /* === Nền / background === */
+  --kh-bg: #0a0a1a;
+  --kh-bg-deep: #050510;
+  --kh-bg-soft: #0d0d2a;
+
+  /* === Màu nhấn === */
+  --kh-accent: #e94560;   /* đỏ nhấn (CTA quan trọng) */
+  --kh-gold: #d4af37;     /* vàng tiên tu (tiêu đề, viền) */
+  --kh-blue: #4a9eff;     /* xanh dương (link, info) */
+
+  /* === Chữ === */
+  --kh-text: #c8c8d8;     /* chữ chính */
+  --kh-text-dim: #8a8a9c; /* chữ mờ / phụ */
+
+  /* === Trạng thái === */
+  --kh-success: #4ade80;
+  --kh-warning: #fbbf24;
+  --kh-danger: #ef4444;
+
+  /* === Bề mặt (panel, card, overlay) === */
+  --kh-surface: rgba(20, 20, 40, 0.7);
+  --kh-surface-strong: rgba(15, 15, 30, 0.92);
+  --kh-border: rgba(212, 175, 55, 0.4);
+}

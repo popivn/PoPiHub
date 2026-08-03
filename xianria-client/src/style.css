@@ -1,0 +1,126 @@
+/* Màu chính được định nghĩa ở src/theme/colors.css (import trong main.ts) */
+:root {
+  font: 16px/1.5 system-ui, 'Segoe UI', sans-serif;
+  color: var(--kh-text);
+  background: var(--kh-bg);
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; }
+
+#app {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  min-height: 100vh;
+}
+
+/* === KIẾM HIỆP SCENE === */
+#kiem-hiep-scene {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(180deg, #0a0a1a 0%, #0d0d2a 40%, #1a1a3e 70%, #0d0d2a 100%);
+}
+
+/* Moon */
+.kh-moon {
+  position: absolute;
+  top: 8%;
+  right: 12%;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f5f5dc, #d4d4a8 40%, #a8a878 70%, transparent);
+  box-shadow: 0 0 60px rgba(245,245,220,0.3), 0 0 120px rgba(245,245,220,0.15);
+  opacity: 0.9;
+}
+
+/* Stars */
+.kh-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 15%, #fff, transparent),
+    radial-gradient(1px 1px at 25% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 45% 10%, #fff, transparent),
+    radial-gradient(1px 1px at 60% 25%, #fff, transparent),
+    radial-gradient(1px 1px at 75% 15%, #fff, transparent),
+    radial-gradient(1px 1px at 85% 35%, #fff, transparent),
+    radial-gradient(1px 1px at 15% 45%, #fff, transparent),
+    radial-gradient(1px 1px at 35% 50%, #fff, transparent),
+    radial-gradient(1px 1px at 55% 40%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 70% 55%, rgba(255,255,255,0.5), transparent),
+    radial-gradient(1px 1px at 90% 20%, #fff, transparent),
+    radial-gradient(1px 1px at 5% 35%, rgba(255,255,255,0.7), transparent);
+  background-size: 100% 60%;
+  background-repeat: no-repeat;
+  animation: twinkle 4s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+/* Mountains */
+.kh-mountains {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 300px;
+  pointer-events: none;
+}
+
+.kh-mountains svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Clouds */
+.kh-clouds {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.kh-cloud {
+  position: absolute;
+  width: 200px;
+  height: 60px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 50px;
+  filter: blur(20px);
+}
+
+.kh-cloud-1 { top: 20%; left: -200px; animation: drift1 25s linear infinite; }
+.kh-cloud-2 { top: 35%; left: -300px; animation: drift2 35s linear infinite; width: 300px; }
+.kh-cloud-3 { top: 15%; left: -150px; animation: drift1 30s linear infinite; animation-delay: -10s; }
+
+@keyframes drift1 {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100vw + 200px)); }
+}
+@keyframes drift2 {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(100vw + 300px)); }
+}
+
+/* Ground */
+.kh-ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  background: linear-gradient(180deg, transparent, rgba(13,13,42,0.8) 50%, #08081a);
+}
+
+@media (max-width: 768px) {
+  .kh-moon { width: 80px; height: 80px; }
+  /* Tắt animation nền trên mobile để giảm tải GPU */
+  .kh-cloud, .kh-stars { animation: none !important; }
+}

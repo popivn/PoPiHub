@@ -1,0 +1,174 @@
+/* === Overlay yêu cầu xoay ngang === */
+.kh-rotate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(5, 5, 15, 0.92);
+  backdrop-filter: blur(6px);
+  color: var(--kh-text, #c8c8d8);
+  font-family: system-ui, 'Segoe UI', sans-serif;
+  text-align: center;
+  padding: 24px;
+}
+
+.kh-rotate-overlay.is-visible {
+  display: flex;
+}
+
+.kh-rotate-card {
+  max-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.kh-rotate-icon {
+  font-size: 64px;
+  color: var(--kh-gold, #d4af37);
+  animation: khRotateHint 2.4s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+@keyframes khRotateHint {
+  0%, 40% { transform: rotate(0deg); }
+  60%, 100% { transform: rotate(90deg); }
+}
+
+.kh-rotate-title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--kh-gold, #d4af37);
+  letter-spacing: 1px;
+}
+
+.kh-rotate-desc {
+  margin: 0;
+  font-size: 0.9rem;
+  opacity: 0.75;
+  line-height: 1.5;
+}
+
+.kh-rotate-action {
+  margin-top: 8px;
+  padding: 10px 22px;
+  background: linear-gradient(180deg, #d4a840 0%, #c09830 50%, #8b6020 100%);
+  border: 2px solid #e8c860;
+  border-radius: 10px;
+  color: #1a1208;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 240, 180, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.kh-rotate-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 20px rgba(232, 200, 96, 0.4), 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* === Nút toggle (mũi tên) góc trên phải === */
+.kh-ctrl-toggle {
+  position: fixed;
+  top: 8px;
+  right: 12px;
+  z-index: 1002;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(20, 20, 40, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 8px;
+  color: var(--kh-gold, #d4af37);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.25s ease;
+}
+
+.kh-ctrl-toggle:hover {
+  background: rgba(40, 40, 70, 0.85);
+  border-color: var(--kh-gold, #d4af37);
+}
+
+/* Khi panel mở, nút toggle trượt xuống cùng panel */
+.kh-ctrl-toggle.is-active {
+  transform: translateY(52px);
+}
+
+.kh-ctrl-toggle[hidden] {
+  display: none;
+}
+
+/* === Thanh công cụ kéo xuống từ trên (kiểu notification panel) === */
+.kh-orientation-controls {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(15, 15, 30, 0.95) 0%, rgba(15, 15, 30, 0.85) 100%);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  /* Trượt từ trên xuống: bắt đầu ở -100% (ẩn trên đỉnh) */
+  transform: translateY(-100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.kh-orientation-controls.is-open {
+  /* Kéo xuống hết cỡ */
+  transform: translateY(0);
+}
+
+.kh-ctrl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(20, 20, 40, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 8px;
+  color: var(--kh-text, #c8c8d8);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.kh-ctrl-btn svg {
+  flex-shrink: 0;
+  color: var(--kh-gold, #d4af37);
+}
+
+.kh-ctrl-btn:hover {
+  background: rgba(40, 40, 70, 0.85);
+  border-color: var(--kh-gold, #d4af37);
+}
+
+.kh-ctrl-btn:active {
+  background: rgba(60, 60, 90, 0.9);
+}
+
+/* Ẩn thanh công cụ + toggle khi overlay xoay ngang đang hiện (mobile portrait) */
+.kh-rotate-overlay.is-visible ~ .kh-orientation-controls,
+.kh-rotate-overlay.is-visible ~ .kh-ctrl-toggle {
+  display: none !important;
+}

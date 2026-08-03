@@ -1,0 +1,509 @@
+/* === Demo Scene — Turn-based combat === */
+#demo-scene {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  background: linear-gradient(180deg, #0a0a1a 0%, #0d0d2a 50%, #1a1a3e 100%);
+  overflow: hidden;
+}
+
+/* === Đội hình 5 vị trí mỗi bên: 2 trước + 3 sau === */
+.demo-formation {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.formation-slot {
+  position: absolute;
+  width: 56px;
+  height: 20px;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 50%;
+  background: rgba(212, 175, 55, 0.05);
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.08);
+  transform: translate(-50%, -50%);
+}
+
+/* Mỗi bên nhìn vào trung tâm: 2 vị trí trước, 3 vị trí sau */
+.demo-formation-enemy .slot-front-1 { left: 28%; top: 43%; }
+.demo-formation-enemy .slot-front-2 { left: 28%; top: 63%; }
+.demo-formation-enemy .slot-back-1 { left: 12%; top: 33%; }
+.demo-formation-enemy .slot-back-2 { left: 12%; top: 53%; }
+.demo-formation-enemy .slot-back-3 { left: 12%; top: 73%; }
+
+.demo-formation-player .slot-front-1 { right: 28%; top: 43%; }
+.demo-formation-player .slot-front-2 { right: 28%; top: 63%; }
+.demo-formation-player .slot-back-1 { right: 12%; top: 33%; }
+.demo-formation-player .slot-back-2 { right: 12%; top: 53%; }
+.demo-formation-player .slot-back-3 { right: 12%; top: 73%; }
+
+/* Entity hiện tại đứng ở vị trí trước số 1 */
+.demo-formation-enemy .slot-front-1,
+.demo-formation-player .slot-front-1 {
+  border-color: rgba(212, 175, 55, 0.65);
+  background: rgba(212, 175, 55, 0.1);
+}
+
+/* === Bên trái — kẻ địch (cube) === */
+#demo-enemy-panel {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(212, 175, 55, 0.15);
+}
+
+#demo-enemy-panel canvas {
+  display: block;
+}
+
+#demo-enemy-label {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--kh-text-dim);
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  z-index: 5;
+}
+
+/* === Bên phải — nhân vật === */
+#demo-char-panel {
+  flex: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 80px;
+}
+
+/* #demo-char-container được PlayerController tự cấu hình (position, size, scale) */
+
+/* === Status bar (HP/MP) — bám trên đỉnh hộp collider === */
+.demo-status {
+  position: fixed;
+  z-index: 95;
+  min-width: 100px;
+  padding: 3px 6px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  text-align: center;
+  transform: translate(-50%, -100%);
+  pointer-events: none;
+}
+
+.demo-status-enemy {
+  text-align: center;
+}
+
+.demo-status-player {
+  text-align: center;
+}
+
+.demo-name {
+  color: var(--kh-gold);
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+.demo-bar-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 3px;
+}
+
+.demo-bar-label {
+  color: var(--kh-text-dim);
+  font-size: 0.55rem;
+  font-weight: 700;
+  width: 16px;
+  text-align: right;
+}
+
+.demo-bar {
+  position: relative;
+  width: 90px;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.demo-bar-fill {
+  height: 100%;
+  width: 100%;
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.demo-hp-fill {
+  background: linear-gradient(90deg, #e94560, #ff6b8a);
+}
+
+.demo-hp-fill-enemy {
+  background: linear-gradient(90deg, #c0392b, #e74c3c);
+}
+
+.demo-mp-fill {
+  background: linear-gradient(90deg, #4a9eff, #6bb6ff);
+}
+
+.demo-hp-text,
+.demo-mp-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* === Tọa độ 2 phe — hiện trên đầu nhân vật === */
+.demo-coord {
+  position: fixed;
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 2px 6px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 0.5rem;
+  pointer-events: none;
+  transform: translate(-50%, -100%);
+  white-space: nowrap;
+}
+
+.demo-coord-label {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-size: 0.45rem;
+}
+
+.demo-coord-value {
+  color: var(--kh-text-dim, #8a8a9c);
+}
+
+.demo-coord-enemy .demo-coord-label { color: #e94560; }
+.demo-coord-player .demo-coord-label { color: var(--kh-gold, #d4af37); }
+
+/* === Debug collider === */
+.demo-collider {
+  position: fixed;
+  z-index: 80;
+  box-sizing: border-box;
+  pointer-events: none;
+  border: 1px solid;
+  background: transparent;
+}
+
+.demo-collider::after {
+  content: 'COLLIDER';
+  position: absolute;
+  top: -14px;
+  left: 0;
+  padding: 1px 3px;
+  font: 0.45rem ui-monospace, monospace;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.demo-collider-player {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.06);
+}
+
+.demo-collider-player::after { color: #4ade80; }
+
+.demo-collider-enemy {
+  border-color: #e94560;
+  background: rgba(233, 69, 96, 0.08);
+}
+
+.demo-collider-enemy::after { color: #e94560; }
+
+/* === Collider bị chọn làm mục tiêu — highlight rõ === */
+.demo-collider.is-targeted {
+  border-width: 2px;
+  border-style: dashed;
+  box-shadow: 0 0 16px currentColor, inset 0 0 12px rgba(255, 255, 0, 0.15);
+  animation: demo-target-pulse 0.8s ease-in-out infinite;
+}
+
+.demo-collider-player.is-targeted { border-color: #facc15; }
+.demo-collider-enemy.is-targeted { border-color: #facc15; }
+
+@keyframes demo-target-pulse {
+  0%, 100% { box-shadow: 0 0 12px rgba(250, 204, 21, 0.4); }
+  50% { box-shadow: 0 0 24px rgba(250, 204, 21, 0.8); }
+}
+
+/* === Turn indicator === */
+.demo-turn-indicator {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: 6px 20px;
+  border-radius: 20px;
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  border: 1px solid;
+  transition: all 0.3s ease;
+}
+
+.demo-turn-indicator.is-player {
+  color: var(--kh-gold);
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(212, 175, 55, 0.1);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+}
+
+.demo-turn-indicator.is-enemy {
+  color: #e94560;
+  border-color: rgba(233, 69, 96, 0.5);
+  background: rgba(233, 69, 96, 0.1);
+  box-shadow: 0 0 12px rgba(233, 69, 96, 0.2);
+}
+
+/* === Log chiến đấu === */
+.demo-log {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  width: 400px;
+  max-width: 90vw;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.demo-log-line {
+  text-align: center;
+  font-size: 0.65rem;
+  color: var(--kh-text-dim);
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px 10px;
+  border-radius: 4px;
+  animation: demo-log-in 0.3s ease;
+}
+
+.demo-log-line:first-child {
+  color: var(--kh-text);
+  font-weight: 600;
+}
+
+@keyframes demo-log-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Thanh skill === */
+.demo-skill-bar {
+  position: fixed;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  background: rgba(10, 10, 25, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 12px;
+}
+
+.demo-skill-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 18px;
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.18) 0%, rgba(212, 175, 55, 0.08) 100%);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  border-radius: 8px;
+  color: var(--kh-gold);
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.demo-skill-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.3) 0%, rgba(212, 175, 55, 0.15) 100%);
+  border-color: var(--kh-gold);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
+}
+
+.demo-skill-btn:active:not(:disabled) {
+  background: rgba(212, 175, 55, 0.35);
+}
+
+.demo-skill-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.demo-skill-spec {
+  background: linear-gradient(180deg, rgba(154, 106, 212, 0.18) 0%, rgba(154, 106, 212, 0.08) 100%);
+  border-color: rgba(154, 106, 212, 0.45);
+  color: #c8a8f0;
+}
+
+.demo-skill-spec:hover:not(:disabled) {
+  background: linear-gradient(180deg, rgba(154, 106, 212, 0.3) 0%, rgba(154, 106, 212, 0.15) 100%);
+  border-color: #9a6ad4;
+  box-shadow: 0 0 10px rgba(154, 106, 212, 0.3);
+}
+
+.demo-mp-cost {
+  font-size: 0.55rem;
+  color: var(--kh-text-dim);
+  font-weight: 400;
+}
+
+/* === Kết quả === */
+.demo-result {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.demo-result.is-visible {
+  display: flex;
+}
+
+.demo-result-title {
+  font-family: 'Noto Serif SC', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: 4px;
+  margin: 0;
+}
+
+.demo-result-title.is-win {
+  color: var(--kh-gold);
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+}
+
+.demo-result-title.is-lose {
+  color: #e94560;
+  text-shadow: 0 0 20px rgba(233, 69, 96, 0.5);
+}
+
+.demo-result-btn {
+  padding: 12px 32px;
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.25) 0%, rgba(212, 175, 55, 0.1) 100%);
+  border: 1px solid var(--kh-gold);
+  border-radius: 10px;
+  color: var(--kh-gold);
+  font-family: 'Noto Serif SC', serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.demo-result-btn:hover {
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.4) 0%, rgba(212, 175, 55, 0.2) 100%);
+}
+
+/* === Nút thoát === */
+#demo-back-btn {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 100;
+  padding: 8px 16px;
+  background: rgba(20, 20, 40, 0.7);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 8px;
+  color: var(--kh-gold);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+#demo-back-btn:hover {
+  background: rgba(40, 40, 70, 0.85);
+  border-color: var(--kh-gold);
+}
+
+/* === Mobile === */
+@media (max-width: 900px) {
+  #demo-back-btn,
+  .demo-skill-bar,
+  .demo-result {
+    backdrop-filter: none;
+  }
+  .demo-skill-bar {
+    background: rgba(10, 10, 25, 0.9);
+  }
+  .demo-result {
+    background: rgba(0, 0, 0, 0.85);
+  }
+  .demo-skill-btn {
+    padding: 8px 12px;
+    font-size: 0.65rem;
+  }
+  .demo-status {
+    top: 40px;
+    min-width: 150px;
+  }
+  .demo-bar {
+    width: 120px;
+    height: 12px;
+  }
+  .demo-name {
+    font-size: 0.75rem;
+  }
+  .demo-turn-indicator {
+    font-size: 0.7rem;
+    padding: 4px 14px;
+  }
+  .demo-log {
+    bottom: 70px;
+    width: 90vw;
+  }
+  .demo-result-title {
+    font-size: 1.4rem;
+  }
+}
