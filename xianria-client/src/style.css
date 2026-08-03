@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Màu chính được định nghĩa ở src/theme/colors.css (import trong main.ts) */
 :root {
   font: 16px/1.5 system-ui, 'Segoe UI', sans-serif;
@@ -5,43 +9,34 @@
   background: var(--kh-bg);
 }
 
-* { box-sizing: border-box; }
+* { @apply box-border; }
 
-body { margin: 0; }
+body { @apply m-0; }
 
 #app {
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
-  min-height: 100vh;
+  @apply w-full max-w-full m-0 min-h-screen;
 }
 
 /* === KIẾM HIỆP SCENE === */
 #kiem-hiep-scene {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
+  @apply relative w-screen h-screen overflow-hidden;
   background: linear-gradient(180deg, #0a0a1a 0%, #0d0d2a 40%, #1a1a3e 70%, #0d0d2a 100%);
 }
 
 /* Moon */
 .kh-moon {
-  position: absolute;
+  @apply absolute rounded-full opacity-90;
   top: 8%;
   right: 12%;
   width: 120px;
   height: 120px;
-  border-radius: 50%;
   background: radial-gradient(circle at 35% 35%, #f5f5dc, #d4d4a8 40%, #a8a878 70%, transparent);
   box-shadow: 0 0 60px rgba(245,245,220,0.3), 0 0 120px rgba(245,245,220,0.15);
-  opacity: 0.9;
 }
 
 /* Stars */
 .kh-stars {
-  position: absolute;
-  inset: 0;
+  @apply absolute inset-0;
   background-image:
     radial-gradient(1px 1px at 10% 15%, #fff, transparent),
     radial-gradient(1px 1px at 25% 30%, #fff, transparent),
@@ -67,32 +62,24 @@ body { margin: 0; }
 
 /* Mountains */
 .kh-mountains {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+  @apply absolute bottom-0 left-0 w-full pointer-events-none;
   height: 300px;
-  pointer-events: none;
 }
 
 .kh-mountains svg {
-  width: 100%;
-  height: 100%;
+  @apply w-full h-full;
 }
 
 /* Clouds */
 .kh-clouds {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
+  @apply absolute inset-0 pointer-events-none;
 }
 
 .kh-cloud {
-  position: absolute;
+  @apply absolute rounded-[50px];
   width: 200px;
   height: 60px;
   background: rgba(255,255,255,0.05);
-  border-radius: 50px;
   filter: blur(20px);
 }
 
@@ -111,16 +98,13 @@ body { margin: 0; }
 
 /* Ground */
 .kh-ground {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
+  @apply absolute bottom-0 left-0 w-full;
   height: 120px;
   background: linear-gradient(180deg, transparent, rgba(13,13,42,0.8) 50%, #08081a);
 }
 
 @media (max-width: 768px) {
-  .kh-moon { width: 80px; height: 80px; }
+  .kh-moon { @apply w-20 h-20; }
   /* Tắt animation nền trên mobile để giảm tải GPU */
   .kh-cloud, .kh-stars { animation: none !important; }
 }

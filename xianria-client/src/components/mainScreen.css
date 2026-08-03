@@ -1,0 +1,79 @@
+.ms-container {
+  @apply relative w-screen h-screen flex flex-col items-center justify-center gap-10 overflow-hidden;
+  background: linear-gradient(180deg, #0a0a1a 0%, #0d0d2a 40%, #1a1a3e 70%, #0d0d2a 100%);
+}
+
+.ms-header {
+  @apply text-center;
+}
+
+.ms-title {
+  @apply m-0 text-4xl font-extrabold text-primary tracking-widest;
+  text-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+}
+
+.ms-subtitle {
+  @apply mt-2 text-sm text-dim tracking-wide;
+}
+
+.ms-grid {
+  @apply grid gap-4 w-[90%] max-w-[600px];
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+}
+
+.ms-tile {
+  @apply relative aspect-square flex flex-col items-center justify-center gap-3 rounded-2xl cursor-pointer overflow-hidden transition-all duration-300;
+  background: var(--kh-surface);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ms-tile::before {
+  @apply absolute inset-0;
+  content: '';
+  background: radial-gradient(circle at 50% 50%, var(--tile-color), transparent 70%);
+  opacity: 0.08;
+  transition: opacity 0.25s ease;
+}
+
+.ms-tile:hover {
+  border-color: var(--tile-color);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 20px color-mix(in srgb, var(--tile-color) 20%, transparent);
+}
+
+.ms-tile:hover::before {
+  opacity: 0.2;
+}
+
+.ms-tile:active {
+  @apply -translate-y-0.5;
+}
+
+.ms-tile-icon {
+  @apply text-4xl z-[1];
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--tile-color) 40%, transparent));
+}
+
+.ms-tile-title {
+  @apply text-sm font-semibold text-secondary tracking-wide z-[1];
+}
+
+.ms-btn {
+  @apply py-2 px-4 rounded-lg text-primary text-sm font-semibold cursor-pointer transition-all duration-200;
+  background: var(--kh-surface);
+  border: 1px solid var(--kh-border);
+}
+
+.ms-btn:hover {
+  background: rgba(40, 40, 70, 0.85);
+  border-color: var(--kh-gold);
+}
+
+@media (max-width: 768px) {
+  .ms-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    @apply gap-3;
+  }
+  .ms-tile-icon { @apply text-2xl; }
+  .ms-title { @apply text-2xl; }
+}

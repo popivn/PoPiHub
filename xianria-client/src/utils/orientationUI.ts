@@ -1,4 +1,5 @@
 import './orientationUI.css'
+import { authApi } from '../server/authApi'
 import {
   getState,
   isMobileDevice,
@@ -20,9 +21,14 @@ import {
 
 let overlayEl: HTMLDivElement | null = null
 let controlsEl: HTMLDivElement | null = null
-let toggleBtn: HTMLButtonElement | null = null
+let controlsOverlayEl: HTMLDivElement | null = null
+let mainToggleBtn: HTMLButtonElement | null = null
 let fullscreenBtn: HTMLButtonElement | null = null
 let rotateBtn: HTMLButtonElement | null = null
+
+export function registerMainToggle(btn: HTMLButtonElement | null): void {
+  mainToggleBtn = btn
+}
 
 function shouldShowOverlay(): boolean {
   // Chỉ hiện overlay khi là mobile và đang ở portrait.
@@ -34,25 +40,54 @@ function updateOverlay(): void {
   overlayEl.classList.toggle('is-visible', shouldShowOverlay())
 }
 
-function updateControls(): void {
-  if (!controlsEl || !toggleBtn) return
+export function updateControls(): void {
+  if (!controlsEl) return
   const isPortrait = isPortraitOrientation()
-  // Portrait: ẩn cả toggle lẫn thanh công cụ (overlay đã lo).
-  // Landscape: hiện toggle (mũi tên), thanh công cụ giữ trạng thái đóng/mở.
-  toggleBtn.hidden = isPortrait
   if (isPortrait) {
     // Đảm bảo đóng thanh công cụ khi về portrait.
     controlsEl.classList.remove('is-open')
   }
 }
 
-function toggleToolbar(): void {
-  if (!controlsEl || !toggleBtn) return
+export function toggleToolbar(btn?: HTMLButtonElement | null): void {
+  if (!controlsEl) return
   const isOpen = controlsEl.classList.toggle('is-open')
-  // Đổi icon + vị trí: đóng -> mũi tên xuống (trên đỉnh), mở -> mũi tên lên (trượt theo panel).
-  toggleBtn.textContent = isOpen ? '▲' : '▼'
-  toggleBtn.setAttribute('aria-expanded', String(isOpen))
-  toggleBtn.classList.toggle('is-active', isOpen)
+  // Đổi icon: đóng -> mũi tên xuống, mở -> mũi tên lên.
+  const toggle = btn ?? mainToggleBtn
+  if (toggle) {
+    toggle.textContent = isOpen ? '▲' : '▼'
+    toggle.setAttribute('aria-expanded', String(isOpen))
+    toggle.classList.toggle('is-active', isOpen)
+  }
+  if (controlsOverlayEl) {
+    controlsOverlayEl.classList.toggle('is-visible', isOpen)
+  }
+  // Cập nhật user info khi mở toolbar
+  if (isOpen) updateUserInfo()
+}
+
+function updateUserInfo(): void {
+  if (!controlsEl) return
+  const user = authApi.getStoredUser()
+  const badge = controlsEl.querySelector('.kh-ctrl-user')
+  if (!badge) return
+  if (user) {
+    badge.innerHTML = `
+      <div class="kh-ctrl-user-avatar">${user.isGuest ? '👤' : '⚔'}</div>
+      <div class="kh-ctrl-user-info">
+        <span class="kh-ctrl-user-name">${user.username ?? 'Unknown'}</span>
+        <span class="kh-ctrl-user-tag">${user.isGuest ? 'Khách' : 'Thành viên'}</span>
+      </div>
+    `
+  } else {
+    badge.innerHTML = `
+      <div class="kh-ctrl-user-avatar">?</div>
+      <div class="kh-ctrl-user-info">
+        <span class="kh-ctrl-user-name">Chưa đăng nhập</span>
+        <span class="kh-ctrl-user-tag">—</span>
+      </div>
+    `
+  }
 }
 
 async function handleFullscreen(): Promise<void> {
@@ -61,6 +96,12 @@ async function handleFullscreen(): Promise<void> {
   } catch (err) {
     console.warn('[orientationUI] fullscreen error:', err)
   }
+}
+
+function handleLogout(): void {
+  authApi.logout()
+  window.location.hash = ''
+  window.location.reload()
 }
 
 async function handleRotate(): Promise<void> {
@@ -95,21 +136,29 @@ function build(): void {
   const actionBtn = overlayEl.querySelector<HTMLButtonElement>('.kh-rotate-action')
   actionBtn?.addEventListener('click', handleRotate)
 
-  // === Nút toggle (mũi tên) góc trên phải ===
-  toggleBtn = document.createElement('button')
-  toggleBtn.type = 'button'
-  toggleBtn.className = 'kh-ctrl-toggle'
-  toggleBtn.setAttribute('aria-label', 'Mở thanh công cụ')
-  toggleBtn.setAttribute('aria-expanded', 'false')
-  toggleBtn.textContent = '▼'
-  toggleBtn.hidden = true
-  document.body.appendChild(toggleBtn)
-  toggleBtn.addEventListener('click', toggleToolbar)
-
   // === Thanh công cụ (kéo xuống từ trên) ===
   controlsEl = document.createElement('div')
   controlsEl.className = 'kh-orientation-controls'
+  const user = authApi.getStoredUser()
+  const userBadge = user
+    ? `<div class="kh-ctrl-user">
+        <div class="kh-ctrl-user-avatar">${user.isGuest ? '👤' : '⚔'}</div>
+        <div class="kh-ctrl-user-info">
+          <span class="kh-ctrl-user-name">${user.username ?? 'Unknown'}</span>
+          <span class="kh-ctrl-user-tag">${user.isGuest ? 'Khách' : 'Thành viên'}</span>
+        </div>
+      </div>`
+    : `<div class="kh-ctrl-user">
+        <div class="kh-ctrl-user-avatar">?</div>
+        <div class="kh-ctrl-user-info">
+          <span class="kh-ctrl-user-name">Chưa đăng nhập</span>
+          <span class="kh-ctrl-user-tag">—</span>
+        </div>
+      </div>`
+
   controlsEl.innerHTML = `
+    ${userBadge}
+    <div class="kh-ctrl-divider"></div>
     <button class="kh-ctrl-btn kh-ctrl-fullscreen" type="button" aria-label="Toàn màn hình" title="Toàn màn hình">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>
@@ -125,14 +174,32 @@ function build(): void {
       </svg>
       <span>Quay ngang</span>
     </button>
+    <div class="kh-ctrl-divider"></div>
+    <button class="kh-ctrl-btn kh-ctrl-logout" type="button" aria-label="Đăng xuất" title="Đăng xuất">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      <span>Đăng xuất</span>
+    </button>
   `
   document.body.appendChild(controlsEl)
+
+  // === Overlay đóng thanh công cụ khi click ra ngoài ===
+  controlsOverlayEl = document.createElement('div')
+  controlsOverlayEl.className = 'kh-controls-overlay'
+  controlsOverlayEl.addEventListener('click', () => toggleToolbar())
+  document.body.appendChild(controlsOverlayEl)
 
   fullscreenBtn = controlsEl.querySelector<HTMLButtonElement>('.kh-ctrl-fullscreen')
   rotateBtn = controlsEl.querySelector<HTMLButtonElement>('.kh-ctrl-rotate')
 
   fullscreenBtn?.addEventListener('click', handleFullscreen)
   rotateBtn?.addEventListener('click', handleRotate)
+
+  const logoutBtn = controlsEl.querySelector<HTMLButtonElement>('.kh-ctrl-logout')
+  logoutBtn?.addEventListener('click', handleLogout)
 }
 
 function attachListeners(): void {

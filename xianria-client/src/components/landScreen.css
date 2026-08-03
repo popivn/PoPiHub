@@ -1,0 +1,80 @@
+.ls-container {
+  @apply relative w-screen h-screen flex flex-col overflow-hidden;
+  background: linear-gradient(180deg, #0a0a1a 0%, #0d0d2a 50%, #0a0a1a 100%);
+  font-family: system-ui, 'Segoe UI', sans-serif;
+}
+
+.ls-topbar {
+  @apply flex items-center justify-between py-2.5 px-4 z-10 shrink-0;
+  background: var(--kh-surface-strong);
+  border-bottom: 1px solid var(--kh-border);
+}
+
+.ls-topbar-right {
+  @apply flex items-center gap-2.5;
+}
+
+.ls-back-btn {
+  @apply py-2 px-4 rounded-lg text-primary text-sm font-semibold cursor-pointer transition-all duration-200;
+  background: var(--kh-surface);
+  border: 1px solid var(--kh-border);
+}
+
+.ls-back-btn:hover {
+  background: rgba(40, 40, 70, 0.85);
+  border-color: var(--kh-gold);
+}
+
+.ls-coins {
+  @apply flex items-center gap-1.5 py-1.5 px-3.5 rounded-full;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid var(--kh-border);
+}
+
+.ls-coins-icon {
+  @apply text-base;
+}
+
+.ls-coins-amount {
+  @apply text-sm font-bold text-primary;
+}
+
+.ls-viewport {
+  @apply flex-1 relative;
+  min-height: 0;
+}
+
+.ls-viewport canvas {
+  @apply block w-full h-full;
+  touch-action: none;
+}
+
+.ls-info {
+  @apply flex items-center gap-3 py-2.5 px-4 text-sm text-dim shrink-0;
+  background: var(--kh-surface-strong);
+  border-top: 1px solid var(--kh-border);
+  min-height: 44px;
+}
+
+.ls-confirm-btn {
+  @apply py-1.5 px-4 rounded-lg text-bg text-xs font-bold cursor-pointer transition-all duration-200;
+  background: linear-gradient(135deg, var(--kh-gold), #b8941f);
+  border: none;
+}
+
+.ls-confirm-btn:hover:not(:disabled) {
+  @apply -translate-y-px;
+  opacity: 0.9;
+}
+
+.ls-confirm-btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.ls-success {
+  @apply text-success;
+}
+
+.ls-error {
+  @apply text-danger;
+}

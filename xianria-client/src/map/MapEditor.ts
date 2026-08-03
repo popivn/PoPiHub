@@ -15,6 +15,7 @@ export interface MapEditorOptions {
   tilesetUrl: string
   tilesetId: string
   mapId?: string
+  onTileClick?: (tx: number, ty: number) => void
 }
 
 interface DualTileSprite {
@@ -36,6 +37,7 @@ export class MapEditor {
   private tilesetUrl: string
   private tilesetId: string
   private mapId: string
+  private onTileClick?: (tx: number, ty: number) => void
   private tilesetTexture: Texture | null = null
   private tileTextures: Map<string, Texture> = new Map()
   private grid: RegularGrid
@@ -57,6 +59,7 @@ export class MapEditor {
     this.tilesetUrl = opts.tilesetUrl
     this.tilesetId = opts.tilesetId
     this.mapId = opts.mapId ?? 'untitled'
+    this.onTileClick = opts.onTileClick
 
     this.app = new Application()
     this.world = new Container()
@@ -210,9 +213,13 @@ export class MapEditor {
     if (tx < 0 || tx >= this.width || ty < 0 || ty >= this.height) return
 
     if (e.button === 0) {
-      // Left click = paint
-      this.isPainting = true
-      this.paintAt(tx, ty)
+      // Left click = paint or trigger external click handler (single click)
+      if (this.onTileClick) {
+        this.onTileClick(tx, ty)
+      } else {
+        this.isPainting = true
+        this.paintAt(tx, ty)
+      }
     } else if (e.button === 2) {
       // Right click = erase
       this.isErasing = true
@@ -269,7 +276,7 @@ export class MapEditor {
     this.isDragging = false
   }
 
-  private paintAt(tx: number, ty: number): void {
+  paintAt(tx: number, ty: number): void {
     const updates = paintCell(this.grid, tx, ty, this.tilesetId)
     for (const { dx, dy, cell } of updates) {
       this.updateDualCell(dx, dy, cell.atlasX, cell.atlasY, cell.filled)

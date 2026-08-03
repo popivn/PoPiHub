@@ -1,0 +1,18 @@
+.pending-scene {
+  @apply fixed inset-0 flex flex-col items-center justify-center gap-5 bg-bg z-[9999];
+}
+
+.pending-spinner {
+  @apply w-12 h-12 rounded-full;
+  border: 3px solid rgba(212, 175, 55, 0.2);
+  border-top-color: var(--kh-gold);
+  animation: pending-spin 0.8s linear infinite;
+}
+
+@keyframes pending-spin {
+  to { transform: rotate(360deg); }
+}
+
+.pending-text {
+  @apply text-dim text-sm tracking-wide;
+}

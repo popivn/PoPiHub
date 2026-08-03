@@ -1,0 +1,20 @@
+.loading-overlay {
+  @apply fixed inset-0 z-[9999] flex flex-col items-center justify-center gap-5 text-secondary;
+  background: color-mix(in srgb, var(--kh-bg) 95%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.loading-spinner {
+  @apply w-12 h-12 rounded-full;
+  border: 3px solid rgba(212, 175, 55, 0.2);
+  border-top-color: var(--kh-gold);
+  animation: loading-spin 0.8s linear infinite;
+}
+
+@keyframes loading-spin {
+  to { transform: rotate(360deg); }
+}
+
+.loading-text {
+  @apply text-sm text-dim tracking-wide;
+}

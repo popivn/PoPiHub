@@ -1,0 +1,14 @@
+.kh-ctrl-toggle {
+  @apply relative w-9 h-9 flex items-center justify-center rounded-lg text-primary text-sm leading-none cursor-pointer backdrop-blur-sm transition-all duration-200;
+  background: var(--kh-surface);
+  border: 1px solid var(--kh-border);
+}
+
+.kh-ctrl-toggle:hover {
+  background: rgba(40, 40, 70, 0.85);
+  border-color: var(--kh-gold);
+}
+
+.kh-ctrl-toggle.is-active {
+  @apply rotate-180;
+}
