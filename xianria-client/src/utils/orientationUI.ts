@@ -100,7 +100,7 @@ async function handleFullscreen(): Promise<void> {
 
 function handleLogout(): void {
   authApi.logout()
-  window.location.hash = ''
+  window.location.href = '/'
   window.location.reload()
 }
 

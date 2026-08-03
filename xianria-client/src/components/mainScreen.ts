@@ -1,4 +1,5 @@
 import './mainScreen.css'
+import { navigate } from '../main'
 
 interface GameTile {
   id: string
@@ -37,11 +38,11 @@ export function mountMainScreen(app: HTMLElement): void {
     tile.addEventListener('click', () => {
       const id = tile.dataset.id
       if (id === 'land') {
-        window.location.hash = '/land'
+        navigate('/land')
       } else if (id === 'ara' || id === 'rover') {
-        window.location.hash = '/game'
+        navigate('/game')
       } else if (id === 'editor') {
-        window.location.hash = '/editor'
+        navigate('/editor')
       }
     })
   })

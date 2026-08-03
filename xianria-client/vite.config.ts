@@ -9,6 +9,12 @@ function devLogPlugin(): Plugin {
   return {
     name: 'devlog',
     configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        if (req.method === 'GET' && req.url && !req.url.startsWith('/api/') && !req.url.startsWith('/__') && !req.url.includes('.') && req.url !== '/') {
+          req.url = '/'
+        }
+        next()
+      })
       server.middlewares.use('/__devlog', (req, res) => {
         let body = ''
         req.on('data', (chunk) => { body += chunk })
