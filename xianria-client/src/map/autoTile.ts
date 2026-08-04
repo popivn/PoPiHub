@@ -18,7 +18,7 @@ export const TR = 4
 export const TL = 8
 
 /** Lookup table: mask → [atlasX, atlasY] — derived from tile file names X-Y-mask-N.png */
-const MASK_TO_ATLAS: Record<number, [number, number]> = {
+export const MASK_TO_ATLAS: Record<number, [number, number]> = {
   0:  [0, 3], // Empty (all water)
   1:  [3, 3], // BR          — file: 3-3-mask-1
   2:  [0, 0], // BL          — file: 0-0-mask-2

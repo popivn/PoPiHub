@@ -10,7 +10,15 @@ function devLogPlugin(): Plugin {
     name: 'devlog',
     configureServer(server) {
       server.middlewares.use((req, res, next) => {
-        if (req.method === 'GET' && req.url && !req.url.startsWith('/api/') && !req.url.startsWith('/__') && !req.url.includes('.') && req.url !== '/') {
+        if (
+          req.method === 'GET' &&
+          req.url &&
+          req.url !== '/' &&
+          !req.url.startsWith('/api/') &&
+          !req.url.startsWith('/__') &&
+          !req.url.startsWith('/@') &&
+          !req.url.includes('.')
+        ) {
           req.url = '/'
         }
         next()

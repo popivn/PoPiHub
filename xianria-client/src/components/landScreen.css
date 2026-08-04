@@ -78,3 +78,134 @@
 .ls-error {
   @apply text-danger;
 }
+
+/* --- Lớp phủ mây trôi (Cloud Overlay) --- */
+.ls-cloud-overlay {
+  @apply absolute inset-0 pointer-events-none;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.ls-cloud-overlay svg {
+  @apply w-full h-full block;
+}
+
+/* Hiệu ứng nhấp nhô của mây */
+.float-slow {
+  animation: bob 8s ease-in-out infinite;
+}
+.float-slow2 {
+  animation: bob 10s ease-in-out infinite;
+  animation-delay: -3s;
+}
+.float-slow3 {
+  animation: bob 7s ease-in-out infinite;
+  animation-delay: -1.5s;
+}
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+
+/* Hiệu ứng trôi ngang của mây */
+.drift-fast { animation: driftA 45s linear infinite; }
+.drift-mid  { animation: driftA 70s linear infinite; }
+.drift-slow { animation: driftA 100s linear infinite; }
+
+@keyframes driftA {
+  from { transform: translateX(-450px); }
+  to   { transform: translateX(calc(100vw + 450px)); }
+}
+
+/* Island Popover */
+.ls-island-popover {
+  @apply absolute flex flex-col gap-2 p-3 rounded-xl border z-20 transition-all duration-150;
+  transform: translate(-50%, -115%); /* Place above the tile */
+  background: rgba(13, 13, 42, 0.95);
+  border-color: var(--kh-gold);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  min-width: 160px;
+}
+
+/* Arrow pointer */
+.ls-island-popover::after {
+  content: '';
+  @apply absolute left-1/2 -bottom-2 -translate-x-1/2 block w-0 h-0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid var(--kh-gold);
+}
+
+.ls-popover-header {
+  @apply flex flex-col gap-0.5 text-center border-b pb-1.5;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.ls-popover-coord {
+  @apply text-xs font-bold text-[#ffd700];
+}
+
+.ls-popover-owner {
+  @apply text-[10px] text-gray-400 font-medium;
+}
+
+.ls-popover-actions {
+  @apply flex items-center justify-between gap-2 mt-1;
+}
+
+.ls-popover-btn {
+  @apply flex-1 py-1 px-2.5 rounded-md text-xs font-semibold text-center cursor-pointer transition-all duration-150;
+}
+
+.ls-enter-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  @apply text-white;
+}
+
+.ls-enter-btn:hover {
+  opacity: 0.9;
+  @apply scale-[1.02];
+}
+
+.ls-info-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  @apply text-gray-300;
+}
+
+.ls-info-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  @apply text-white;
+}
+
+/* Center Title in Topbar */
+.ls-title-center {
+  @apply text-sm font-bold text-[#ffd700] absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none;
+}
+
+/* Clear Button */
+.ls-clear-btn {
+  @apply py-1.5 px-3 rounded-lg text-danger text-xs font-semibold cursor-pointer transition-all duration-150 bg-opacity-10 border;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.ls-clear-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: rgba(239, 68, 68, 0.5);
+  @apply text-white;
+}
+
+/* Mode Toggle Button */
+.ls-mode-btn {
+  @apply py-1.5 px-3 rounded-lg text-[#6bb6ff] text-xs font-semibold cursor-pointer transition-all duration-150;
+  background: rgba(107, 182, 255, 0.1);
+  border: 1px solid rgba(107, 182, 255, 0.3);
+}
+
+.ls-mode-btn:hover {
+  background: rgba(107, 182, 255, 0.25);
+  border-color: rgba(107, 182, 255, 0.5);
+  @apply text-white;
+}

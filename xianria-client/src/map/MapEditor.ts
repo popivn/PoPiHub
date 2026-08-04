@@ -1,10 +1,13 @@
 import { Application, Container, Sprite, Texture, Rectangle, Graphics } from 'pixi.js'
 import { Assets } from 'pixi.js'
+import { OceanBackground } from './OceanBackground'
+import { FogOfWar } from './FogOfWar'
 import {
   type RegularGrid,
   createGrid,
   paintCell,
   computeDualGrid,
+  MASK_TO_ATLAS,
 } from './autoTile'
 
 export interface MapEditorOptions {
@@ -16,6 +19,10 @@ export interface MapEditorOptions {
   tilesetId: string
   mapId?: string
   onTileClick?: (tx: number, ty: number) => void
+  showFogOfWar?: boolean
+  onCameraMove?: () => void
+  waterTextureUrl?: string
+  useIndividualTiles?: boolean
 }
 
 interface DualTileSprite {
@@ -27,6 +34,8 @@ interface DualTileSprite {
 export class MapEditor {
   app: Application
   world: Container
+  ocean: OceanBackground | null = null
+  fog: FogOfWar | null = null
   tileLayer: Container
   gridOverlay: Graphics
   hoverHighlight: Graphics
@@ -38,8 +47,12 @@ export class MapEditor {
   private tilesetId: string
   private mapId: string
   private onTileClick?: (tx: number, ty: number) => void
+  private onCameraMove?: () => void
+  private showFogOfWar = true
   private tilesetTexture: Texture | null = null
   private tileTextures: Map<string, Texture> = new Map()
+  private waterTextureUrl?: string
+  private useIndividualTiles = false
   private grid: RegularGrid
   private dualSprites: DualTileSprite[] = []
   private isPainting = false
@@ -50,6 +63,39 @@ export class MapEditor {
   private dragStartY = 0
   private cameraStartX = 0
   private cameraStartY = 0
+  private _panMode = false
+
+  get panMode(): boolean {
+    return this._panMode
+  }
+
+  set panMode(val: boolean) {
+    this._panMode = val
+    if (this.app && this.app.canvas) {
+      this.app.canvas.style.cursor = val ? 'grab' : 'default'
+    }
+    if (val) {
+      this.hoverHighlight.visible = false
+    }
+  }
+
+  private _readOnly = false
+
+  get readOnly(): boolean {
+    return this._readOnly
+  }
+
+  set readOnly(val: boolean) {
+    this._readOnly = val
+    if (this.app && this.app.canvas) {
+      this.app.canvas.style.cursor = val ? 'grab' : 'default'
+    }
+    if (val) {
+      this.hoverHighlight.visible = false
+    }
+  }
+
+  public activeTool: 'land' | 'water' = 'land'
 
   constructor(opts: MapEditorOptions) {
     this.container = opts.container
@@ -60,6 +106,10 @@ export class MapEditor {
     this.tilesetId = opts.tilesetId
     this.mapId = opts.mapId ?? 'untitled'
     this.onTileClick = opts.onTileClick
+    this.onCameraMove = opts.onCameraMove
+    this.showFogOfWar = opts.showFogOfWar ?? true
+    this.waterTextureUrl = opts.waterTextureUrl
+    this.useIndividualTiles = opts.useIndividualTiles ?? false
 
     this.app = new Application()
     this.world = new Container()
@@ -73,17 +123,51 @@ export class MapEditor {
     await this.app.init({
       width: this.container.clientWidth,
       height: this.container.clientHeight,
-      backgroundColor: 0x2a2a2a,
+      backgroundColor: 0x9ee2ff,
       antialias: false,
       resizeTo: this.container,
     })
 
     // Load tileset
-    this.tilesetTexture = await Assets.load(this.tilesetUrl)
-    this.buildTileTextures()
+    if (this.useIndividualTiles) {
+      await this.loadIndividualTextures()
+    } else {
+      this.tilesetTexture = await Assets.load(this.tilesetUrl)
+      this.buildTileTextures()
+    }
 
-    // Setup world
+    // Setup world water texture
+    let waterTexture = this.tileTextures.get('0,3')
+    if (this.waterTextureUrl) {
+      try {
+        waterTexture = await Assets.load(this.waterTextureUrl)
+      } catch (err) {
+        console.error('Failed to load water texture:', err)
+      }
+    }
+
+    this.ocean = new OceanBackground({
+      width: this.width,
+      height: this.height,
+      tileSize: this.tileSize,
+      waterTexture,
+      baseColor: 0x56b7ea,
+    })
+    this.ocean.init()
+    this.world.addChild(this.ocean.view)
     this.world.addChild(this.tileLayer)
+
+    // Fog of war — sương mù bao quanh đảo, trên tile layer nhưng dưới grid overlay
+    this.fog = new FogOfWar({
+      app: this.app,
+      width: this.width,
+      height: this.height,
+      tileSize: this.tileSize,
+    })
+    if (this.showFogOfWar) {
+      this.world.addChild(this.fog.view)
+    }
+
     this.world.addChild(this.gridOverlay)
     this.world.addChild(this.hoverHighlight)
     this.app.stage.addChild(this.world)
@@ -104,8 +188,16 @@ export class MapEditor {
     // Event listeners
     canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e))
     canvas.addEventListener('pointermove', (e) => this.onPointerMove(e))
+    canvas.addEventListener('pointerup', () => this.onPointerUp())
     canvas.addEventListener('pointerleave', () => { this.onPointerUp(); this.hoverHighlight.visible = false })
     canvas.addEventListener('contextmenu', (e) => e.preventDefault())
+
+    // Fog animation ticker
+    if (this.showFogOfWar) {
+      this.app.ticker.add((ticker) => {
+        this.fog?.update(ticker.deltaMS)
+      })
+    }
 
     // Center camera after canvas is in DOM
     requestAnimationFrame(() => {
@@ -133,6 +225,38 @@ export class MapEditor {
     }
   }
 
+  private async loadIndividualTextures(): Promise<void> {
+    const promises: Promise<void>[] = []
+    
+    // We map each mask to its atlas coords
+    for (const [maskStr, coords] of Object.entries(MASK_TO_ATLAS)) {
+      const mask = parseInt(maskStr)
+      if (mask === 0) continue // Empty is transparent
+      
+      const [atlasX, atlasY] = coords
+      let fileUrl = ''
+      if (mask === 15) {
+        fileUrl = `/inside_island/assets/tiles/${this.tilesetId}-2-1.png`
+      } else {
+        // Skip diagonal masks if they don't exist on disk
+        if (mask === 6 || mask === 9) continue
+        fileUrl = `/inside_island/assets/tiles/${this.tilesetId}-${atlasX}-${atlasY}-mask-${mask}.png`
+      }
+      
+      const loadPromise = (async () => {
+        try {
+          const tex = await Assets.load(fileUrl)
+          this.tileTextures.set(`${atlasX},${atlasY}`, tex)
+        } catch (err) {
+          console.warn(`Failed to load individual tile texture: ${fileUrl}`, err)
+        }
+      })()
+      promises.push(loadPromise)
+    }
+    
+    await Promise.all(promises)
+  }
+
   private createDualSprites(): void {
     const dualWidth = this.width + 1
     const dualHeight = this.height + 1
@@ -151,7 +275,7 @@ export class MapEditor {
 
   private drawGridOverlay(): void {
     this.gridOverlay.clear()
-    this.gridOverlay.setStrokeStyle({ width: 1, color: 0x666666, alpha: 0.6 })
+    this.gridOverlay.setStrokeStyle({ width: 1, color: 0xeafbff, alpha: 0.4 })
 
     for (let x = 0; x <= this.width; x++) {
       this.gridOverlay.moveTo(x * this.tileSize, 0)
@@ -199,13 +323,16 @@ export class MapEditor {
   }
 
   private onPointerDown(e: PointerEvent): void {
-    if (e.shiftKey) {
-      // Shift+drag = pan camera
+    if (e.shiftKey || this._panMode || this._readOnly) {
+      // Shift+drag or panMode or readOnly = pan camera
       this.isDragging = true
       this.dragStartX = e.clientX
       this.dragStartY = e.clientY
       this.cameraStartX = this.world.x
       this.cameraStartY = this.world.y
+      if (this.app && this.app.canvas) {
+        this.app.canvas.style.cursor = 'grabbing'
+      }
       return
     }
 
@@ -217,8 +344,17 @@ export class MapEditor {
       if (this.onTileClick) {
         this.onTileClick(tx, ty)
       } else {
-        this.isPainting = true
-        this.paintAt(tx, ty)
+        const isWaterTool = this.activeTool === 'water'
+        const tilesetIsWater = this.tilesetId === 'water'
+        const shouldPaint = (isWaterTool && tilesetIsWater) || (!isWaterTool && !tilesetIsWater)
+
+        if (shouldPaint) {
+          this.isPainting = true
+          this.paintAt(tx, ty)
+        } else {
+          this.isErasing = true
+          this.eraseAt(tx, ty)
+        }
       }
     } else if (e.button === 2) {
       // Right click = erase
@@ -229,10 +365,23 @@ export class MapEditor {
 
   private onPointerMove(e: PointerEvent): void {
     if (this.isDragging) {
-      const dx = e.clientX - this.dragStartX
-      const dy = e.clientY - this.dragStartY
-      this.world.x = this.cameraStartX + dx
-      this.world.y = this.cameraStartY + dy
+      if ((e.buttons & 1) === 0 && (e.buttons & 2) === 0) {
+        this.onPointerUp()
+      } else {
+        const dx = e.clientX - this.dragStartX
+        const dy = e.clientY - this.dragStartY
+        this.world.x = this.cameraStartX + dx
+        this.world.y = this.cameraStartY + dy
+        this.clampCamera()
+        if (this.onCameraMove) {
+          this.onCameraMove()
+        }
+        return
+      }
+    }
+
+    if (this._panMode || this._readOnly) {
+      this.hoverHighlight.visible = false
       return
     }
 
@@ -274,6 +423,9 @@ export class MapEditor {
     this.isPainting = false
     this.isErasing = false
     this.isDragging = false
+    if (this.app && this.app.canvas) {
+      this.app.canvas.style.cursor = (this._panMode || this._readOnly) ? 'grab' : 'default'
+    }
   }
 
   paintAt(tx: number, ty: number): void {
@@ -281,12 +433,33 @@ export class MapEditor {
     for (const { dx, dy, cell } of updates) {
       this.updateDualCell(dx, dy, cell.atlasX, cell.atlasY, cell.filled)
     }
+    this.fog?.reveal(tx, ty)
   }
 
   private eraseAt(tx: number, ty: number): void {
     const updates = paintCell(this.grid, tx, ty, null)
     for (const { dx, dy, cell } of updates) {
       this.updateDualCell(dx, dy, cell.atlasX, cell.atlasY, cell.filled)
+    }
+    this.fog?.hide(tx, ty)
+  }
+
+  private clampCamera(): void {
+    const viewWidth = this.app.screen.width
+    const viewHeight = this.app.screen.height
+    const mapWidthPx = this.width * this.tileSize
+    const mapHeightPx = this.height * this.tileSize
+
+    if (mapWidthPx <= viewWidth) {
+      this.world.x = (viewWidth - mapWidthPx) / 2
+    } else {
+      this.world.x = Math.max(viewWidth - mapWidthPx, Math.min(0, this.world.x))
+    }
+
+    if (mapHeightPx <= viewHeight) {
+      this.world.y = (viewHeight - mapHeightPx) / 2
+    } else {
+      this.world.y = Math.max(viewHeight - mapHeightPx, Math.min(0, this.world.y))
     }
   }
 
@@ -295,9 +468,10 @@ export class MapEditor {
     const viewHeight = this.app.screen.height
     const mapWidthPx = this.width * this.tileSize
     const mapHeightPx = this.height * this.tileSize
-    // Center the map in the viewport, clamp so it doesn't go off-screen
-    this.world.x = Math.max(0, (viewWidth - mapWidthPx) / 2)
-    this.world.y = Math.max(0, (viewHeight - mapHeightPx) / 2)
+    // Center the map in the viewport
+    this.world.x = (viewWidth - mapWidthPx) / 2
+    this.world.y = (viewHeight - mapHeightPx) / 2
+    this.clampCamera()
   }
 
   toggleGrid(): void {
@@ -305,28 +479,98 @@ export class MapEditor {
     this.gridOverlay.visible = this.showGrid
   }
 
+  setGridVisible(visible: boolean): void {
+    this.showGrid = visible
+    this.gridOverlay.visible = visible
+  }
+
   clearMap(): void {
     this.grid = createGrid(this.width, this.height)
     for (const ds of this.dualSprites) {
       ds.sprite.visible = false
     }
+    this.fog?.clearRevealed()
   }
 
   /**
    * Load map data from API or provided data.
    */
-  loadFromData(data: { grid: Array<{ tilesetId: string; atlasX: number; atlasY: number; mode: string } | null> }): void {
-    // The meowa-map.json grid is the dual grid (width+1) x (height+1)
-    // We need to reverse-engineer the regular grid from it
-    // For simplicity, we'll just render the dual grid directly
+  loadFromData(data: {
+    grid?: Array<{ tilesetId: string; atlasX: number; atlasY: number; mode: string } | null>
+    map?: {
+      grid?: Array<{ tilesetId: string; atlasX: number; atlasY: number; mode: string } | null>
+    }
+    canvasElement?: { width: number; height: number }
+  }): void {
+    const gridArray = data.grid || data.map?.grid
+    if (!gridArray) return
+    this.clearMap()
+
+    const totalCells = gridArray.length
+    let originalWidth = this.width
+    let originalHeight = this.height
+
+    if (data.canvasElement?.width) {
+      originalWidth = Math.round(data.canvasElement.width / this.tileSize)
+    } else {
+      const side = Math.round(Math.sqrt(totalCells))
+      if (side * side === totalCells) {
+        originalWidth = side - 1
+      }
+    }
+
+    if (data.canvasElement?.height) {
+      originalHeight = Math.round(data.canvasElement.height / this.tileSize)
+    } else {
+      const side = Math.round(Math.sqrt(totalCells))
+      if (side * side === totalCells) {
+        originalHeight = side - 1
+      }
+    }
+
+    const originalDualWidth = originalWidth + 1
+    const offsetX = Math.max(0, Math.floor((this.width - originalWidth) / 2))
+    const offsetY = Math.max(0, Math.floor((this.height - originalHeight) / 2))
+
+    // Reconstruct regular grid cells and paint them at the offset position
+    for (let ty = 0; ty < originalHeight; ty++) {
+      for (let tx = 0; tx < originalWidth; tx++) {
+        const corners = [
+          ty * originalDualWidth + tx,
+          ty * originalDualWidth + tx + 1,
+          (ty + 1) * originalDualWidth + tx,
+          (ty + 1) * originalDualWidth + tx + 1,
+        ]
+        const anyFilled = corners.some((idx) => gridArray[idx] != null)
+        if (anyFilled) {
+          const targetX = tx + offsetX
+          const targetY = ty + offsetY
+          if (targetX >= 0 && targetX < this.width && targetY >= 0 && targetY < this.height) {
+            paintCell(this.grid, targetX, targetY, this.tilesetId)
+          }
+        }
+      }
+    }
+
+    // Now render all dual cells for the current grid
     const dualWidth = this.width + 1
-    for (let i = 0; i < data.grid.length; i++) {
-      const cell = data.grid[i]
-      if (!cell) continue
+    const dual = computeDualGrid(this.grid)
+    for (let i = 0; i < dual.length; i++) {
       const dx = i % dualWidth
       const dy = Math.floor(i / dualWidth)
-      this.updateDualCell(dx, dy, cell.atlasX, cell.atlasY, true)
+      this.updateDualCell(dx, dy, dual[i].atlasX, dual[i].atlasY, dual[i].filled)
     }
+
+    // Reveal fog for painted tiles if present
+    const revealedCells: Array<{ x: number; y: number }> = []
+    for (let ty = 0; ty < this.height; ty++) {
+      for (let tx = 0; tx < this.width; tx++) {
+        if (this.grid.cells[ty * this.width + tx]) {
+          revealedCells.push({ x: tx, y: ty })
+        }
+      }
+    }
+    this.fog?.revealAll(revealedCells)
   }
 
   /**
@@ -442,10 +686,22 @@ export class MapEditor {
         const dy = Math.floor(i / dualWidth)
         this.updateDualCell(dx, dy, dual[i].atlasX, dual[i].atlasY, dual[i].filled)
       }
+      // Reveal fog around all painted tiles
+      const revealedCells: Array<{ x: number; y: number }> = []
+      for (let ty = 0; ty < this.height; ty++) {
+        for (let tx = 0; tx < this.width; tx++) {
+          if (this.grid.cells[ty * this.width + tx]) {
+            revealedCells.push({ x: tx, y: ty })
+          }
+        }
+      }
+      this.fog?.revealAll(revealedCells)
     }
   }
 
   destroy(): void {
+    this.fog?.destroy()
+    this.ocean?.destroy()
     this.tileTextures.forEach((t) => t.destroy(true))
     this.tileTextures.clear()
     this.app.destroy(true)

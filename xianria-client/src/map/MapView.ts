@@ -1,5 +1,7 @@
 import { Application, Container, Sprite, Texture, Rectangle, Graphics } from 'pixi.js'
 import type { MeowaMapData } from './types'
+import { OceanBackground } from './OceanBackground'
+import { FogOfWar } from './FogOfWar'
 
 export interface MapViewOptions {
   container: HTMLElement
@@ -14,6 +16,8 @@ export class MapView {
   tileLayer: Container
   characterLayer: Container
   character: Sprite | null = null
+  ocean: OceanBackground | null = null
+  fog: FogOfWar | null = null
   private mapData: MeowaMapData
   private tilesetTexture: Texture
   private tileSize: number
@@ -43,19 +47,48 @@ export class MapView {
       resizeTo: this.app.renderer ? undefined : undefined,
       width: this.mapWidthPx,
       height: this.mapHeightPx,
-      backgroundColor: 0x909090,
+      backgroundColor: 0x56b7ea,
       antialias: false,
     })
-
-    // Setup camera (world container)
-    this.world.addChild(this.tileLayer)
-    this.world.addChild(this.characterLayer)
 
     // Build tile textures from atlas
     this.buildTileTextures()
 
+    // Add ocean background
+    const waterTexture = this.tileTextures.get('0,3')
+    this.ocean = new OceanBackground({
+      width: this.mapData.map.widthTiles,
+      height: this.mapData.map.heightTiles,
+      tileSize: this.tileSize,
+      waterTexture,
+      baseColor: 0x56b7ea,
+    })
+    this.ocean.init()
+
+    // Setup camera (world container)
+    this.world.addChild(this.ocean.view)
+    this.world.addChild(this.tileLayer)
+    this.world.addChild(this.characterLayer)
+
     // Render tiles
     this.renderTiles()
+
+    // Fog of war — sương mù bao quanh đảo đã mở khoá
+    this.fog = new FogOfWar({
+      app: this.app,
+      width: this.mapData.map.widthTiles,
+      height: this.mapData.map.heightTiles,
+      tileSize: this.tileSize,
+    })
+    // Reveal fog around all painted tiles from the loaded map
+    const revealedCells = this.getPaintedTiles()
+    this.fog.revealAll(revealedCells)
+    this.world.addChild(this.fog.view)
+
+    // Fog animation ticker
+    this.app.ticker.add((ticker) => {
+      this.fog?.update(ticker.deltaMS)
+    })
 
     // Add character if texture provided
     if (this.characterTexture) {
@@ -120,6 +153,20 @@ export class MapView {
       sprite.y = ty * this.tileSize
       this.tileLayer.addChild(sprite)
     }
+  }
+
+  /**
+   * Lấy danh sách các tile đã paint (không null) từ map data — dùng để khai phá sương mù.
+   */
+  private getPaintedTiles(): Array<{ x: number; y: number }> {
+    const { grid, widthTiles } = this.mapData.map
+    const cells: Array<{ x: number; y: number }> = []
+    for (let i = 0; i < grid.length; i++) {
+      if (grid[i]) {
+        cells.push({ x: i % widthTiles, y: Math.floor(i / widthTiles) })
+      }
+    }
+    return cells
   }
 
   private findFirstWalkableTile(): { x: number; y: number } | null {
@@ -218,6 +265,8 @@ export class MapView {
   }
 
   destroy(): void {
+    this.fog?.destroy()
+    this.ocean?.destroy()
     this.tileTextures.forEach((t) => t.destroy(true))
     this.tileTextures.clear()
     this.app.destroy(true)

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Đám mây chi tiết</title>
+<style>
+  :root {
+    --sky-top: #7ec8f0;
+    --sky-mid: #a9dcf5;
+    --sky-bottom: #e8f6ff;
+  }
+
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-mid) 45%, var(--sky-bottom) 100%);
+  }
+
+  svg {
+    width: 100%;
+    height: 100vh;
+    display: block;
+  }
+
+  /* --- Chuyển động --- */
+  .float-slow {
+    animation: bob 8s ease-in-out infinite;
+  }
+  .float-slow2 {
+    animation: bob 10s ease-in-out infinite;
+    animation-delay: -3s;
+  }
+  .float-slow3 {
+    animation: bob 7s ease-in-out infinite;
+    animation-delay: -1.5s;
+  }
+
+  @keyframes bob {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-14px); }
+  }
+
+  .drift1 { animation: driftA 40s linear infinite; }
+  .drift2 { animation: driftB 55s linear infinite; }
+
+  @keyframes driftA {
+    from { transform: translateX(-120px); }
+    to   { transform: translateX(calc(100vw + 120px)); }
+  }
+  @keyframes driftB {
+    from { transform: translateX(-160px); }
+    to   { transform: translateX(calc(100vw + 160px)); }
+  }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Bộ lọc "goo" giúp các hình tròn hoà vào nhau thành khối mây tự nhiên -->
+    <filter id="goo" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="9" result="blur" />
+      <feColorMatrix in="blur" mode="matrix"
+        values="1 0 0 0 0
+                0 1 0 0 0
+                0 0 1 0 0
+                0 0 0 22 -9" result="goo" />
+      <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+    </filter>
+
+    <!-- Bóng đổ mềm phía dưới mỗi đám mây -->
+    <filter id="soft-shadow" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#4a6a8a" flood-opacity="0.18"/>
+    </filter>
+
+    <!-- Định nghĩa hình dạng 1 đám mây chi tiết, có bóng và điểm sáng -->
+    <symbol id="cloud-detailed" viewBox="0 0 340 220">
+      <g filter="url(#soft-shadow)">
+        <g filter="url(#goo)">
+          <!-- Khối thân chính -->
+          <circle cx="55"  cy="130" r="40" fill="#ffffff"/>
+          <circle cx="95"  cy="105" r="52" fill="#ffffff"/>
+          <circle cx="150" cy="90"  r="58" fill="#ffffff"/>
+          <circle cx="205" cy="95"  r="54" fill="#ffffff"/>
+          <circle cx="255" cy="110" r="46" fill="#ffffff"/>
+          <circle cx="292" cy="135" r="34" fill="#ffffff"/>
+          <circle cx="30"  cy="150" r="28" fill="#ffffff"/>
+
+          <!-- Các bướu nhỏ phía trên tạo độ gồ ghề tự nhiên -->
+          <circle cx="120" cy="62" r="34" fill="#ffffff"/>
+          <circle cx="168" cy="52" r="38" fill="#ffffff"/>
+          <circle cx="212" cy="60" r="32" fill="#ffffff"/>
+          <circle cx="80"  cy="78"  r="24" fill="#ffffff"/>
+          <circle cx="240" cy="75"  r="26" fill="#ffffff"/>
+
+          <!-- Vùng bóng mờ phía dưới/phải tạo chiều sâu -->
+          <circle cx="150" cy="150" r="42" fill="#d3e4f2"/>
+          <circle cx="205" cy="155" r="44" fill="#cfe1f0"/>
+          <circle cx="255" cy="145" r="36" fill="#d6e6f3"/>
+          <circle cx="90"  cy="150" r="30" fill="#dcebf6"/>
+          <circle cx="270" cy="155" r="26" fill="#d3e4f2"/>
+
+          <!-- Điểm sáng phía trên bên trái -->
+          <circle cx="105" cy="60" r="26" fill="#ffffff"/>
+          <circle cx="145" cy="48" r="22" fill="#ffffff"/>
+        </g>
+      </g>
+    </symbol>
+  </defs>
+
+  <!-- Mây nền, mờ và nhỏ hơn để tạo chiều sâu -->
+  <g class="drift2" opacity="0.55">
+    <use href="#cloud-detailed" class="float-slow2" x="-40" y="60" width="260" height="169"/>
+  </g>
+  <g class="drift1" opacity="0.5">
+    <use href="#cloud-detailed" class="float-slow3" x="700" y="30" width="220" height="143"/>
+  </g>
+
+  <!-- Mây chính, chi tiết và rõ nét -->
+  <g class="float-slow">
+    <use href="#cloud-detailed" x="420" y="180" width="420" height="272"/>
+  </g>
+
+  <g class="float-slow2">
+    <use href="#cloud-detailed" x="60" y="380" width="360" height="233"/>
+  </g>
+
+  <g class="float-slow3" opacity="0.9">
+    <use href="#cloud-detailed" x="760" y="400" width="380" height="246"/>
+  </g>
+</svg>
+</body>
+</html>
