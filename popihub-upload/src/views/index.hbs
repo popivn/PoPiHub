@@ -6,6 +6,7 @@
   <title>PoPiHub Upload</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -51,6 +52,36 @@
     .upload-icon {
       font-size: 3rem;
       margin-bottom: 12px;
+      color: #818cf8;
+    }
+    .upload-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .btn-select {
+      background: #1e293b;
+      border: 1px solid #334155;
+      color: #e2e8f0;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-select:hover {
+      border-color: #818cf8;
+      background: #1e293b80;
+    }
+    #folderInput { display: none; }
+    .file-chip i {
+      color: #64748b;
+      font-size: 0.8rem;
     }
     .upload-zone p {
       color: #94a3b8;
@@ -225,9 +256,18 @@
     <p class="subtitle">Kéo thả hoặc chọn file để upload — không giới hạn số lượng</p>
 
     <div class="upload-zone" id="dropZone">
-      <div class="upload-icon">📁</div>
-      <p>Kéo thả file vào đây hoặc <span class="browse">chọn file</span></p>
+      <div class="upload-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+      <p>Kéo thả file vào đây hoặc chọn file/folder</p>
       <input type="file" id="fileInput" multiple>
+      <input type="file" id="folderInput" webkitdirectory multiple>
+      <div class="upload-buttons">
+        <button class="btn-select" type="button" onclick="event.stopPropagation(); fileInput.click();">
+          <i class="fa-regular fa-file"></i> Chọn file
+        </button>
+        <button class="btn-select" type="button" onclick="event.stopPropagation(); folderInput.click();">
+          <i class="fa-solid fa-folder-open"></i> Chọn folder
+        </button>
+      </div>
     </div>
 
     <div class="file-list-preview" id="filePreview"></div>
@@ -237,7 +277,7 @@
     </div>
 
     <div class="upload-actions">
-      <button class="btn btn-primary" id="uploadBtn" disabled>Upload</button>
+      <button class="btn btn-primary" id="uploadBtn" disabled><i class="fa-solid fa-upload"></i> Upload</button>
     </div>
 
     <h2 class="section-title">
@@ -262,8 +302,8 @@
           <td class="file-size">{{this.size}}</td>
           <td class="file-date">{{this.uploadedAt}}</td>
           <td class="actions-cell">
-            <button class="action-btn btn-download" onclick="downloadFile('{{this.name}}')">Tải về</button>
-            <button class="action-btn btn-delete" onclick="deleteFile('{{this.name}}')">Xóa</button>
+            <button class="action-btn btn-download" onclick="downloadFile('{{this.name}}')"><i class="fa-solid fa-download"></i> Tải về</button>
+            <button class="action-btn btn-delete" onclick="deleteFile('{{this.name}}')"><i class="fa-solid fa-trash"></i> Xóa</button>
           </td>
         </tr>
         {{/each}}
@@ -271,7 +311,7 @@
     </table>
     {{else}}
     <div class="empty-state">
-      <div class="icon">📂</div>
+      <div class="icon"><i class="fa-regular fa-folder-open" style="color:#475569"></i></div>
       <p>Chưa có file nào. Hãy upload file đầu tiên!</p>
     </div>
     {{/if}}
@@ -282,6 +322,7 @@
   <script>
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
+    const folderInput = document.getElementById('folderInput');
     const filePreview = document.getElementById('filePreview');
     const uploadBtn = document.getElementById('uploadBtn');
     const progressBar = document.getElementById('progressBar');
@@ -290,6 +331,11 @@
     let selectedFiles = [];
 
     dropZone.addEventListener('click', () => fileInput.click());
+
+    folderInput.addEventListener('change', () => {
+      addFiles(folderInput.files);
+      folderInput.value = '';
+    });
 
     dropZone.addEventListener('dragover', (e) => {
       e.preventDefault();
@@ -323,7 +369,8 @@
       selectedFiles.forEach((file, index) => {
         const chip = document.createElement('div');
         chip.className = 'file-chip';
-        chip.innerHTML = `<span>${file.name}</span> <span class="remove" data-index="${index}">✕</span>`;
+        const icon = file.webkitRelativePath ? 'fa-folder' : 'fa-file';
+        chip.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${file.name}</span> <span class="remove" data-index="${index}"><i class="fa-solid fa-xmark"></i></span>`;
         filePreview.appendChild(chip);
       });
       uploadBtn.disabled = selectedFiles.length === 0;
