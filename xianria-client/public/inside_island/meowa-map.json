@@ -1,7 +1,7 @@
 {
   "format": "meowa-map",
   "version": 1,
-  "exportedAt": "2026-08-04T06:08:45.090Z",
+  "exportedAt": "2026-08-04T08:04:49.396Z",
   "canvasElement": {
     "id": "1785823345222-vg83768t5y",
     "name": "Map Editor",
@@ -1220,7 +1220,7 @@
             "mode": "auto"
           },
           {
-            "tilesetId": "grass",
+            "tilesetId": "water",
             "atlasX": 2,
             "atlasY": 1,
             "mode": "auto"
@@ -1358,7 +1358,7 @@
             "mode": "auto"
           },
           {
-            "tilesetId": "grass",
+            "tilesetId": "water",
             "atlasX": 2,
             "atlasY": 1,
             "mode": "auto"
@@ -1496,6 +1496,150 @@
             "mode": "auto"
           },
           {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
             "tilesetId": "grass",
             "atlasX": 2,
             "atlasY": 1,
@@ -1599,444 +1743,6 @@
           },
           {
             "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "atlasX": 3,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "grass",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
-            "atlasX": 2,
-            "atlasY": 1,
-            "mode": "auto"
-          },
-          {
-            "tilesetId": "water",
             "atlasX": 2,
             "atlasY": 1,
             "mode": "auto"
@@ -2180,6 +1886,300 @@
             "mode": "auto"
           },
           {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "water",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "atlasX": 3,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
+            "tilesetId": "grass",
+            "atlasX": 2,
+            "atlasY": 1,
+            "mode": "auto"
+          },
+          {
             "tilesetId": "water",
             "atlasX": 2,
             "atlasY": 1,
@@ -2270,7 +2270,7 @@
             "mode": "auto"
           },
           {
-            "tilesetId": "grass",
+            "tilesetId": "water",
             "atlasX": 2,
             "atlasY": 1,
             "mode": "auto"
@@ -2408,7 +2408,7 @@
             "mode": "auto"
           },
           {
-            "tilesetId": "grass",
+            "tilesetId": "water",
             "atlasX": 2,
             "atlasY": 1,
             "mode": "auto"
@@ -4770,15 +4770,6 @@
             "atlasX": 2,
             "atlasY": 1,
             "x": 11.5,
-            "y": 3.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 11.5,
             "y": 2.5,
             "renderMask": 15
           },
@@ -4852,33 +4843,6 @@
             "atlasY": 1,
             "x": 12.5,
             "y": 1.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 12.5,
-            "y": 2.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 12.5,
-            "y": 3.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 12.5,
-            "y": 4.5,
             "renderMask": 15
           },
           {
@@ -4941,33 +4905,6 @@
             "atlasX": 2,
             "atlasY": 1,
             "x": 13.5,
-            "y": 3.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 13.5,
-            "y": 2.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 13.5,
-            "y": 1.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 13.5,
             "y": 0.5,
             "renderMask": 15
           },
@@ -5014,15 +4951,6 @@
             "atlasY": 1,
             "x": 14.5,
             "y": 0.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 14.5,
-            "y": 1.5,
             "renderMask": 15
           },
           {
@@ -5490,24 +5418,6 @@
             "atlasX": 2,
             "atlasY": 1,
             "x": 19.5,
-            "y": 10.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 19.5,
-            "y": 9.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 19.5,
             "y": 5.5,
             "renderMask": 15
           },
@@ -5670,33 +5580,6 @@
             "atlasX": 2,
             "atlasY": 1,
             "x": 20.5,
-            "y": 8.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 20.5,
-            "y": 9.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 20.5,
-            "y": 10.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 20.5,
             "y": 11.5,
             "renderMask": 15
           },
@@ -5806,24 +5689,6 @@
             "atlasY": 1,
             "x": 21.5,
             "y": 10.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 21.5,
-            "y": 9.5,
-            "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 1,
-            "x": 21.5,
-            "y": 8.5,
             "renderMask": 15
           },
           {
@@ -6509,24 +6374,6 @@
             "x": 10.5,
             "y": 5.5,
             "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 2,
-            "atlasY": 2,
-            "x": 11.5,
-            "y": 4.5,
-            "renderMask": 13
-          },
-          {
-            "tilesetId": "water",
-            "mode": "auto",
-            "atlasX": 0,
-            "atlasY": 0,
-            "x": 11.5,
-            "y": 4.5,
-            "renderMask": 2
           },
           {
             "tilesetId": "water",
@@ -7472,24 +7319,6 @@
             "x": 15.5,
             "y": 3.5,
             "renderMask": 15
-          },
-          {
-            "tilesetId": "grass",
-            "mode": "auto",
-            "atlasX": 3,
-            "atlasY": 1,
-            "x": 14.5,
-            "y": 2.5,
-            "renderMask": 7
-          },
-          {
-            "tilesetId": "library-tileset:generated-122330-tileset_path",
-            "mode": "auto",
-            "atlasX": 1,
-            "atlasY": 3,
-            "x": 14.5,
-            "y": 2.5,
-            "renderMask": 8
           },
           {
             "tilesetId": "grass",
@@ -8534,6 +8363,321 @@
             "x": 3.5,
             "y": 3.5,
             "renderMask": 4
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 3,
+            "atlasY": 1,
+            "x": 19.5,
+            "y": 9.5,
+            "renderMask": 7
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 1,
+            "atlasY": 3,
+            "x": 19.5,
+            "y": 9.5,
+            "renderMask": 8
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 2,
+            "atlasY": 0,
+            "x": 19.5,
+            "y": 10.5,
+            "renderMask": 11
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 0,
+            "atlasY": 2,
+            "x": 19.5,
+            "y": 10.5,
+            "renderMask": 4
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 3,
+            "atlasY": 3,
+            "x": 20.5,
+            "y": 10.5,
+            "renderMask": 1
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 1,
+            "atlasY": 1,
+            "x": 20.5,
+            "y": 10.5,
+            "renderMask": 14
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 3,
+            "atlasY": 1,
+            "x": 20.5,
+            "y": 8.5,
+            "renderMask": 7
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 1,
+            "atlasY": 3,
+            "x": 20.5,
+            "y": 8.5,
+            "renderMask": 8
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 2,
+            "atlasY": 2,
+            "x": 21.5,
+            "y": 8.5,
+            "renderMask": 13
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 0,
+            "atlasY": 0,
+            "x": 21.5,
+            "y": 8.5,
+            "renderMask": 2
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 0,
+            "atlasY": 1,
+            "x": 20.5,
+            "y": 9.5,
+            "renderMask": 9
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 2,
+            "atlasY": 3,
+            "x": 20.5,
+            "y": 9.5,
+            "renderMask": 6
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 3,
+            "atlasY": 3,
+            "x": 21.5,
+            "y": 9.5,
+            "renderMask": 1
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 1,
+            "atlasY": 1,
+            "x": 21.5,
+            "y": 9.5,
+            "renderMask": 14
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 3,
+            "atlasY": 1,
+            "x": 11.5,
+            "y": 3.5,
+            "renderMask": 7
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 1,
+            "atlasY": 3,
+            "x": 11.5,
+            "y": 3.5,
+            "renderMask": 8
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 0,
+            "atlasY": 1,
+            "x": 11.5,
+            "y": 4.5,
+            "renderMask": 9
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 2,
+            "atlasY": 3,
+            "x": 11.5,
+            "y": 4.5,
+            "renderMask": 6
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 3,
+            "atlasY": 3,
+            "x": 12.5,
+            "y": 4.5,
+            "renderMask": 1
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 1,
+            "atlasY": 1,
+            "x": 12.5,
+            "y": 4.5,
+            "renderMask": 14
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 3,
+            "atlasY": 1,
+            "x": 12.5,
+            "y": 2.5,
+            "renderMask": 7
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 1,
+            "atlasY": 3,
+            "x": 12.5,
+            "y": 2.5,
+            "renderMask": 8
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 0,
+            "atlasY": 1,
+            "x": 12.5,
+            "y": 3.5,
+            "renderMask": 9
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 2,
+            "atlasY": 3,
+            "x": 12.5,
+            "y": 3.5,
+            "renderMask": 6
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 3,
+            "atlasY": 3,
+            "x": 13.5,
+            "y": 3.5,
+            "renderMask": 1
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 1,
+            "atlasY": 1,
+            "x": 13.5,
+            "y": 3.5,
+            "renderMask": 14
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 3,
+            "atlasY": 1,
+            "x": 13.5,
+            "y": 1.5,
+            "renderMask": 7
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 1,
+            "atlasY": 3,
+            "x": 13.5,
+            "y": 1.5,
+            "renderMask": 8
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 2,
+            "atlasY": 2,
+            "x": 14.5,
+            "y": 1.5,
+            "renderMask": 13
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 0,
+            "atlasY": 0,
+            "x": 14.5,
+            "y": 1.5,
+            "renderMask": 2
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 0,
+            "atlasY": 1,
+            "x": 13.5,
+            "y": 2.5,
+            "renderMask": 9
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 2,
+            "atlasY": 3,
+            "x": 13.5,
+            "y": 2.5,
+            "renderMask": 6
+          },
+          {
+            "tilesetId": "water",
+            "mode": "auto",
+            "atlasX": 3,
+            "atlasY": 3,
+            "x": 14.5,
+            "y": 2.5,
+            "renderMask": 1
+          },
+          {
+            "tilesetId": "grass",
+            "mode": "auto",
+            "atlasX": 2,
+            "atlasY": 3,
+            "x": 14.5,
+            "y": 2.5,
+            "renderMask": 6
+          },
+          {
+            "tilesetId": "library-tileset:generated-122330-tileset_path",
+            "mode": "auto",
+            "atlasX": 1,
+            "atlasY": 3,
+            "x": 14.5,
+            "y": 2.5,
+            "renderMask": 8
           }
         ],
         "objectPlacements": [],
@@ -10853,7 +10997,7 @@
         "mode": "auto"
       },
       {
-        "tilesetId": "grass",
+        "tilesetId": "water",
         "atlasX": 2,
         "atlasY": 1,
         "mode": "auto"
@@ -10991,7 +11135,7 @@
         "mode": "auto"
       },
       {
-        "tilesetId": "grass",
+        "tilesetId": "water",
         "atlasX": 2,
         "atlasY": 1,
         "mode": "auto"
@@ -11129,6 +11273,150 @@
         "mode": "auto"
       },
       {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
         "tilesetId": "grass",
         "atlasX": 2,
         "atlasY": 1,
@@ -11232,444 +11520,6 @@
       },
       {
         "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "library-tileset:generated-122330-tileset_path",
-        "atlasX": 3,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "grass",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
-        "atlasX": 2,
-        "atlasY": 1,
-        "mode": "auto"
-      },
-      {
-        "tilesetId": "water",
         "atlasX": 2,
         "atlasY": 1,
         "mode": "auto"
@@ -11813,6 +11663,300 @@
         "mode": "auto"
       },
       {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "water",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "library-tileset:generated-122330-tileset_path",
+        "atlasX": 3,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
+        "tilesetId": "grass",
+        "atlasX": 2,
+        "atlasY": 1,
+        "mode": "auto"
+      },
+      {
         "tilesetId": "water",
         "atlasX": 2,
         "atlasY": 1,
@@ -11903,7 +12047,7 @@
         "mode": "auto"
       },
       {
-        "tilesetId": "grass",
+        "tilesetId": "water",
         "atlasX": 2,
         "atlasY": 1,
         "mode": "auto"
@@ -12041,7 +12185,7 @@
         "mode": "auto"
       },
       {
-        "tilesetId": "grass",
+        "tilesetId": "water",
         "atlasX": 2,
         "atlasY": 1,
         "mode": "auto"

@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3]
+[gd_scene load_steps=44 format=3]
 
 [ext_resource type="Script" path="res://scripts/map_root.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/tiles/grass-1-3-mask-8.png" id="2_tex"]
@@ -15,9 +15,9 @@
 [ext_resource type="Texture2D" path="res://assets/tiles/water-3-0-mask-10.png" id="13_tex"]
 [ext_resource type="Texture2D" path="res://assets/tiles/water-1-1-mask-14.png" id="14_tex"]
 [ext_resource type="Texture2D" path="res://assets/tiles/water-2-1.png" id="15_tex"]
-[ext_resource type="Texture2D" path="res://assets/tiles/grass-2-2-mask-13.png" id="16_tex"]
-[ext_resource type="Texture2D" path="res://assets/tiles/water-0-0-mask-2.png" id="17_tex"]
-[ext_resource type="Texture2D" path="res://assets/tiles/water-2-0-mask-11.png" id="18_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/water-2-0-mask-11.png" id="16_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/grass-2-2-mask-13.png" id="17_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/water-0-0-mask-2.png" id="18_tex"]
 [ext_resource type="Texture2D" path="res://assets/tiles/water-3-2-mask-3.png" id="19_tex"]
 [ext_resource type="Texture2D" path="res://assets/tiles/water-1-2-mask-5.png" id="20_tex"]
 [ext_resource type="Texture2D" path="res://assets/tiles/water-3-3-mask-1.png" id="21_tex"]
@@ -33,13 +33,16 @@
 [ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-3-3-mask-1.png" id="31_tex"]
 [ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-2-1.png" id="32_tex"]
 [ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-1-0-mask-12.png" id="33_tex"]
-[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-1-3-mask-8.png" id="34_tex"]
-[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-3-0-mask-10.png" id="35_tex"]
-[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-0-0-mask-2.png" id="36_tex"]
-[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-2-0-mask-11.png" id="37_tex"]
-[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-3-2-mask-3.png" id="38_tex"]
-[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-1-2-mask-5.png" id="39_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-3-0-mask-10.png" id="34_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-0-0-mask-2.png" id="35_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-2-0-mask-11.png" id="36_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-3-2-mask-3.png" id="37_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-1-2-mask-5.png" id="38_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-1-3-mask-8.png" id="39_tex"]
 [ext_resource type="Texture2D" path="res://assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-1-1-mask-14.png" id="40_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/grass-0-1-mask-9.png" id="41_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/water-2-3-mask-6.png" id="42_tex"]
+[ext_resource type="Texture2D" path="res://assets/tiles/grass-2-3-mask-6.png" id="43_tex"]
 
 [node name="Map" type="Node2D"]
 script = ExtResource("1_script")
@@ -2297,18 +2300,6 @@ metadata/meowa_atlas_x = 2.0
 metadata/meowa_atlas_y = 1.0
 metadata/meowa_layer_index = 0.0
 
-[node name="tile_grass_736_224" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(736.0, 224.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
 [node name="tile_grass_736_160" type="Sprite2D" parent="1_map_layer"]
 position = Vector2(736.0, 160.0)
 texture_filter = 1
@@ -2421,42 +2412,6 @@ metadata/meowa_atlas_x = 2.0
 metadata/meowa_atlas_y = 1.0
 metadata/meowa_layer_index = 0.0
 
-[node name="tile_grass_800_160" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(800.0, 160.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_800_224" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(800.0, 224.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_800_288" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(800.0, 288.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
 [node name="tile_grass_800_736" type="Sprite2D" parent="1_map_layer"]
 position = Vector2(800.0, 736.0)
 texture_filter = 1
@@ -2521,42 +2476,6 @@ metadata/meowa_layer_index = 0.0
 
 [node name="tile_grass_864_288" type="Sprite2D" parent="1_map_layer"]
 position = Vector2(864.0, 288.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_864_224" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(864.0, 224.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_864_160" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(864.0, 160.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_864_96" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(864.0, 96.0)
 texture_filter = 1
 centered = false
 texture = ExtResource("5_tex")
@@ -2633,18 +2552,6 @@ metadata/meowa_render_mask = 10.0
 
 [node name="tile_grass_928_32" type="Sprite2D" parent="1_map_layer"]
 position = Vector2(928.0, 32.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_928_96" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(928.0, 96.0)
 texture_filter = 1
 centered = false
 texture = ExtResource("5_tex")
@@ -3283,30 +3190,6 @@ metadata/meowa_atlas_x = 2.0
 metadata/meowa_atlas_y = 1.0
 metadata/meowa_layer_index = 0.0
 
-[node name="tile_grass_1248_672" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(1248.0, 672.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_1248_608" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(1248.0, 608.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
 [node name="tile_grass_1248_352" type="Sprite2D" parent="1_map_layer"]
 position = Vector2(1248.0, 352.0)
 texture_filter = 1
@@ -3527,42 +3410,6 @@ metadata/meowa_atlas_x = 2.0
 metadata/meowa_atlas_y = 1.0
 metadata/meowa_layer_index = 0.0
 
-[node name="tile_grass_1312_544" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(1312.0, 544.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_1312_608" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(1312.0, 608.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_1312_672" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(1312.0, 672.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
 [node name="tile_grass_1312_736" type="Sprite2D" parent="1_map_layer"]
 position = Vector2(1312.0, 736.0)
 texture_filter = 1
@@ -3713,30 +3560,6 @@ metadata/meowa_layer_index = 0.0
 
 [node name="tile_grass_1376_672" type="Sprite2D" parent="1_map_layer"]
 position = Vector2(1376.0, 672.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_1376_608" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(1376.0, 608.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("5_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-
-[node name="tile_grass_1376_544" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(1376.0, 544.0)
 texture_filter = 1
 centered = false
 texture = ExtResource("5_tex")
@@ -4709,37 +4532,11 @@ metadata/meowa_atlas_x = 2.0
 metadata/meowa_atlas_y = 1.0
 metadata/meowa_layer_index = 0.0
 
-[node name="tile_grass_736_288" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(736.0, 288.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("16_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 2.0
-metadata/meowa_atlas_y = 2.0
-metadata/meowa_layer_index = 0.0
-metadata/meowa_render_mask = 13.0
-
-[node name="tile_water_736_288" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(736.0, 288.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("17_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "water"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 0.0
-metadata/meowa_atlas_y = 0.0
-metadata/meowa_layer_index = 0.0
-metadata/meowa_render_mask = 2.0
-
 [node name="tile_water_736_352" type="Sprite2D" parent="1_map_layer"]
 position = Vector2(736.0, 352.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("18_tex")
+texture = ExtResource("16_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "water"
 metadata/meowa_layer_id = "map-layer-1"
@@ -4789,7 +4586,7 @@ metadata/meowa_layer_index = 0.0
 position = Vector2(800.0, 352.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("16_tex")
+texture = ExtResource("17_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "grass"
 metadata/meowa_layer_id = "map-layer-1"
@@ -4802,7 +4599,7 @@ metadata/meowa_render_mask = 13.0
 position = Vector2(800.0, 352.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("17_tex")
+texture = ExtResource("18_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "water"
 metadata/meowa_layer_id = "map-layer-1"
@@ -4853,7 +4650,7 @@ metadata/meowa_layer_index = 0.0
 position = Vector2(800.0, 480.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("18_tex")
+texture = ExtResource("16_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "water"
 metadata/meowa_layer_id = "map-layer-1"
@@ -5067,7 +4864,7 @@ metadata/meowa_render_mask = 12.0
 position = Vector2(864.0, 480.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("16_tex")
+texture = ExtResource("17_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "grass"
 metadata/meowa_layer_id = "map-layer-1"
@@ -5080,7 +4877,7 @@ metadata/meowa_render_mask = 13.0
 position = Vector2(864.0, 480.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("17_tex")
+texture = ExtResource("18_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "water"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6065,32 +5862,6 @@ metadata/meowa_atlas_x = 2.0
 metadata/meowa_atlas_y = 1.0
 metadata/meowa_layer_index = 0.0
 
-[node name="tile_grass_928_160" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(928.0, 160.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("11_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "grass"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 3.0
-metadata/meowa_atlas_y = 1.0
-metadata/meowa_layer_index = 0.0
-metadata/meowa_render_mask = 7.0
-
-[node name="tile_library_tileset_generated_122330_tileset_path_928_160" type="Sprite2D" parent="1_map_layer"]
-position = Vector2(928.0, 160.0)
-texture_filter = 1
-centered = false
-texture = ExtResource("34_tex")
-metadata/meowa_kind = "tile"
-metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
-metadata/meowa_layer_id = "map-layer-1"
-metadata/meowa_atlas_x = 1.0
-metadata/meowa_atlas_y = 3.0
-metadata/meowa_layer_index = 0.0
-metadata/meowa_render_mask = 8.0
-
 [node name="tile_grass_992_160" type="Sprite2D" parent="1_map_layer"]
 position = Vector2(992.0, 160.0)
 texture_filter = 1
@@ -6108,7 +5879,7 @@ metadata/meowa_render_mask = 5.0
 position = Vector2(992.0, 160.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("35_tex")
+texture = ExtResource("34_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6121,7 +5892,7 @@ metadata/meowa_render_mask = 10.0
 position = Vector2(1056.0, 160.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("16_tex")
+texture = ExtResource("17_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "grass"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6134,7 +5905,7 @@ metadata/meowa_render_mask = 13.0
 position = Vector2(1056.0, 160.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("36_tex")
+texture = ExtResource("35_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6147,7 +5918,7 @@ metadata/meowa_render_mask = 2.0
 position = Vector2(1056.0, 224.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("37_tex")
+texture = ExtResource("36_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6185,7 +5956,7 @@ metadata/meowa_layer_index = 0.0
 position = Vector2(1120.0, 224.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("16_tex")
+texture = ExtResource("17_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "grass"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6198,7 +5969,7 @@ metadata/meowa_render_mask = 13.0
 position = Vector2(1120.0, 224.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("36_tex")
+texture = ExtResource("35_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6211,7 +5982,7 @@ metadata/meowa_render_mask = 2.0
 position = Vector2(1120.0, 288.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("38_tex")
+texture = ExtResource("37_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6237,7 +6008,7 @@ metadata/meowa_render_mask = 12.0
 position = Vector2(1120.0, 352.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("37_tex")
+texture = ExtResource("36_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6327,7 +6098,7 @@ metadata/meowa_layer_index = 0.0
 position = Vector2(1184.0, 544.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("39_tex")
+texture = ExtResource("38_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6353,7 +6124,7 @@ metadata/meowa_render_mask = 10.0
 position = Vector2(1184.0, 416.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("37_tex")
+texture = ExtResource("36_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6379,7 +6150,7 @@ metadata/meowa_render_mask = 4.0
 position = Vector2(1184.0, 352.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("16_tex")
+texture = ExtResource("17_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "grass"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6392,7 +6163,7 @@ metadata/meowa_render_mask = 13.0
 position = Vector2(1184.0, 352.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("36_tex")
+texture = ExtResource("35_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6405,7 +6176,7 @@ metadata/meowa_render_mask = 2.0
 position = Vector2(1248.0, 416.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("16_tex")
+texture = ExtResource("17_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "grass"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6418,7 +6189,7 @@ metadata/meowa_render_mask = 13.0
 position = Vector2(1248.0, 416.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("36_tex")
+texture = ExtResource("35_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6431,7 +6202,7 @@ metadata/meowa_render_mask = 2.0
 position = Vector2(1248.0, 480.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("38_tex")
+texture = ExtResource("37_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6507,7 +6278,7 @@ metadata/meowa_layer_index = 0.0
 position = Vector2(800.0, 928.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("39_tex")
+texture = ExtResource("38_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6675,7 +6446,7 @@ metadata/meowa_render_mask = 4.0
 position = Vector2(928.0, 992.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("39_tex")
+texture = ExtResource("38_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6688,7 +6459,7 @@ metadata/meowa_render_mask = 5.0
 position = Vector2(928.0, 992.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("39_tex")
+texture = ExtResource("38_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6701,7 +6472,7 @@ metadata/meowa_render_mask = 5.0
 position = Vector2(992.0, 928.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("38_tex")
+texture = ExtResource("37_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6830,7 +6601,7 @@ metadata/meowa_render_mask = 7.0
 position = Vector2(736.0, 800.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("34_tex")
+texture = ExtResource("39_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6856,7 +6627,7 @@ metadata/meowa_render_mask = 5.0
 position = Vector2(800.0, 800.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("35_tex")
+texture = ExtResource("34_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6919,7 +6690,7 @@ metadata/meowa_layer_index = 0.0
 position = Vector2(1056.0, 800.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("38_tex")
+texture = ExtResource("37_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6984,7 +6755,7 @@ metadata/meowa_render_mask = 5.0
 position = Vector2(992.0, 736.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("35_tex")
+texture = ExtResource("34_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -6997,7 +6768,7 @@ metadata/meowa_render_mask = 10.0
 position = Vector2(1056.0, 736.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("16_tex")
+texture = ExtResource("17_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "grass"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7010,7 +6781,7 @@ metadata/meowa_render_mask = 13.0
 position = Vector2(1056.0, 736.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("36_tex")
+texture = ExtResource("35_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7036,7 +6807,7 @@ metadata/meowa_render_mask = 5.0
 position = Vector2(928.0, 736.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("35_tex")
+texture = ExtResource("34_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7062,7 +6833,7 @@ metadata/meowa_render_mask = 7.0
 position = Vector2(864.0, 736.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("34_tex")
+texture = ExtResource("39_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7088,7 +6859,7 @@ metadata/meowa_render_mask = 7.0
 position = Vector2(160.0, 96.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("34_tex")
+texture = ExtResource("39_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7114,7 +6885,7 @@ metadata/meowa_render_mask = 5.0
 position = Vector2(224.0, 96.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("35_tex")
+texture = ExtResource("34_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7230,7 +7001,7 @@ metadata/meowa_render_mask = 7.0
 position = Vector2(288.0, 32.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("34_tex")
+texture = ExtResource("39_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7256,7 +7027,7 @@ metadata/meowa_render_mask = 5.0
 position = Vector2(352.0, 32.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("35_tex")
+texture = ExtResource("34_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7294,7 +7065,7 @@ metadata/meowa_render_mask = 5.0
 position = Vector2(416.0, 32.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("35_tex")
+texture = ExtResource("34_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7357,7 +7128,7 @@ metadata/meowa_render_mask = 8.0
 position = Vector2(352.0, 224.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("39_tex")
+texture = ExtResource("38_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7409,7 +7180,7 @@ metadata/meowa_render_mask = 14.0
 position = Vector2(288.0, 224.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("39_tex")
+texture = ExtResource("38_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7435,7 +7206,7 @@ metadata/meowa_render_mask = 10.0
 position = Vector2(480.0, 96.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("37_tex")
+texture = ExtResource("36_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7461,7 +7232,7 @@ metadata/meowa_render_mask = 4.0
 position = Vector2(480.0, 160.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("39_tex")
+texture = ExtResource("38_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7487,7 +7258,7 @@ metadata/meowa_render_mask = 10.0
 position = Vector2(544.0, 96.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("16_tex")
+texture = ExtResource("17_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "grass"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7500,7 +7271,7 @@ metadata/meowa_render_mask = 13.0
 position = Vector2(544.0, 96.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("36_tex")
+texture = ExtResource("35_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7539,7 +7310,7 @@ metadata/meowa_render_mask = 14.0
 position = Vector2(480.0, 32.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("16_tex")
+texture = ExtResource("17_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "grass"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7552,7 +7323,7 @@ metadata/meowa_render_mask = 13.0
 position = Vector2(480.0, 32.0)
 texture_filter = 1
 centered = false
-texture = ExtResource("36_tex")
+texture = ExtResource("35_tex")
 metadata/meowa_kind = "tile"
 metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
 metadata/meowa_layer_id = "map-layer-1"
@@ -7586,6 +7357,461 @@ metadata/meowa_atlas_x = 0.0
 metadata/meowa_atlas_y = 2.0
 metadata/meowa_layer_index = 0.0
 metadata/meowa_render_mask = 4.0
+
+[node name="tile_grass_1248_608" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1248.0, 608.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("11_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 7.0
+
+[node name="tile_water_1248_608" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1248.0, 608.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("12_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 8.0
+
+[node name="tile_grass_1248_672" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1248.0, 672.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("25_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 11.0
+
+[node name="tile_water_1248_672" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1248.0, 672.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("26_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 4.0
+
+[node name="tile_water_1312_672" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1312.0, 672.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("21_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 1.0
+
+[node name="tile_grass_1312_672" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1312.0, 672.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("22_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 14.0
+
+[node name="tile_grass_1312_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1312.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("11_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 7.0
+
+[node name="tile_water_1312_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1312.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("12_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 8.0
+
+[node name="tile_grass_1376_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1376.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("17_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 13.0
+
+[node name="tile_water_1376_544" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1376.0, 544.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("18_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 2.0
+
+[node name="tile_grass_1312_608" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1312.0, 608.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("41_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 9.0
+
+[node name="tile_water_1312_608" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1312.0, 608.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("42_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 6.0
+
+[node name="tile_water_1376_608" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1376.0, 608.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("21_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 1.0
+
+[node name="tile_grass_1376_608" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(1376.0, 608.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("22_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 14.0
+
+[node name="tile_grass_736_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("11_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 7.0
+
+[node name="tile_water_736_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("12_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 8.0
+
+[node name="tile_grass_736_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("41_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 9.0
+
+[node name="tile_water_736_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(736.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("42_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 6.0
+
+[node name="tile_water_800_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("21_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 1.0
+
+[node name="tile_grass_800_288" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 288.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("22_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 14.0
+
+[node name="tile_grass_800_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("11_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 7.0
+
+[node name="tile_water_800_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("12_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 8.0
+
+[node name="tile_grass_800_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("41_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 9.0
+
+[node name="tile_water_800_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(800.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("42_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 6.0
+
+[node name="tile_water_864_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("21_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 1.0
+
+[node name="tile_grass_864_224" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 224.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("22_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 14.0
+
+[node name="tile_grass_864_96" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 96.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("11_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 7.0
+
+[node name="tile_water_864_96" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 96.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("12_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 8.0
+
+[node name="tile_grass_928_96" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 96.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("17_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 2.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 13.0
+
+[node name="tile_water_928_96" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 96.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("18_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 0.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 2.0
+
+[node name="tile_grass_864_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("41_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 0.0
+metadata/meowa_atlas_y = 1.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 9.0
+
+[node name="tile_water_864_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(864.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("42_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 6.0
+
+[node name="tile_water_928_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("21_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "water"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 3.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 1.0
+
+[node name="tile_grass_928_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("43_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "grass"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 2.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 6.0
+
+[node name="tile_library_tileset_generated_122330_tileset_path_928_160" type="Sprite2D" parent="1_map_layer"]
+position = Vector2(928.0, 160.0)
+texture_filter = 1
+centered = false
+texture = ExtResource("39_tex")
+metadata/meowa_kind = "tile"
+metadata/meowa_tileset_id = "library-tileset:generated-122330-tileset_path"
+metadata/meowa_layer_id = "map-layer-1"
+metadata/meowa_atlas_x = 1.0
+metadata/meowa_atlas_y = 3.0
+metadata/meowa_layer_index = 0.0
+metadata/meowa_render_mask = 8.0
 
 [node name="2_object_layer" type="Node2D" parent="."]
 z_index = 1

@@ -1,5 +1,5 @@
 import './insideIsland.css'
-import { MapEditor } from '../map/MapEditor'
+import { InsideIslandMapEditor } from '../map/InsideIslandMapEditor'
 import { type LandPlot } from './landScreen'
 import { type AuthUser } from '../server/authApi'
 
@@ -39,13 +39,17 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
       <div class="ii-viewport" id="ii-viewport-inner"></div>
       <div class="ii-palette" id="ii-palette" style="display: none;">
         <div class="ii-palette-title">Công cụ vẽ:</div>
-        <button class="ii-palette-item active" id="ii-tool-land" title="Vẽ Đất">
+        <button class="ii-palette-item active" id="ii-tool-grass" title="Cỏ Nhạt">
           <img src="/inside_island/assets/tiles/grass-2-1.png" class="ii-palette-icon" />
-          <span>Vẽ Đất (Đất)</span>
+          <span>Cỏ Nhạt</span>
+        </button>
+        <button class="ii-palette-item" id="ii-tool-dark-grass" title="Cỏ Đậm">
+          <img src="/inside_island/assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-2-1.png" class="ii-palette-icon" />
+          <span>Cỏ Đậm</span>
         </button>
         <button class="ii-palette-item" id="ii-tool-water" title="Vẽ Nước">
           <img src="/inside_island/assets/tiles/water-2-1.png" class="ii-palette-icon" />
-          <span>Xoá Đất (Nước)</span>
+          <span>Vẽ Nước</span>
         </button>
       </div>
       <div class="ii-info" id="ii-info">Mẹo: Kéo chuột hoặc vuốt màn hình để di chuyển xem đảo!</div>
@@ -59,18 +63,18 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
   const innerSave = app.querySelector<HTMLButtonElement>('#ii-save')!
   const innerClear = app.querySelector<HTMLButtonElement>('#ii-clear')!
   const innerPalette = app.querySelector<HTMLDivElement>('#ii-palette')!
-  const btnToolLand = app.querySelector<HTMLButtonElement>('#ii-tool-land')!
+  const btnToolGrass = app.querySelector<HTMLButtonElement>('#ii-tool-grass')!
+  const btnToolDarkGrass = app.querySelector<HTMLButtonElement>('#ii-tool-dark-grass')!
   const btnToolWater = app.querySelector<HTMLButtonElement>('#ii-tool-water')!
 
   const INNER_GRID_SIZE = 32
-  const innerEditor = new MapEditor({
+  const innerEditor = new InsideIslandMapEditor({
     container: innerViewport,
     width: INNER_GRID_SIZE,
     height: INNER_GRID_SIZE,
     tilesetSize: 64,
     tilesetUrl: '/inside_island/assets/tilesets/grass.png',
     tilesetId: 'grass',
-    waterTextureUrl: '/inside_island/assets/tiles/water-2-1.png',
     showFogOfWar: false,
     useIndividualTiles: true,
   })
@@ -89,7 +93,6 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
       console.error('Lỗi khi tải dữ liệu đảo:', err)
     }
   } else {
-    // For first-time initialization, keep the grid empty to render 100% grass background
     innerEditor.clearMap()
   }
 
@@ -108,12 +111,13 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
       innerClear.style.display = 'block'
       innerPalette.style.display = 'flex'
 
-      // Reset to land tool by default when entering Design Mode
-      innerEditor.activeTool = 'land'
-      btnToolLand.classList.add('active')
+      // Reset to grass tool by default when entering Design Mode
+      innerEditor.activeTool = 'grass'
+      btnToolGrass.classList.add('active')
+      btnToolDarkGrass.classList.remove('active')
       btnToolWater.classList.remove('active')
 
-      innerInfo.textContent = 'Mẹo: Chọn Đất hoặc Nước bên dưới rồi vẽ lên bản đồ! (Nhấn Shift + Kéo để di chuyển)'
+      innerInfo.textContent = 'Mẹo: Chọn Cỏ Nhạt, Cỏ Đậm hoặc Nước bên dưới rồi vẽ lên bản đồ! (Nhấn Shift + Kéo để di chuyển)'
     } else {
       innerBack.style.display = 'block'
       if (innerEditToggle) {
@@ -141,7 +145,7 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
       innerInfo.innerHTML = `<span class="ii-success">✅ Lưu thiết kế đảo thành công!</span>`
       setTimeout(() => {
         innerInfo.textContent = isDesign
-          ? 'Mẹo: Chọn Đất hoặc Nước bên dưới rồi vẽ lên bản đồ! (Nhấn Shift + Kéo để di chuyển)'
+          ? 'Mẹo: Chọn Cỏ Nhạt, Cỏ Đậm hoặc Nước bên dưới rồi vẽ lên bản đồ! (Nhấn Shift + Kéo để di chuyển)'
           : 'Mẹo: Kéo chuột hoặc vuốt màn hình để di chuyển xem đảo!'
       }, 3000)
     } catch (err) {
@@ -155,7 +159,7 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
       innerInfo.innerHTML = `<span class="ii-success">🧹 Đã xoá toàn bộ bản đồ.</span>`
       setTimeout(() => {
         innerInfo.textContent = isDesign 
-          ? 'Mẹo: Chọn Đất hoặc Nước bên dưới rồi vẽ lên bản đồ! (Nhấn Shift + Kéo để di chuyển)'
+          ? 'Mẹo: Chọn Cỏ Nhạt, Cỏ Đậm hoặc Nước bên dưới rồi vẽ lên bản đồ! (Nhấn Shift + Kéo để di chuyển)'
           : 'Mẹo: Kéo chuột hoặc vuốt màn hình để di chuyển xem đảo!'
       }, 3000)
     }
@@ -167,15 +171,24 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
     })
   }
 
-  btnToolLand.addEventListener('click', () => {
-    innerEditor.activeTool = 'land'
-    btnToolLand.classList.add('active')
+  btnToolGrass.addEventListener('click', () => {
+    innerEditor.activeTool = 'grass'
+    btnToolGrass.classList.add('active')
+    btnToolDarkGrass.classList.remove('active')
+    btnToolWater.classList.remove('active')
+  })
+
+  btnToolDarkGrass.addEventListener('click', () => {
+    innerEditor.activeTool = 'dark-grass'
+    btnToolDarkGrass.classList.add('active')
+    btnToolGrass.classList.remove('active')
     btnToolWater.classList.remove('active')
   })
 
   btnToolWater.addEventListener('click', () => {
     innerEditor.activeTool = 'water'
     btnToolWater.classList.add('active')
-    btnToolLand.classList.remove('active')
+    btnToolGrass.classList.remove('active')
+    btnToolDarkGrass.classList.remove('active')
   })
 }
