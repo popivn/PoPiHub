@@ -50,10 +50,19 @@ type VercelResponse = {
 }
 
 // Simple cron expression parser — supports: * * * * * and */N * * * *
+// All times are interpreted in Asia/Ho_Chi_Minh (UTC+7)
 function shouldRun(schedule: string, now: Date): boolean {
   const parts = schedule.trim().split(/\s+/)
   if (parts.length !== 5) return false
   const [min, hour, dom, month, dow] = parts
+
+  // Convert UTC `now` to UTC+7 components
+  const utc7 = new Date(now.getTime() + 7 * 60 * 60 * 1000)
+  const m = utc7.getUTCMinutes()
+  const h = utc7.getUTCHours()
+  const d = utc7.getUTCDate()
+  const mo = utc7.getUTCMonth() + 1
+  const dw = utc7.getUTCDay()
 
   function matchField(expr: string, value: number, min: number, max: number): boolean {
     if (expr === '*') return true
@@ -78,11 +87,11 @@ function shouldRun(schedule: string, now: Date): boolean {
   }
 
   return (
-    matchField(min, now.getMinutes(), 0, 59) &&
-    matchField(hour, now.getHours(), 0, 23) &&
-    matchField(dom, now.getDate(), 1, 31) &&
-    matchField(month, now.getMonth() + 1, 1, 12) &&
-    matchField(dow, now.getDay(), 0, 6)
+    matchField(min, m, 0, 59) &&
+    matchField(hour, h, 0, 23) &&
+    matchField(dom, d, 1, 31) &&
+    matchField(month, mo, 1, 12) &&
+    matchField(dow, dw, 0, 6)
   )
 }
 
