@@ -57,13 +57,13 @@ export function calcWaterMask(
   dx: number,
   dy: number,
 ): number {
-  const { width, height } = grid
+  const { width, height, cells } = grid
   let mask = 0
 
   const isWater = (x: number, y: number): boolean => {
-    return x >= 0 && x < width && y >= 0 && y < height
+    if (x < 0 || x >= width || y < 0 || y >= height) return false
+    return cells[y * width + x] === 'water'
   }
-
   if (isWater(dx - 1, dy - 1)) mask |= BR
   if (isWater(dx,     dy - 1)) mask |= TR
   if (isWater(dx - 1, dy    )) mask |= BL
@@ -87,7 +87,7 @@ export function calcGrassMask(
   const isGrass = (x: number, y: number): boolean => {
     if (x < 0 || x >= width || y < 0 || y >= height) return false
     const val = cells[y * width + x]
-    return val === 'grass' || val === '060440_dual_grid_template_dual_grid_template-tileset'
+    return val === 'grass' || val === 'water'
   }
 
   if (isGrass(dx - 1, dy - 1)) mask |= BR
@@ -100,7 +100,7 @@ export function calcGrassMask(
 
 /**
  * Calculate dark grass mask for a dual-grid cell at (dx, dy).
- * Only '060440_dual_grid_template_dual_grid_template-tileset' is treated as dark grass.
+ * Both dark grass, grass, and water are treated as dark grass base layer.
  */
 export function calcDarkGrassMask(
   grid: RegularGrid,
@@ -112,7 +112,7 @@ export function calcDarkGrassMask(
 
   const isDarkGrass = (x: number, y: number): boolean => {
     if (x < 0 || x >= width || y < 0 || y >= height) return false
-    return cells[y * width + x] === '060440_dual_grid_template_dual_grid_template-tileset'
+    return cells[y * width + x] === 'texture-job_e510e767f70e488b9a4ed95f6caaf33c'
   }
 
   if (isDarkGrass(dx - 1, dy - 1)) mask |= BR

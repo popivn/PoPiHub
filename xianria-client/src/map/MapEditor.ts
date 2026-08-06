@@ -236,11 +236,11 @@ export class MapEditor {
       const [atlasX, atlasY] = coords
       let fileUrl = ''
       if (mask === 15) {
-        fileUrl = `/inside_island/assets/tiles/${this.tilesetId}-2-1.png`
+        fileUrl = `/inside_island2/assets/tiles/${this.tilesetId}-2-1.png`
       } else {
         // Skip diagonal masks if they don't exist on disk
         if (mask === 6 || mask === 9) continue
-        fileUrl = `/inside_island/assets/tiles/${this.tilesetId}-${atlasX}-${atlasY}-mask-${mask}.png`
+        fileUrl = `/inside_island2/assets/tiles/${this.tilesetId}-${atlasX}-${atlasY}-mask-${mask}.png`
       }
       
       const loadPromise = (async () => {

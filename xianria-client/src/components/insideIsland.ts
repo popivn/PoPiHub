@@ -40,15 +40,15 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
       <div class="ii-palette" id="ii-palette" style="display: none;">
         <div class="ii-palette-title">Công cụ vẽ:</div>
         <button class="ii-palette-item active" id="ii-tool-grass" title="Cỏ Nhạt">
-          <img src="/inside_island/assets/tiles/grass-2-1.png" class="ii-palette-icon" />
+          <img src="/inside_island2/assets/tiles/grass-2-1.png" class="ii-palette-icon" />
           <span>Cỏ Nhạt</span>
         </button>
         <button class="ii-palette-item" id="ii-tool-dark-grass" title="Cỏ Đậm">
-          <img src="/inside_island/assets/tiles/060440_dual_grid_template_dual_grid_template-tileset-2-1.png" class="ii-palette-icon" />
+          <img src="/inside_island2/assets/tiles/2-1.png" class="ii-palette-icon" />
           <span>Cỏ Đậm</span>
         </button>
         <button class="ii-palette-item" id="ii-tool-water" title="Vẽ Nước">
-          <img src="/inside_island/assets/tiles/water-2-1.png" class="ii-palette-icon" />
+          <img src="/inside_island2/assets/tiles/water-2-1.png" class="ii-palette-icon" />
           <span>Vẽ Nước</span>
         </button>
       </div>
@@ -73,7 +73,7 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
     width: INNER_GRID_SIZE,
     height: INNER_GRID_SIZE,
     tilesetSize: 64,
-    tilesetUrl: '/inside_island/assets/tilesets/grass.png',
+    tilesetUrl: '/inside_island2/assets/tilesets/grass.png',
     tilesetId: 'grass',
     showFogOfWar: false,
     useIndividualTiles: true,

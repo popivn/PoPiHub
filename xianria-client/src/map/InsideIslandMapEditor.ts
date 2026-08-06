@@ -33,6 +33,46 @@ interface DualTileSprite {
   dy: number
 }
 
+function makeNonWaterTransparent(sourceTex: Texture): Texture {
+  const sourceEl = sourceTex.source?.resource as any
+  if (!sourceEl || typeof document === 'undefined') return sourceTex
+
+  try {
+    const canvas = document.createElement('canvas')
+    const width = sourceTex.width || sourceEl.width || 256
+    const height = sourceTex.height || sourceEl.height || 256
+    canvas.width = width
+    canvas.height = height
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return sourceTex
+
+    ctx.drawImage(sourceEl, 0, 0)
+    const imgData = ctx.getImageData(0, 0, width, height)
+    const data = imgData.data
+
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i]
+      const g = data[i + 1]
+      const b = data[i + 2]
+      const a = data[i + 3]
+
+      if (a > 0) {
+        // Water pixels in water.png have blue dominance (b > r + 10 && b > g - 20) or light cyan
+        const isWater = (b > r + 10 && b > g - 20) || (g > 170 && b > 190)
+        if (!isWater) {
+          data[i + 3] = 0 // Clear non-water pixels (grey dirt/rocks)
+        }
+      }
+    }
+
+    ctx.putImageData(imgData, 0, 0)
+    return Texture.from(canvas)
+  } catch (err) {
+    console.warn('Failed to clean water texture transparent pixels:', err)
+    return sourceTex
+  }
+}
+
 export class InsideIslandMapEditor {
   app: Application
   world: Container
@@ -126,6 +166,8 @@ export class InsideIslandMapEditor {
     // Load tileset
     if (this.useIndividualTiles) {
       await this.loadIndividualTextures()
+    } else {
+      await this.loadAtlasTextures()
     }
 
     // Initialize dark grey ocean background
@@ -196,17 +238,18 @@ export class InsideIslandMapEditor {
     let darkGrassAtlas: Texture | null = null
     let waterAtlas: Texture | null = null
     try {
-      grassAtlas = await Assets.load('/inside_island/assets/tilesets/grass.png')
+      grassAtlas = await Assets.load('/inside_island2/assets/tilesets/grass.png')
     } catch (err) {
       console.error('Failed to load grass atlas:', err)
     }
     try {
-      darkGrassAtlas = await Assets.load('/inside_island/assets/tilesets/library-tileset-generated-122330-tileset_path.png')
+      darkGrassAtlas = await Assets.load('/inside_island2/assets/tilesets/texture-job_e510e767f70e488b9a4ed95f6caaf33c.png')
     } catch (err) {
       console.error('Failed to load dark grass atlas:', err)
     }
     try {
-      waterAtlas = await Assets.load('/inside_island/assets/tilesets/water.png')
+      const rawWaterAtlas = await Assets.load('/inside_island2/assets/tilesets/water.png')
+      waterAtlas = makeNonWaterTransparent(rawWaterAtlas)
     } catch (err) {
       console.error('Failed to load water atlas:', err)
     }
@@ -221,27 +264,27 @@ export class InsideIslandMapEditor {
       // Load Grass tile
       const loadGrass = (async () => {
         if (mask === 15) {
-          const fileUrl = `/inside_island/assets/tiles/grass-2-1.png`
+          const fileUrl = `/inside_island2/assets/tiles/grass-2-1.png`
           try {
             const tex = await Assets.load(fileUrl)
             this.tileTextures.set(`grass:${atlasX},${atlasY}`, tex)
           } catch (err) {
-            console.warn(`Failed to load grass texture: ${fileUrl}`, err)
+            if (grassAtlas) {
+              const frame = new Rectangle(atlasX * this.tileSize, atlasY * this.tileSize, this.tileSize, this.tileSize)
+              const tex = new Texture({ source: grassAtlas.source, frame })
+              this.tileTextures.set(`grass:${atlasX},${atlasY}`, tex)
+            } else {
+              console.warn(`Failed to load grass texture: ${fileUrl}`, err)
+            }
           }
         } else {
-          const fileUrl = `/inside_island/assets/tiles/grass-${atlasX}-${atlasY}-mask-${mask}.png`
+          const fileUrl = `/inside_island2/assets/tiles/grass-${atlasX}-${atlasY}-mask-${mask}.png`
           try {
             const tex = await Assets.load(fileUrl)
             this.tileTextures.set(`grass:${atlasX},${atlasY}`, tex)
           } catch (err) {
-            // Fallback for diagonal tiles if file not found
-            if ((mask === 6 || mask === 9) && grassAtlas) {
-              const frame = new Rectangle(
-                atlasX * this.tileSize,
-                atlasY * this.tileSize,
-                this.tileSize,
-                this.tileSize
-              )
+            if (grassAtlas) {
+              const frame = new Rectangle(atlasX * this.tileSize, atlasY * this.tileSize, this.tileSize, this.tileSize)
               const tex = new Texture({ source: grassAtlas.source, frame })
               this.tileTextures.set(`grass:${atlasX},${atlasY}`, tex)
             } else {
@@ -254,29 +297,28 @@ export class InsideIslandMapEditor {
 
       // Load Dark Grass tile
       const loadDarkGrass = (async () => {
-        const tilesetId = '060440_dual_grid_template_dual_grid_template-tileset'
         if (mask === 15) {
-          const fileUrl = `/inside_island/assets/tiles/${tilesetId}-2-1.png`
+          const fileUrl = `/inside_island2/assets/tiles/2-1.png`
           try {
             const tex = await Assets.load(fileUrl)
             this.tileTextures.set(`dark-grass:${atlasX},${atlasY}`, tex)
           } catch (err) {
-            console.warn(`Failed to load dark grass texture: ${fileUrl}`, err)
+            if (darkGrassAtlas) {
+              const frame = new Rectangle(atlasX * this.tileSize, atlasY * this.tileSize, this.tileSize, this.tileSize)
+              const tex = new Texture({ source: darkGrassAtlas.source, frame })
+              this.tileTextures.set(`dark-grass:${atlasX},${atlasY}`, tex)
+            } else {
+              console.warn(`Failed to load dark grass texture: ${fileUrl}`, err)
+            }
           }
         } else {
-          const fileUrl = `/inside_island/assets/tiles/${tilesetId}-${atlasX}-${atlasY}-mask-${mask}.png`
+          const fileUrl = `/inside_island2/assets/tiles/${atlasX}-${atlasY}-mask-${mask}.png`
           try {
             const tex = await Assets.load(fileUrl)
             this.tileTextures.set(`dark-grass:${atlasX},${atlasY}`, tex)
           } catch (err) {
-            // Fallback for diagonal tiles if file not found
-            if ((mask === 6 || mask === 9) && darkGrassAtlas) {
-              const frame = new Rectangle(
-                atlasX * this.tileSize,
-                atlasY * this.tileSize,
-                this.tileSize,
-                this.tileSize
-              )
+            if (darkGrassAtlas) {
+              const frame = new Rectangle(atlasX * this.tileSize, atlasY * this.tileSize, this.tileSize, this.tileSize)
               const tex = new Texture({ source: darkGrassAtlas.source, frame })
               this.tileTextures.set(`dark-grass:${atlasX},${atlasY}`, tex)
             } else {
@@ -290,32 +332,28 @@ export class InsideIslandMapEditor {
       // Load Water tile
       const loadWater = (async () => {
         if (mask === 15) {
-          const fileUrl = `/inside_island/assets/tiles/water-2-1.png`
+          const fileUrl = `/inside_island2/assets/tiles/water-2-1.png`
           try {
             const tex = await Assets.load(fileUrl)
-            this.tileTextures.set(`water:${atlasX},${atlasY}`, tex)
+            this.tileTextures.set(`water:${atlasX},${atlasY}`, makeNonWaterTransparent(tex))
           } catch (err) {
-            console.warn(`Failed to load water texture: ${fileUrl}`, err)
+            if (waterAtlas) {
+              const frame = new Rectangle(atlasX * this.tileSize, atlasY * this.tileSize, this.tileSize, this.tileSize)
+              const tex = new Texture({ source: waterAtlas.source, frame })
+              this.tileTextures.set(`water:${atlasX},${atlasY}`, tex)
+            } else {
+              console.warn(`Failed to load water texture: ${fileUrl}`, err)
+            }
           }
         } else {
-          let fileUrl = `/inside_island/assets/tiles/water-${atlasX}-${atlasY}-mask-${mask}.png`
-          if (mask === 1) fileUrl = '/inside_island/assets/tiles/water-1-3-mask-8.png'
-          else if (mask === 2) fileUrl = '/inside_island/assets/tiles/water-3-3-mask-1.png'
-          else if (mask === 8) fileUrl = '/inside_island/assets/tiles/water-0-0-mask-2.png'
-          else if (mask === 4) fileUrl = '/inside_island/assets/tiles/water-0-2-mask-4.png'
+          const fileUrl = `/inside_island2/assets/tiles/water-${atlasX}-${atlasY}-mask-${mask}.png`
 
           try {
             const tex = await Assets.load(fileUrl)
-            this.tileTextures.set(`water:${atlasX},${atlasY}`, tex)
+            this.tileTextures.set(`water:${atlasX},${atlasY}`, makeNonWaterTransparent(tex))
           } catch (err) {
-            // Fallback for diagonal tiles if file not found
-            if ((mask === 6 || mask === 9) && waterAtlas) {
-              const frame = new Rectangle(
-                atlasX * this.tileSize,
-                atlasY * this.tileSize,
-                this.tileSize,
-                this.tileSize
-              )
+            if (waterAtlas) {
+              const frame = new Rectangle(atlasX * this.tileSize, atlasY * this.tileSize, this.tileSize, this.tileSize)
               const tex = new Texture({ source: waterAtlas.source, frame })
               this.tileTextures.set(`water:${atlasX},${atlasY}`, tex)
             } else {
@@ -330,32 +368,74 @@ export class InsideIslandMapEditor {
     await Promise.all(promises)
   }
 
+  private async loadAtlasTextures(): Promise<void> {
+    try {
+      const grassAtlas = await Assets.load('/inside_island2/assets/tilesets/grass.png')
+      this.buildTileTexturesFromAtlas('grass', grassAtlas)
+    } catch (err) {
+      console.error('Failed to load grass atlas:', err)
+    }
+
+    try {
+      const darkGrassAtlas = await Assets.load('/inside_island2/assets/tilesets/texture-job_e510e767f70e488b9a4ed95f6caaf33c.png')
+      this.buildTileTexturesFromAtlas('dark-grass', darkGrassAtlas)
+    } catch (err) {
+      console.error('Failed to load dark grass atlas:', err)
+    }
+
+    try {
+      const rawWaterAtlas = await Assets.load('/inside_island2/assets/tilesets/water.png')
+      const waterAtlas = makeNonWaterTransparent(rawWaterAtlas)
+      this.buildTileTexturesFromAtlas('water', waterAtlas)
+    } catch (err) {
+      console.error('Failed to load water atlas:', err)
+    }
+  }
+
+  private buildTileTexturesFromAtlas(id: string, atlas: Texture): void {
+    const cols = Math.floor(atlas.width / this.tileSize)
+    const rows = Math.floor(atlas.height / this.tileSize)
+
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const frame = new Rectangle(
+          x * this.tileSize,
+          y * this.tileSize,
+          this.tileSize,
+          this.tileSize
+        )
+        const tex = new Texture({ source: atlas.source, frame })
+        this.tileTextures.set(`${id}:${x},${y}`, tex)
+      }
+    }
+  }
+
   private createDualSprites(): void {
     const dualWidth = this.width + 1
     const dualHeight = this.height + 1
 
     for (let dy = 0; dy < dualHeight; dy++) {
       for (let dx = 0; dx < dualWidth; dx++) {
-        // Water sprite sits at the bottom layer
-        const waterSprite = new Sprite(Texture.EMPTY)
-        waterSprite.x = (dx - 0.5) * this.tileSize
-        waterSprite.y = (dy - 0.5) * this.tileSize
-        waterSprite.visible = false
-        this.tileLayer.addChild(waterSprite)
+        // Dark Grass sprite (grey dirt) sits at the bottom layer
+        const darkGrassSprite = new Sprite(Texture.EMPTY)
+        darkGrassSprite.x = (dx - 0.5) * this.tileSize
+        darkGrassSprite.y = (dy - 0.5) * this.tileSize
+        darkGrassSprite.visible = false
+        this.tileLayer.addChild(darkGrassSprite)
 
-        // Grass sprite sits on top of water
+        // Grass sprite sits on top of grey dirt
         const grassSprite = new Sprite(Texture.EMPTY)
         grassSprite.x = (dx - 0.5) * this.tileSize
         grassSprite.y = (dy - 0.5) * this.tileSize
         grassSprite.visible = false
         this.tileLayer.addChild(grassSprite)
 
-        // Dark Grass sprite sits on top of grass
-        const darkGrassSprite = new Sprite(Texture.EMPTY)
-        darkGrassSprite.x = (dx - 0.5) * this.tileSize
-        darkGrassSprite.y = (dy - 0.5) * this.tileSize
-        darkGrassSprite.visible = false
-        this.tileLayer.addChild(darkGrassSprite)
+        // Water sprite sits on top of grass
+        const waterSprite = new Sprite(Texture.EMPTY)
+        waterSprite.x = (dx - 0.5) * this.tileSize
+        waterSprite.y = (dy - 0.5) * this.tileSize
+        waterSprite.visible = false
+        this.tileLayer.addChild(waterSprite)
 
         this.dualSprites.push({ waterSprite, grassSprite, darkGrassSprite, dx, dy })
       }
@@ -449,14 +529,8 @@ export class InsideIslandMapEditor {
       if (this.onTileClick) {
         this.onTileClick(tx, ty)
       } else {
-        const isWaterTool = this.activeTool === 'water'
-        if (!isWaterTool) {
-          this.isPainting = true
-          this.paintAt(tx, ty)
-        } else {
-          this.isErasing = true
-          this.eraseAt(tx, ty)
-        }
+        this.isPainting = true
+        this.paintAt(tx, ty)
       }
     } else if (e.button === 2) {
       this.isErasing = true
@@ -527,7 +601,12 @@ export class InsideIslandMapEditor {
   }
 
   paintAt(tx: number, ty: number): void {
-    const tilesetId = this.activeTool === 'grass' ? 'grass' : '060440_dual_grid_template_dual_grid_template-tileset'
+    let tilesetId = 'grass'
+    if (this.activeTool === 'dark-grass') {
+      tilesetId = 'texture-job_e510e767f70e488b9a4ed95f6caaf33c'
+    } else if (this.activeTool === 'water') {
+      tilesetId = 'water'
+    }
     const updates = paintCell(this.grid, tx, ty, tilesetId)
     for (const { dx, dy, cell } of updates) {
       this.updateDualCell(dx, dy, cell)
@@ -589,6 +668,15 @@ export class InsideIslandMapEditor {
       ds.darkGrassSprite.visible = false
       ds.waterSprite.visible = false
     }
+
+    const dualWidth = this.width + 1
+    const dual = computeDualGrid(this.grid)
+    for (let i = 0; i < dual.length; i++) {
+      const dx = i % dualWidth
+      const dy = Math.floor(i / dualWidth)
+      this.updateDualCell(dx, dy, dual[i])
+    }
+
     this.fog?.clearRevealed()
   }
 
@@ -640,14 +728,14 @@ export class InsideIslandMapEditor {
           (ty + 1) * originalDualWidth + tx,
           (ty + 1) * originalDualWidth + tx + 1,
         ]
-        const anyDarkGrass = corners.some((idx) => gridArray[idx]?.tilesetId === '060440_dual_grid_template_dual_grid_template-tileset')
+        const anyDarkGrass = corners.some((idx) => gridArray[idx]?.tilesetId === 'texture-job_e510e767f70e488b9a4ed95f6caaf33c')
         const anyGrass = corners.some((idx) => gridArray[idx]?.tilesetId === 'grass')
         
         const targetX = tx + offsetX
         const targetY = ty + offsetY
         if (targetX >= 0 && targetX < this.width && targetY >= 0 && targetY < this.height) {
           if (anyDarkGrass) {
-            paintCell(this.grid, targetX, targetY, '060440_dual_grid_template_dual_grid_template-tileset')
+            paintCell(this.grid, targetX, targetY, 'texture-job_e510e767f70e488b9a4ed95f6caaf33c')
           } else if (anyGrass) {
             paintCell(this.grid, targetX, targetY, 'grass')
           }
@@ -683,7 +771,7 @@ export class InsideIslandMapEditor {
     const exportedGrid = dual.map((cell) => {
       if (cell.darkGrassFilled) {
         return {
-          tilesetId: '060440_dual_grid_template_dual_grid_template-tileset',
+          tilesetId: 'texture-job_e510e767f70e488b9a4ed95f6caaf33c',
           atlasX: cell.darkGrassAtlasX,
           atlasY: cell.darkGrassAtlasY,
           mode: 'auto',
@@ -724,14 +812,14 @@ export class InsideIslandMapEditor {
             id: 'grass',
             name: 'grass',
             type: 'dual-grid-15',
-            url: '/inside_island/assets/tilesets/grass.png',
+            url: '/inside_island2/assets/tilesets/grass.png',
             mimeType: 'image/png',
           },
           {
-            id: '060440_dual_grid_template_dual_grid_template-tileset',
-            name: '060440_dual_grid_template_dual_grid_template-tileset',
+            id: 'texture-job_e510e767f70e488b9a4ed95f6caaf33c',
+            name: 'texture-job_e510e767f70e488b9a4ed95f6caaf33c',
             type: 'dual-grid-15',
-            url: '/inside_island/assets/tilesets/library-tileset-generated-122330-tileset_path.png',
+            url: '/inside_island2/assets/tilesets/texture-job_e510e767f70e488b9a4ed95f6caaf33c.png',
             mimeType: 'image/png',
           }
         ],
@@ -788,10 +876,10 @@ export class InsideIslandMapEditor {
             (ty + 1) * dualWidth + tx,
             (ty + 1) * dualWidth + tx + 1,
           ]
-          const anyDarkGrass = corners.some((idx) => dualGrid[idx]?.tilesetId === '060440_dual_grid_template_dual_grid_template-tileset')
+          const anyDarkGrass = corners.some((idx) => dualGrid[idx]?.tilesetId === 'texture-job_e510e767f70e488b9a4ed95f6caaf33c')
           const anyGrass = corners.some((idx) => dualGrid[idx]?.tilesetId === 'grass')
           if (anyDarkGrass) {
-            paintCell(this.grid, tx, ty, '060440_dual_grid_template_dual_grid_template-tileset')
+            paintCell(this.grid, tx, ty, 'texture-job_e510e767f70e488b9a4ed95f6caaf33c')
           } else if (anyGrass) {
             paintCell(this.grid, tx, ty, 'grass')
           }
