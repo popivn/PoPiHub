@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PoPiHub Upload</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #818cf8, #c084fc);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .subtitle {
+      color: #94a3b8;
+      margin-bottom: 32px;
+      font-size: 0.95rem;
+    }
+    .upload-zone {
+      border: 2px dashed #334155;
+      border-radius: 16px;
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #1e293b;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #818cf8;
+      background: #1e293b80;
+    }
+    .upload-zone.dragover {
+      transform: scale(1.01);
+    }
+    .upload-icon {
+      font-size: 3rem;
+      margin-bottom: 12px;
+    }
+    .upload-zone p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+    }
+    .upload-zone .browse {
+      color: #818cf8;
+      font-weight: 600;
+    }
+    #fileInput { display: none; }
+    .file-list-preview {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .file-chip {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .file-chip .remove {
+      cursor: pointer;
+      color: #f87171;
+      font-weight: bold;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .upload-actions {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 40px 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title .count {
+      background: #334155;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      padding: 2px 10px;
+      border-radius: 20px;
+    }
+    .file-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1e293b;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .file-table th {
+      text-align: left;
+      padding: 14px 16px;
+      background: #1e293b;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #334155;
+    }
+    .file-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid #33415580;
+      font-size: 0.9rem;
+    }
+    .file-table tr:last-child td { border-bottom: none; }
+    .file-table tr:hover td { background: #1e293b80; }
+    .file-name {
+      font-weight: 500;
+      color: #e2e8f0;
+      word-break: break-all;
+    }
+    .file-size { color: #94a3b8; }
+    .file-date { color: #64748b; font-size: 0.85rem; }
+    .action-btn {
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-download {
+      background: #312e81;
+      color: #a5b4fc;
+    }
+    .btn-download:hover { background: #3730a3; }
+    .btn-delete {
+      background: #7f1d1d;
+      color: #fca5a5;
+    }
+    .btn-delete:hover { background: #991b1b; }
+    .actions-cell { display: flex; gap: 8px; }
+    .empty-state {
+      text-align: center;
+      padding: 48px;
+      color: #64748b;
+    }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 1000;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: all 0.3s ease;
+    }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.success { background: #064e3b; color: #6ee7b7; }
+    .toast.error { background: #7f1d1d; color: #fca5a5; }
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #334155;
+      border-radius: 2px;
+      margin-top: 16px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-bar.active { display: block; }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PoPiHub Upload</h1>
+    <p class="subtitle">Kéo thả hoặc chọn file để upload — không giới hạn số lượng</p>
+
+    <div class="upload-zone" id="dropZone">
+      <div class="upload-icon">📁</div>
+      <p>Kéo thả file vào đây hoặc <span class="browse">chọn file</span></p>
+      <input type="file" id="fileInput" multiple>
+    </div>
+
+    <div class="file-list-preview" id="filePreview"></div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="upload-actions">
+      <button class="btn btn-primary" id="uploadBtn" disabled>Upload</button>
+    </div>
+
+    <h2 class="section-title">
+      File đã upload
+      <span class="count" id="fileCount">{{files.length}}</span>
+    </h2>
+
+    {{#if files.length}}
+    <table class="file-table">
+      <thead>
+        <tr>
+          <th>Tên file</th>
+          <th>Kích thước</th>
+          <th>Thời gian</th>
+          <th>Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each files}}
+        <tr>
+          <td class="file-name">{{this.name}}</td>
+          <td class="file-size">{{this.size}}</td>
+          <td class="file-date">{{this.uploadedAt}}</td>
+          <td class="actions-cell">
+            <button class="action-btn btn-download" onclick="downloadFile('{{this.name}}')">Tải về</button>
+            <button class="action-btn btn-delete" onclick="deleteFile('{{this.name}}')">Xóa</button>
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+    {{else}}
+    <div class="empty-state">
+      <div class="icon">📂</div>
+      <p>Chưa có file nào. Hãy upload file đầu tiên!</p>
+    </div>
+    {{/if}}
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const filePreview = document.getElementById('filePreview');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const toast = document.getElementById('toast');
+    let selectedFiles = [];
+
+    dropZone.addEventListener('click', () => fileInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.classList.add('dragover');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+      dropZone.classList.remove('dragover');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.classList.remove('dragover');
+      addFiles(e.dataTransfer.files);
+    });
+
+    fileInput.addEventListener('change', () => {
+      addFiles(fileInput.files);
+      fileInput.value = '';
+    });
+
+    function addFiles(fileList) {
+      for (const file of fileList) {
+        selectedFiles.push(file);
+      }
+      renderPreview();
+    }
+
+    function renderPreview() {
+      filePreview.innerHTML = '';
+      selectedFiles.forEach((file, index) => {
+        const chip = document.createElement('div');
+        chip.className = 'file-chip';
+        chip.innerHTML = `<span>${file.name}</span> <span class="remove" data-index="${index}">✕</span>`;
+        filePreview.appendChild(chip);
+      });
+      uploadBtn.disabled = selectedFiles.length === 0;
+
+      filePreview.querySelectorAll('.remove').forEach((el) => {
+        el.addEventListener('click', (e) => {
+          const idx = parseInt(e.target.dataset.index);
+          selectedFiles.splice(idx, 1);
+          renderPreview();
+        });
+      });
+    }
+
+    uploadBtn.addEventListener('click', async () => {
+      if (selectedFiles.length === 0) return;
+      uploadBtn.disabled = true;
+      progressBar.classList.add('active');
+
+      const formData = new FormData();
+      selectedFiles.forEach((file) => formData.append('files', file));
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/upload');
+
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable) {
+          const percent = Math.round((e.loaded / e.total) * 100);
+          progressFill.style.width = percent + '%';
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 201 || xhr.status === 200) {
+          showToast('Upload thành công!', 'success');
+          setTimeout(() => location.reload(), 800);
+        } else {
+          showToast('Upload thất bại!', 'error');
+          uploadBtn.disabled = false;
+          progressBar.classList.remove('active');
+        }
+      });
+
+      xhr.addEventListener('error', () => {
+        showToast('Lỗi kết nối!', 'error');
+        uploadBtn.disabled = false;
+        progressBar.classList.remove('active');
+      });
+
+      xhr.send(formData);
+    });
+
+    function downloadFile(filename) {
+      window.location.href = '/download/' + encodeURIComponent(filename);
+    }
+
+    async function deleteFile(filename) {
+      if (!confirm('Xóa file này?')) return;
+      try {
+        const res = await fetch('/files/' + encodeURIComponent(filename), { method: 'DELETE' });
+        if (res.ok) {
+          showToast('Đã xóa file!', 'success');
+          setTimeout(() => location.reload(), 600);
+        } else {
+          showToast('Xóa thất bại!', 'error');
+        }
+      } catch {
+        showToast('Lỗi kết nối!', 'error');
+      }
+    }
+
+    function showToast(msg, type) {
+      toast.textContent = msg;
+      toast.className = 'toast show ' + type;
+      setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+  </script>
+</body>
+</html>
