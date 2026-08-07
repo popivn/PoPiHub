@@ -209,3 +209,173 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: #000;
 }
+
+/* Bottom Left Group */
+.ii-bottom-left-group {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.ii-bottom-left-group > * {
+  pointer-events: auto;
+}
+
+.ii-island-title-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 20px;
+  color: #ffd700;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgba(255, 215, 0, 0.2);
+  user-select: none;
+  width: fit-content;
+}
+
+/* Floating Toast Notification */
+.ii-toast {
+  position: absolute;
+  top: 70px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  z-index: 50;
+  padding: 10px 20px;
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(107, 182, 255, 0.3);
+  border-radius: 30px;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  pointer-events: none;
+}
+
+.ii-toast.active {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Summon Card Styles */
+.ii-summon-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.ii-summon-card {
+  position: relative;
+  width: 140px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 215, 0, 0.35);
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 215, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  user-select: none;
+}
+
+.ii-summon-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  border-color: #ffd700;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 215, 0, 0.4);
+}
+
+.ii-summon-card:active {
+  transform: translateY(-2px) scale(0.98);
+}
+
+.ii-card-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: linear-gradient(135deg, #ef4444, #f59e0b);
+  color: #ffffff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 6px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+.ii-card-avatar-wrap {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.2) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border: 1px solid rgba(255, 215, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ii-card-avatar {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.4));
+  transition: transform 0.3s ease;
+}
+
+.ii-summon-card:hover .ii-card-avatar {
+  transform: scale(1.1);
+}
+
+.ii-card-info {
+  text-align: center;
+}
+
+.ii-card-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-bottom: 2px;
+}
+
+.ii-card-sub {
+  font-size: 10px;
+  font-weight: 500;
+  color: #ffd700;
+  opacity: 0.9;
+}
+
+.ii-card-btn {
+  width: 100%;
+  padding: 6px 0;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #ffd700 0%, #f59e0b 100%);
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.ii-card-btn:hover {
+  background: linear-gradient(135deg, #ffe033 0%, #fbbf24 100%);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.5);
+}

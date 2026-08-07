@@ -2,6 +2,10 @@ import { Application, Container, Sprite, Texture, Rectangle, Graphics } from 'pi
 import { Assets } from 'pixi.js'
 import { OceanBackground } from './OceanBackground'
 import { FogOfWar } from './FogOfWar'
+import { RiaController } from '../character/RiaController'
+import { BeeController } from '../monster/BeeController'
+import { WanderingController } from '../action/WanderingController'
+import { findShortestPath } from '../utils/gridPathfinder'
 import {
   type RegularGrid,
   type DualGridCell,
@@ -23,6 +27,17 @@ export interface InsideIslandMapEditorOptions {
   showFogOfWar?: boolean
   onCameraMove?: () => void
   useIndividualTiles?: boolean
+}
+
+export interface SummonedCharacter {
+  id: string
+  name: string
+  textureUrl: string
+  tx: number
+  ty: number
+  container: Container
+  sprite: Sprite
+  shadow: Graphics
 }
 
 interface DualTileSprite {
@@ -79,8 +94,16 @@ export class InsideIslandMapEditor {
   ocean: OceanBackground | null = null
   fog: FogOfWar | null = null
   tileLayer: Container
+  characterLayer: Container
   gridOverlay: Graphics
   hoverHighlight: Graphics
+  characters: SummonedCharacter[] = []
+  riaControllers: RiaController[] = []
+  beeControllers: BeeController[] = []
+  wanderingControllers: Map<RiaController | BeeController, WanderingController> = new Map()
+  private beeSpawnTimer: number = 0
+  private beeSpawnInterval: number = 5000 // 5 seconds
+  private maxBeeCount: number = 15
   private container: HTMLElement
   private width: number
   private height: number
@@ -109,11 +132,13 @@ export class InsideIslandMapEditor {
 
   set panMode(val: boolean) {
     this._panMode = val
+    if (val) {
+      this.isPainting = false
+      this.isErasing = false
+      this.hoverHighlight.visible = false
+    }
     if (this.app && this.app.canvas) {
       this.app.canvas.style.cursor = val ? 'grab' : 'default'
-    }
-    if (val) {
-      this.hoverHighlight.visible = false
     }
   }
 
@@ -125,11 +150,13 @@ export class InsideIslandMapEditor {
 
   set readOnly(val: boolean) {
     this._readOnly = val
+    if (val) {
+      this.isPainting = false
+      this.isErasing = false
+      this.hoverHighlight.visible = false
+    }
     if (this.app && this.app.canvas) {
       this.app.canvas.style.cursor = val ? 'grab' : 'default'
-    }
-    if (val) {
-      this.hoverHighlight.visible = false
     }
   }
 
@@ -149,6 +176,7 @@ export class InsideIslandMapEditor {
     this.app = new Application()
     this.world = new Container()
     this.tileLayer = new Container()
+    this.characterLayer = new Container()
     this.gridOverlay = new Graphics()
     this.hoverHighlight = new Graphics()
     this.grid = createGrid(this.width, this.height)
@@ -181,6 +209,7 @@ export class InsideIslandMapEditor {
     this.ocean.init()
     this.world.addChild(this.ocean.view)
     this.world.addChild(this.tileLayer)
+    this.world.addChild(this.characterLayer)
 
     // Fog of war
     this.fog = new FogOfWar({
@@ -208,21 +237,46 @@ export class InsideIslandMapEditor {
     canvas.style.height = '100%'
     canvas.style.display = 'block'
     canvas.style.touchAction = 'none'
+    canvas.style.cursor = (this._panMode || this._readOnly) ? 'grab' : 'default'
     this.container.appendChild(canvas)
 
     // Event listeners
     canvas.addEventListener('pointerdown', (e) => this.onPointerDown(e))
     canvas.addEventListener('pointermove', (e) => this.onPointerMove(e))
-    canvas.addEventListener('pointerup', () => this.onPointerUp())
-    canvas.addEventListener('pointerleave', () => { this.onPointerUp(); this.hoverHighlight.visible = false })
+    canvas.addEventListener('pointerup', (e) => this.onPointerUp(e))
+    canvas.addEventListener('pointerleave', (e) => { this.onPointerUp(e); this.hoverHighlight.visible = false })
     canvas.addEventListener('contextmenu', (e) => e.preventDefault())
 
-    // Fog animation ticker
-    if (this.showFogOfWar) {
-      this.app.ticker.add((ticker) => {
+    // Animation & Bee Spawner ticker loop
+    this.app.ticker.add((ticker) => {
+      if (this.showFogOfWar) {
         this.fog?.update(ticker.deltaMS)
-      })
-    }
+      }
+
+      // Every 5 seconds, spawn 1 Bee monster
+      this.beeSpawnTimer += ticker.deltaMS
+      if (this.beeSpawnTimer >= this.beeSpawnInterval) {
+        this.beeSpawnTimer -= this.beeSpawnInterval
+        if (this.beeControllers.length < this.maxBeeCount) {
+          this.spawnBee()
+        }
+      }
+
+      for (const ria of this.riaControllers) {
+        ria.update(ticker.deltaMS)
+        const wander = this.wanderingControllers.get(ria)
+        if (wander) wander.update(ticker.deltaMS)
+      }
+
+      // Clean up dead bees
+      this.beeControllers = this.beeControllers.filter((b) => !b.isDead)
+
+      for (const bee of this.beeControllers) {
+        bee.update(ticker.deltaMS)
+        const wander = this.wanderingControllers.get(bee)
+        if (wander) wander.update(ticker.deltaMS)
+      }
+    })
 
     // Center camera after canvas is in DOM
     requestAnimationFrame(() => {
@@ -509,9 +563,34 @@ export class InsideIslandMapEditor {
     }
   }
 
+  /**
+   * Command active Ria to find shortest grid path and walk to target tile.
+   */
+  public moveRiaToTile(tx: number, ty: number): void {
+    if (this.riaControllers.length === 0) return
+    const activeRia = this.riaControllers[this.riaControllers.length - 1]
+    const path = findShortestPath(
+      this.grid.cells,
+      this.width,
+      this.height,
+      { x: activeRia.tx, y: activeRia.ty },
+      { x: tx, y: ty }
+    )
+    if (path.length > 0) {
+      activeRia.setPath(path)
+    }
+  }
+
+  private pointerDownPos: { x: number; y: number; tx: number; ty: number } | null = null
+
   private onPointerDown(e: PointerEvent): void {
+    const { tx, ty } = this.screenToTile(e)
+    this.pointerDownPos = { x: e.clientX, y: e.clientY, tx, ty }
+
     if (e.shiftKey || this._panMode || this._readOnly) {
       this.isDragging = true
+      this.isPainting = false
+      this.isErasing = false
       this.dragStartX = e.clientX
       this.dragStartY = e.clientY
       this.cameraStartX = this.world.x
@@ -522,7 +601,6 @@ export class InsideIslandMapEditor {
       return
     }
 
-    const { tx, ty } = this.screenToTile(e)
     if (tx < 0 || tx >= this.width || ty < 0 || ty >= this.height) return
 
     if (e.button === 0) {
@@ -541,7 +619,7 @@ export class InsideIslandMapEditor {
   private onPointerMove(e: PointerEvent): void {
     if (this.isDragging) {
       if ((e.buttons & 1) === 0 && (e.buttons & 2) === 0) {
-        this.onPointerUp()
+        this.onPointerUp(e)
       } else {
         const dx = e.clientX - this.dragStartX
         const dy = e.clientY - this.dragStartY
@@ -591,16 +669,29 @@ export class InsideIslandMapEditor {
     }
   }
 
-  private onPointerUp(): void {
+  private onPointerUp(e?: PointerEvent): void {
+    if (e && this.pointerDownPos) {
+      const dist = Math.hypot(e.clientX - this.pointerDownPos.x, e.clientY - this.pointerDownPos.y)
+      // If user clicked (did not drag camera), pathfind Ria to clicked tile
+      if (dist < 8 && this.pointerDownPos.tx >= 0 && this.pointerDownPos.tx < this.width && this.pointerDownPos.ty >= 0 && this.pointerDownPos.ty < this.height) {
+        if (this._readOnly || this._panMode || !this.isPainting) {
+          this.moveRiaToTile(this.pointerDownPos.tx, this.pointerDownPos.ty)
+        }
+      }
+    }
+
     this.isPainting = false
     this.isErasing = false
     this.isDragging = false
+    this.pointerDownPos = null
     if (this.app && this.app.canvas) {
       this.app.canvas.style.cursor = (this._panMode || this._readOnly) ? 'grab' : 'default'
     }
   }
 
   paintAt(tx: number, ty: number): void {
+    if (this._readOnly || this._panMode) return
+
     let tilesetId = 'grass'
     if (this.activeTool === 'dark-grass') {
       tilesetId = 'texture-job_e510e767f70e488b9a4ed95f6caaf33c'
@@ -612,14 +703,22 @@ export class InsideIslandMapEditor {
       this.updateDualCell(dx, dy, cell)
     }
     this.fog?.reveal(tx, ty)
+    for (const wander of this.wanderingControllers.values()) {
+      wander.updateGrid(this.grid.cells, this.width, this.height)
+    }
   }
 
   private eraseAt(tx: number, ty: number): void {
+    if (this._readOnly || this._panMode) return
+
     const updates = paintCell(this.grid, tx, ty, null)
     for (const { dx, dy, cell } of updates) {
       this.updateDualCell(dx, dy, cell)
     }
     this.fog?.hide(tx, ty)
+    for (const wander of this.wanderingControllers.values()) {
+      wander.updateGrid(this.grid.cells, this.width, this.height)
+    }
   }
 
   private clampCamera(): void {
@@ -661,6 +760,115 @@ export class InsideIslandMapEditor {
     this.gridOverlay.visible = visible
   }
 
+  /**
+   * Summon Ria character on the island using RiaController.
+   */
+  async summonRia(opts?: { tx?: number; ty?: number }): Promise<RiaController | null> {
+    const ria = new RiaController(this.tileSize)
+    await ria.init()
+
+    let tx = opts?.tx ?? Math.floor(this.width / 2)
+    let ty = opts?.ty ?? Math.floor(this.height / 2)
+
+    const offsetIndex = this.riaControllers.length
+    if (opts?.tx === undefined && opts?.ty === undefined) {
+      tx = Math.min(this.width - 1, Math.max(0, tx + (offsetIndex % 3) - 1))
+      ty = Math.min(this.height - 1, Math.max(0, ty + Math.floor(offsetIndex / 3) - 1))
+    }
+
+    ria.setGridPosition(tx, ty)
+    this.characterLayer.addChild(ria.view)
+    ria.triggerSpawnEffect(this.app.ticker)
+    this.riaControllers.push(ria)
+
+    const wanderCtrl = new WanderingController({
+      character: {
+        get tx() { return ria.tx },
+        get ty() { return ria.ty },
+        get isWalking() { return ria.isWalking },
+        get isCastingSkill() { return ria.isCastingSkill },
+        get currentDirection() { return ria.currentDirection },
+        setPath: (p) => ria.setPath(p),
+        playAnimation: (anim, dir, loop) => ria.playAnimation(anim, dir, loop),
+        playAttackEffectOnTarget: (target) => ria.playAttackEffectOnTarget(target, this.characterLayer),
+        castUlti: (target) => ria.castUlti(target, this.characterLayer),
+        takeDamage: (amt) => ria.takeDamage(amt),
+        get hp() { return ria.hp },
+        get maxHp() { return ria.maxHp },
+      },
+      gridCells: this.grid.cells,
+      width: this.width,
+      height: this.height,
+      targets: this.beeControllers,
+      detectionRange: 8,
+      attackRange: 3, // Ranged attack: 3 tiles distance!
+      attackCooldownMs: 2000, // 2s cooldown so 1.5s cast completes nicely
+      attackDamage: 70,
+    })
+    this.wanderingControllers.set(ria, wanderCtrl)
+
+    return ria
+  }
+
+  /**
+   * Spawn a Bee monster on the island using BeeController.
+   */
+  async spawnBee(opts?: { tx?: number; ty?: number }): Promise<BeeController | null> {
+    const bee = new BeeController(this.tileSize)
+    await bee.init()
+
+    let tx = opts?.tx ?? Math.floor(this.width / 2)
+    let ty = opts?.ty ?? Math.floor(this.height / 2)
+
+    const offsetIndex = this.beeControllers.length
+    if (opts?.tx === undefined && opts?.ty === undefined) {
+      tx = Math.min(this.width - 1, Math.max(0, tx + (offsetIndex % 3) - 1))
+      ty = Math.min(this.height - 1, Math.max(0, ty + Math.floor(offsetIndex / 3) - 1))
+    }
+
+    bee.setGridPosition(tx, ty)
+    this.characterLayer.addChild(bee.view)
+    bee.triggerSpawnEffect(this.app.ticker)
+    this.beeControllers.push(bee)
+
+    // Update targets for all Ria wandering controllers
+    for (const ria of this.riaControllers) {
+      const wander = this.wanderingControllers.get(ria)
+      if (wander) wander.setTargets(this.beeControllers)
+    }
+
+    const wanderCtrl = new WanderingController({
+      character: bee,
+      gridCells: this.grid.cells,
+      width: this.width,
+      height: this.height,
+      minRestTimeMs: 1500,
+      maxRestTimeMs: 4000,
+      maxRadius: 8,
+    })
+    this.wanderingControllers.set(bee, wanderCtrl)
+
+    return bee
+  }
+
+  /**
+   * Summon character compatibility wrapper.
+   */
+  async summonCharacter(opts?: { name?: string; textureUrl?: string; tx?: number; ty?: number }): Promise<SummonedCharacter | null> {
+    const ria = await this.summonRia({ tx: opts?.tx, ty: opts?.ty })
+    if (!ria) return null
+    return {
+      id: `${Date.now()}`,
+      name: opts?.name ?? 'Ria',
+      textureUrl: opts?.textureUrl ?? '/assets/Character/Ria/Idle/rotations/south.png',
+      tx: ria.tx,
+      ty: ria.ty,
+      container: ria.view,
+      sprite: ria.sprite,
+      shadow: ria.shadow,
+    }
+  }
+
   clearMap(): void {
     this.grid = createGrid(this.width, this.height)
     for (const ds of this.dualSprites) {
@@ -668,6 +876,24 @@ export class InsideIslandMapEditor {
       ds.darkGrassSprite.visible = false
       ds.waterSprite.visible = false
     }
+
+    for (const c of this.characters) {
+      if (c.container.parent) this.characterLayer.removeChild(c.container)
+      c.container.destroy({ children: true })
+    }
+    this.characters = []
+
+    for (const ria of this.riaControllers) {
+      ria.destroy()
+    }
+    this.riaControllers = []
+
+    for (const bee of this.beeControllers) {
+      bee.destroy()
+    }
+    this.beeControllers = []
+
+    this.wanderingControllers.clear()
 
     const dualWidth = this.width + 1
     const dual = computeDualGrid(this.grid)
@@ -687,8 +913,10 @@ export class InsideIslandMapEditor {
     grid?: Array<{ tilesetId: string; atlasX: number; atlasY: number; mode: string } | null>
     map?: {
       grid?: Array<{ tilesetId: string; atlasX: number; atlasY: number; mode: string } | null>
+      summons?: Array<{ id: string; name: string; textureUrl: string; tx: number; ty: number }>
     }
     canvasElement?: { width: number; height: number }
+    summons?: Array<{ id: string; name: string; textureUrl: string; tx: number; ty: number }>
   }): void {
     const gridArray = data.grid || data.map?.grid
     if (!gridArray) return
@@ -760,6 +988,16 @@ export class InsideIslandMapEditor {
       }
     }
     this.fog?.revealAll(revealedCells)
+
+    const summonsArray = data.summons || data.map?.summons
+    if (Array.isArray(summonsArray)) {
+      for (const s of summonsArray) {
+        this.summonRia({
+          tx: s.tx,
+          ty: s.ty,
+        })
+      }
+    }
   }
 
   /**
@@ -788,10 +1026,19 @@ export class InsideIslandMapEditor {
       return null
     })
 
+    const summonsList = this.riaControllers.map(r => ({
+      id: 'ria',
+      name: 'Ria',
+      textureUrl: '/assets/Character/Ria/Idle/rotations/south.png',
+      tx: r.tx,
+      ty: r.ty,
+    }))
+
     return {
       format: 'meowa-map',
       version: 1,
       exportedAt: new Date().toISOString(),
+      summons: summonsList,
       canvasElement: {
         id: `${Date.now()}-editor`,
         name: 'Map Editor',
@@ -807,6 +1054,7 @@ export class InsideIslandMapEditor {
         widthTiles: this.width,
         heightTiles: this.height,
         tileSize: this.tileSize,
+        summons: summonsList,
         tilesets: [
           {
             id: 'grass',

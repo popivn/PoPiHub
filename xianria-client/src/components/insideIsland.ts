@@ -29,7 +29,6 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
     <div class="ii-container">
       <div class="ii-topbar">
         <button class="ii-back-btn" id="ii-back">← Quay lại Bản đồ</button>
-        <div class="ii-title-center">🏝️ Đảo (${x}, ${y}) - Chủ: ${ownerName}</div>
         <div class="ii-topbar-right">
           ${isMine ? `<button class="ii-mode-btn" id="ii-edit-toggle">🛠️ Thiết kế</button>` : ''}
           <button class="ii-confirm-btn" id="ii-save" style="display: none;">Lưu Thiết Kế</button>
@@ -37,6 +36,28 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
         </div>
       </div>
       <div class="ii-viewport" id="ii-viewport-inner"></div>
+      
+      <!-- Bottom Left UI Group: Island Title & Summon Card -->
+      <div class="ii-bottom-left-group">
+        <div class="ii-island-title-badge">
+          <span>🏝️ Đảo (${x}, ${y}) - Chủ: ${ownerName}</span>
+        </div>
+
+        <div class="ii-summon-section" id="ii-summon-panel">
+          <div class="ii-summon-card" id="ii-summon-ria" title="Triệu hồi Ria lên đảo">
+            <div class="ii-card-badge">SSR</div>
+            <div class="ii-card-avatar-wrap">
+              <img src="/assets/Character/Ria/Idle/rotations/south.png" class="ii-card-avatar" alt="Ria" />
+            </div>
+            <div class="ii-card-info">
+              <div class="ii-card-name">Ria</div>
+              <div class="ii-card-sub">Triệu Hồi Viên</div>
+            </div>
+            <button class="ii-card-btn">✨ Triệu Hồi</button>
+          </div>
+        </div>
+      </div>
+
       <div class="ii-palette" id="ii-palette" style="display: none;">
         <div class="ii-palette-title">Công cụ vẽ:</div>
         <button class="ii-palette-item active" id="ii-tool-grass" title="Cỏ Nhạt">
@@ -52,12 +73,14 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
           <span>Vẽ Nước</span>
         </button>
       </div>
-      <div class="ii-info" id="ii-info">Mẹo: Kéo chuột hoặc vuốt màn hình để di chuyển xem đảo!</div>
+
+      <!-- Toast Notification Container -->
+      <div class="ii-toast" id="ii-toast"></div>
     </div>
   `
 
   const innerViewport = app.querySelector<HTMLDivElement>('#ii-viewport-inner')!
-  const innerInfo = app.querySelector<HTMLDivElement>('#ii-info')!
+  const toastEl = app.querySelector<HTMLDivElement>('#ii-toast')!
   const innerBack = app.querySelector<HTMLButtonElement>('#ii-back')!
   const innerEditToggle = app.querySelector<HTMLButtonElement>('#ii-edit-toggle')
   const innerSave = app.querySelector<HTMLButtonElement>('#ii-save')!
@@ -66,6 +89,17 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
   const btnToolGrass = app.querySelector<HTMLButtonElement>('#ii-tool-grass')!
   const btnToolDarkGrass = app.querySelector<HTMLButtonElement>('#ii-tool-dark-grass')!
   const btnToolWater = app.querySelector<HTMLButtonElement>('#ii-tool-water')!
+  const summonRiaCard = app.querySelector<HTMLDivElement>('#ii-summon-ria')!
+
+  let toastTimer: number | undefined
+  function showToast(message: string, durationMs = 2500): void {
+    if (toastTimer) window.clearTimeout(toastTimer)
+    toastEl.innerHTML = message
+    toastEl.classList.add('active')
+    toastTimer = window.setTimeout(() => {
+      toastEl.classList.remove('active')
+    }, durationMs)
+  }
 
   const INNER_GRID_SIZE = 32
   const innerEditor = new InsideIslandMapEditor({
@@ -116,8 +150,6 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
       btnToolGrass.classList.add('active')
       btnToolDarkGrass.classList.remove('active')
       btnToolWater.classList.remove('active')
-
-      innerInfo.textContent = 'Mẹo: Chọn Cỏ Nhạt, Cỏ Đậm hoặc Nước bên dưới rồi vẽ lên bản đồ! (Nhấn Shift + Kéo để di chuyển)'
     } else {
       innerBack.style.display = 'block'
       if (innerEditToggle) {
@@ -126,12 +158,20 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
       innerSave.style.display = 'none'
       innerClear.style.display = 'none'
       innerPalette.style.display = 'none'
-      innerInfo.textContent = 'Mẹo: Kéo chuột hoặc vuốt màn hình để di chuyển xem đảo!'
     }
   }
 
-  // Set default mode to Normal Mode (read-only, no grid)
+  // Set default mode to Normal View Mode (read-only = true, grid hidden, cursor = grab)
   setDesignMode(false)
+
+  if (summonRiaCard) {
+    summonRiaCard.addEventListener('click', async () => {
+      const charObj = await innerEditor.summonRia()
+      if (charObj) {
+        showToast('<span class="ii-success">✨ Đã triệu hồi Ria lên đảo!</span>')
+      }
+    })
+  }
 
   innerBack.addEventListener('click', async () => {
     innerEditor.destroy()
@@ -142,26 +182,16 @@ export async function mountInsideIsland(opts: InsideIslandOptions): Promise<void
     try {
       const exported = innerEditor.exportMap()
       localStorage.setItem(storageKey, JSON.stringify(exported))
-      innerInfo.innerHTML = `<span class="ii-success">✅ Lưu thiết kế đảo thành công!</span>`
-      setTimeout(() => {
-        innerInfo.textContent = isDesign
-          ? 'Mẹo: Chọn Cỏ Nhạt, Cỏ Đậm hoặc Nước bên dưới rồi vẽ lên bản đồ! (Nhấn Shift + Kéo để di chuyển)'
-          : 'Mẹo: Kéo chuột hoặc vuốt màn hình để di chuyển xem đảo!'
-      }, 3000)
+      showToast('<span class="ii-success">✅ Lưu thiết kế đảo thành công!</span>')
     } catch (err) {
-      innerInfo.innerHTML = `<span class="ii-error">❌ Lưu thiết kế thất bại: ${err instanceof Error ? err.message : 'Lỗi'}</span>`
+      showToast(`<span class="ii-error">❌ Lưu thiết kế thất bại: ${err instanceof Error ? err.message : 'Lỗi'}</span>`)
     }
   })
 
   innerClear.addEventListener('click', () => {
     if (confirm('Bạn có chắc chắn muốn xoá toàn bộ thiết kế bên trong đảo không?')) {
       innerEditor.clearMap()
-      innerInfo.innerHTML = `<span class="ii-success">🧹 Đã xoá toàn bộ bản đồ.</span>`
-      setTimeout(() => {
-        innerInfo.textContent = isDesign 
-          ? 'Mẹo: Chọn Cỏ Nhạt, Cỏ Đậm hoặc Nước bên dưới rồi vẽ lên bản đồ! (Nhấn Shift + Kéo để di chuyển)'
-          : 'Mẹo: Kéo chuột hoặc vuốt màn hình để di chuyển xem đảo!'
-      }, 3000)
+      showToast('<span class="ii-success">🧹 Đã xoá toàn bộ bản đồ.</span>')
     }
   })
 

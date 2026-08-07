@@ -1,0 +1,90 @@
+{
+  "group_id": "b69a4d6b-7fbf-4859-a470-a6a3bafcea56",
+  "states": [
+    {
+      "character": {
+        "id": "7e993be4-4936-4d53-876d-5db22fc16a29",
+        "name": "Idle",
+        "prompt": "Cute fantasy honey bee monster, 64x64 pixel art RPG enemy sprite, chibi proportions, round fuzzy yellow-and-black body, large glowing blue eyes, tiny sharp fangs, translucent insect wings, small antennae, oversized stinger dripping golden honey, six tiny legs, playful but dangerous expression, clean pixel clusters, limited color palette, highly readable silhouette, front view, full body, transparent background, classic JRPG style.",
+        "size": {
+          "width": 120,
+          "height": 120
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-08-07T00:46:39.011039+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {
+          "Flying_Kick": {
+            "south-west": [
+              "Idle/animations/Flying_Kick/south-west/frame_000.png",
+              "Idle/animations/Flying_Kick/south-west/frame_001.png",
+              "Idle/animations/Flying_Kick/south-west/frame_002.png",
+              "Idle/animations/Flying_Kick/south-west/frame_003.png",
+              "Idle/animations/Flying_Kick/south-west/frame_004.png",
+              "Idle/animations/Flying_Kick/south-west/frame_005.png"
+            ],
+            "south-east": [
+              "Idle/animations/Flying_Kick/south-east/frame_000.png",
+              "Idle/animations/Flying_Kick/south-east/frame_001.png",
+              "Idle/animations/Flying_Kick/south-east/frame_002.png",
+              "Idle/animations/Flying_Kick/south-east/frame_003.png",
+              "Idle/animations/Flying_Kick/south-east/frame_004.png",
+              "Idle/animations/Flying_Kick/south-east/frame_005.png"
+            ]
+          },
+          "Breathing_Idle": {
+            "south-east": [
+              "Idle/animations/Breathing_Idle/south-east/frame_000.png",
+              "Idle/animations/Breathing_Idle/south-east/frame_001.png",
+              "Idle/animations/Breathing_Idle/south-east/frame_002.png",
+              "Idle/animations/Breathing_Idle/south-east/frame_003.png"
+            ],
+            "south-west": [
+              "Idle/animations/Breathing_Idle/south-west/frame_000.png",
+              "Idle/animations/Breathing_Idle/south-west/frame_001.png",
+              "Idle/animations/Breathing_Idle/south-west/frame_002.png",
+              "Idle/animations/Breathing_Idle/south-west/frame_003.png"
+            ]
+          },
+          "Falling_Back_Death": {
+            "south": [
+              "Idle/animations/Falling_Back_Death/south/frame_000.png",
+              "Idle/animations/Falling_Back_Death/south/frame_001.png",
+              "Idle/animations/Falling_Back_Death/south/frame_002.png",
+              "Idle/animations/Falling_Back_Death/south/frame_003.png",
+              "Idle/animations/Falling_Back_Death/south/frame_004.png",
+              "Idle/animations/Falling_Back_Death/south/frame_005.png",
+              "Idle/animations/Falling_Back_Death/south/frame_006.png"
+            ]
+          },
+          "Flying_Kick-c76a5bd2": {
+            "south": [
+              "Idle/animations/Flying_Kick-c76a5bd2/south/frame_000.png",
+              "Idle/animations/Flying_Kick-c76a5bd2/south/frame_001.png",
+              "Idle/animations/Flying_Kick-c76a5bd2/south/frame_002.png",
+              "Idle/animations/Flying_Kick-c76a5bd2/south/frame_003.png",
+              "Idle/animations/Flying_Kick-c76a5bd2/south/frame_004.png",
+              "Idle/animations/Flying_Kick-c76a5bd2/south/frame_005.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-08-07T01:02:11.150527"
+}
