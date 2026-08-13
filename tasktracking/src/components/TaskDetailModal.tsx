@@ -1,7 +1,7 @@
 import React from 'react';
 import type { TaskItem, Zone } from '../types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faClock, faSpinner, faCircleCheck, faPenToSquare, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faClock, faSpinner, faCircleCheck, faPenToSquare, faTrashCan, faBolt } from '@fortawesome/free-solid-svg-icons';
 
 interface TaskDetailModalProps {
   task: TaskItem | null;
@@ -19,6 +19,17 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
   onDelete,
 }) => {
   if (!task) return null;
+
+  const formatDuration = (ms: number): string => {
+    if (!ms || ms < 0) return '0s';
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  };
 
   const renderStatusBadge = () => {
     switch (task.status) {
@@ -66,6 +77,33 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             <h2 className="text-lg sm:text-xl font-bold text-slate-100 truncate">
               {task.title}
             </h2>
+            <span
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold border whitespace-nowrap flex-shrink-0"
+              style={{
+                backgroundColor:
+                  (task.exp ?? 0) >= 200
+                    ? 'rgba(244,63,94,0.15)'
+                    : (task.exp ?? 0) >= 100
+                    ? 'rgba(245,158,11,0.15)'
+                    : 'rgba(16,185,129,0.15)',
+                color:
+                  (task.exp ?? 0) >= 200
+                    ? '#fb7185'
+                    : (task.exp ?? 0) >= 100
+                    ? '#fbbf24'
+                    : '#34d399',
+                borderColor:
+                  (task.exp ?? 0) >= 200
+                    ? 'rgba(244,63,94,0.3)'
+                    : (task.exp ?? 0) >= 100
+                    ? 'rgba(245,158,11,0.3)'
+                    : 'rgba(16,185,129,0.3)',
+              }}
+              title="Điểm EXP do AI đánh giá"
+            >
+              <FontAwesomeIcon icon={faBolt} />
+              {task.exp ?? 0} EXP
+            </span>
             <div className="hidden sm:block flex-shrink-0">
               {renderStatusBadge()}
             </div>
@@ -102,10 +140,24 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         </div>
 
         {/* Compact Footer Actions */}
-        <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-3 text-xs">
-          <span className="text-slate-500 font-medium text-[11px]">
-            Ngày tạo: {new Date(task.createdAt).toLocaleString('vi-VN')}
-          </span>
+        <div className="pt-3 border-t border-slate-800 flex items-center justify-between gap-3 text-xs flex-wrap">
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-slate-500 font-medium text-[11px]">
+              Ngày tạo: {new Date(task.createdAt).toLocaleString('vi-VN')}
+            </span>
+            {task.status === 'ongoing' && task.startedAt && (
+              <span className="inline-flex items-center gap-1 text-blue-400 font-bold text-[11px]">
+                <FontAwesomeIcon icon={faClock} />
+                Đang làm: {formatDuration(Date.now() - new Date(task.startedAt).getTime())}
+              </span>
+            )}
+            {task.status === 'completed' && task.durationMs && task.durationMs > 0 && (
+              <span className="inline-flex items-center gap-1 text-emerald-400 font-bold text-[11px]">
+                <FontAwesomeIcon icon={faClock} />
+                Hoàn thành trong: {formatDuration(task.durationMs)}
+              </span>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             <button

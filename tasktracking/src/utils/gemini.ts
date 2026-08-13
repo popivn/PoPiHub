@@ -1,0 +1,217 @@
+import { CONFIG } from '../config';
+import { EXP_RULE, buildExpPrompt } from './expRule';
+
+export interface ChatMessage {
+  role: 'user' | 'model';
+  text: string;
+}
+
+/** Kết quả parse JSON hành động từ câu trả lời của AI */
+export interface ParsedAction {
+  /** Phần text hiển thị cho user (đã bỏ JSON block) */
+  text: string;
+  /** Task cần tạo (nếu AI quyết định tạo) */
+  createTask?: {
+    title: string;
+    description: string;
+    zoneName?: string;
+  };
+}
+
+const GEMINI_MODEL = 'gemini-3.5-flash';
+const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+/**
+ * Xây system instruction cho chat agent.
+ * Bao gồm danh sách zone hiện có để AI biết zone nào hợp lệ.
+ */
+const buildChatSystemInstruction = (availableZones: string[]) => {
+  const zoneList = availableZones.length > 0 ? availableZones.join(', ') : '(chưa có zone nào)';
+  const multipleZones = availableZones.length > 1;
+  return `Bạn là trợ lý AI thân thiện của app "PoPi Hub - Task Zone Tracker", một ứng dụng quản lý công việc.
+
+Vai trò chính: GIÚP USER TẠO TASK MỚI thông qua hội thoại.
+
+## Quy trình làm việc
+1. Khi bắt đầu hội thoại (hoặc khi user chưa yêu cầu gì cụ thể), hãy hỏi: "Hôm nay bạn cần thêm task gì?" hoặc câu tương tự để khơi gợi.
+2. Khi user nói muốn tạo task, hãy PHÂN TÍCH yêu cầu để thu thập ĐỦ thông tin trước khi tạo:
+   - **title**: Tên task ngắn gọn, rõ ràng (BẮT BUỘC). Nếu user nói mơ hồ, hãy đặt câu hỏi làm rõ.
+   - **description**: Mô tả chi tiết. PHẢI ở định dạng HTML sử dụng <p>, <ul><li>, <strong>, <br>. KHÔNG dùng markdown, KHÔNG dùng plain text với xuống dòng \\n. Ví dụ đúng: "<p>Thực hiện điều chỉnh giao diện:</p><ul><li>Tối ưu layout</li><li>Responsive mobile</li></ul>". Nếu user không cung cấp chi tiết, có thể để rỗng "".
+   - **zoneName**: Tên zone.${multipleZones ? ` CÓ NHIỀU ZONE: [${zoneList}]. BẮT BUỘC phải HỎI user muốn đưa task vào zone nào (hoặc gợi ý zone phù hợp nhất và xin xác nhận) TRƯỚC KHI tạo task. KHÔNG tự ý chọn zone.` : ` Chỉ có 1 zone: [${zoneList}], tự động chọn zone này.`}
+3. Nếu thông tin CÒN THIẾU (thiếu zone${multipleZones ? ', thiếu chi tiết mô tả' : ', hoặc mơ hồ'}), hãy HỎI THÊM 1-2 câu ngắn để làm rõ TRƯỚC KHI tạo. Đừng hỏi quá nhiều câu cùng lúc.
+4. Chỉ KHI ĐÃ ĐỦ thông tin (title rõ ràng${multipleZones ? ', zone đã xác nhận' : ''}, description nếu có), hãy trả lời kèm một JSON block theo định dạng:
+
+\`\`\`json
+{
+  "action": "create_task",
+  "task": {
+    "title": "Tên task",
+    "description": "<p>Mô tả HTML chi tiết</p>",
+    "zoneName": "Tên zone thuộc danh sách trên"
+  }
+}
+\`\`\`
+
+5. TRƯỚC JSON block, hãy viết 1-2 câu xác nhận tự nhiên, ví dụ: "Tôi sẽ tạo task 'X' trong zone 'Y' cho bạn nhé!"
+6. Sau khi JSON được gửi, KHÔNG viết thêm gì nữa (JSON phải ở cuối câu trả lời).
+7. Nếu user chỉ hỏi/hỏi tư vấn mà không cần tạo task, trả lời bình thường KHÔNG kèm JSON.
+
+## Lưu ý QUAN TRỌNG
+- Trả lời ngắn gọn, thân thiện, bằng tiếng Việt.
+- **description PHẢI là HTML**: dùng <p>, <ul><li>, <strong>, <br>. Tuyệt đối KHÔNG dùng markdown (**bold**), KHÔNG dùng plain text với \\n. Mỗi gạch đầu dòng phải dùng <li>.
+- **zoneName phải KHỚP** với một zone trong danh sách (không phân biệt hoa thường).
+- **Chỉ emit JSON khi thực sự muốn tạo task**, không emit JSON để minh họa hay ví dụ.
+- **KHÔNG tự tạo task nếu chưa hỏi đủ thông tin** (đặc biệt là zone khi có nhiều zone).`;
+};
+
+/**
+ * Gọi Gemini API để sinh câu trả lời dựa trên lịch sử chat.
+ * @param history Tin nhắn trước đó (user/model)
+ * @param userMessage Tin nhắn mới của user
+ * @param availableZones Danh sách tên zone hiện có để AI chọn
+ * @returns Câu trả lời thô từ AI (chưa parse)
+ */
+export const askGemini = async (
+  history: ChatMessage[],
+  userMessage: string,
+  availableZones: string[] = []
+): Promise<string> => {
+  const contents = [
+    ...history.map((m) => ({
+      role: m.role,
+      parts: [{ text: m.text }],
+    })),
+    {
+      role: 'user',
+      parts: [{ text: userMessage }],
+    },
+  ];
+
+  const res = await fetch(`${ENDPOINT}?key=${CONFIG.GEMINI_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents,
+      generationConfig: {
+        temperature: 0.7,
+        topP: 0.95,
+        maxOutputTokens: 1024,
+      },
+      systemInstruction: {
+        parts: [{ text: buildChatSystemInstruction(availableZones) }],
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Gemini API lỗi (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  return reply?.trim() || 'Xin lỗi, tôi không tạo được câu trả lời lúc này.';
+};
+
+/**
+ * Parse câu trả lời của AI để tách phần text hiển thị và JSON action (nếu có).
+ * Hỗ trợ JSON trong fenced code block ```json ... ``` hoặc JSON raw.
+ */
+export const parseAction = (raw: string): ParsedAction => {
+  // Tìm fenced json block
+  const fenceMatch = raw.match(/```json\s*([\s\S]*?)```/i);
+  let jsonStr: string | null = null;
+  let text = raw;
+
+  if (fenceMatch) {
+    jsonStr = fenceMatch[1].trim();
+    text = raw.replace(fenceMatch[0], '').trim();
+  } else {
+    // Thử tìm JSON raw có "action":"create_task"
+    const rawMatch = raw.match(/\{[\s\S]*?"action"[\s\S]*?\}/);
+    if (rawMatch) {
+      jsonStr = rawMatch[0];
+      text = raw.replace(rawMatch[0], '').trim();
+    }
+  }
+
+  if (!jsonStr) return { text };
+
+  try {
+    const parsed = JSON.parse(jsonStr);
+    if (parsed?.action === 'create_task' && parsed?.task?.title) {
+      return {
+        text: text || `Tôi sẽ tạo task "${parsed.task.title}" cho bạn!`,
+        createTask: {
+          title: String(parsed.task.title).trim(),
+          description: String(parsed.task.description ?? '').trim(),
+          zoneName: parsed.task.zoneName ? String(parsed.task.zoneName).trim() : undefined,
+        },
+      };
+    }
+  } catch {
+    // JSON lỗi → trả về text nguyên bản
+    return { text: raw };
+  }
+
+  return { text };
+};
+
+/**
+ * Gọi Gemini để chấm điểm EXP cho một task dựa trên quy tắc EXP_RULE.
+ * @param title Tiêu đề task
+ * @param description Mô tả task (có thể là HTML)
+ * @returns Số EXP nguyên trong khoảng [0, 500]
+ */
+export const evaluateExp = async (title: string, description: string): Promise<number> => {
+  // Strip HTML tags để AI đọc description dạng text thuần
+  const plainDesc = description
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const prompt = buildExpPrompt(title, plainDesc);
+
+  const res = await fetch(`${ENDPOINT}?key=${CONFIG.GEMINI_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: {
+        temperature: 0.2,
+        topP: 0.9,
+        maxOutputTokens: 64,
+      },
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Gemini EXP lỗi (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  console.debug('[evaluateExp] AI raw response:', JSON.stringify(raw));
+
+  // Tìm tất cả số nguyên trong câu trả lời, ưu tiên số trong khoảng [0, 500]
+  const allNumbers: string[] = raw.match(/\d+/g) || [];
+  const candidates = allNumbers.map((s: string) => parseInt(s, 10)).filter((n: number) => n >= 0 && n <= 500);
+
+  // Ưu tiên số cuối cùng hợp lệ (thường là kết luận), fallback số đầu tiên, fallback 50
+  let exp: number;
+  if (candidates.length > 0) {
+    exp = candidates[candidates.length - 1];
+  } else if (allNumbers.length > 0) {
+    exp = parseInt(allNumbers[0], 10);
+  } else {
+    console.warn('[evaluateExp] Không tìm thấy số nào, dùng mặc định 50. Raw:', raw);
+    exp = 50;
+  }
+
+  return Math.max(0, Math.min(500, exp));
+};
+
+// Re-export để các module khác có thể import chung từ gemini.ts
+export { EXP_RULE };

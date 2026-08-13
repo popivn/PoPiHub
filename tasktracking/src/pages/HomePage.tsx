@@ -13,7 +13,9 @@ import {
   faChevronUp,
   faFilter,
   faLayerGroup,
-  faMaximize
+  faMaximize,
+  faBolt,
+  faWandMagicSparkles
 } from '@fortawesome/free-solid-svg-icons';
 
 import { CONFIG } from '../config';
@@ -27,8 +29,10 @@ import {
   deleteZoneFromFirestore
 } from '../utils/storage';
 import { toast, confirmDelete, showAlert } from '../utils/alert';
+import { evaluateExp } from '../utils/gemini';
 import { ZoneModal } from '../components/ZoneModal';
 import { TaskDetailModal } from '../components/TaskDetailModal';
+import { ChatPanel, type CreatedTaskInfo } from '../components/ChatPanel';
 
 export const HomePage: React.FC = () => {
   const [zones, setZones] = useState<Zone[]>([]);
@@ -47,6 +51,9 @@ export const HomePage: React.FC = () => {
   const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [selectedDetailTask, setSelectedDetailTask] = useState<TaskItem | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [evaluatingExp, setEvaluatingExp] = useState(false);
+  // Tick mỗi giây để cập nhật live timer cho task ongoing
+  const [, setTick] = useState(0);
 
   // Subscribe to Firestore Real-time Updates
   useEffect(() => {
@@ -67,47 +74,81 @@ export const HomePage: React.FC = () => {
     };
   }, []);
 
+  // Live tick mỗi giây khi có task ongoing để cập nhật timer
+  useEffect(() => {
+    const hasOngoing = tasks.some((t) => t.status === 'ongoing' && t.startedAt);
+    if (!hasOngoing) return;
+    const id = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(id);
+  }, [tasks]);
+
   const handleTaskSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
 
-    if (editingTaskId) {
-      const existing = tasks.find((t) => t.id === editingTaskId);
-      if (existing) {
-        const updatedTask: TaskItem = {
-          ...existing,
+    setEvaluatingExp(true);
+    try {
+      if (editingTaskId) {
+        const existing = tasks.find((t) => t.id === editingTaskId);
+        if (existing) {
+          // Re-evaluate EXP nếu description thay đổi
+          let exp = existing.exp ?? 0;
+          if (existing.title !== title.trim() || existing.description !== description) {
+            try {
+              exp = await evaluateExp(title.trim(), description);
+            } catch {
+              /* giữ exp cũ nếu lỗi */
+            }
+          }
+          const updatedTask: TaskItem = {
+            ...existing,
+            title: title.trim(),
+            description,
+            zoneId: taskZoneId,
+            exp,
+            startedAt: existing.startedAt ?? null,
+            durationMs: existing.durationMs ?? 0,
+            updatedAt: new Date().toISOString(),
+          };
+          await saveTaskToFirestore(updatedTask);
+          toast.fire({
+            icon: 'success',
+            title: `Đã cập nhật công việc! (+${exp} EXP)`,
+          });
+        }
+        setEditingTaskId(null);
+      } else {
+        let exp = 10;
+        try {
+          exp = await evaluateExp(title.trim(), description);
+        } catch (err: any) {
+          toast.fire({ icon: 'warning', title: 'Không đánh giá được EXP, dùng mặc định 10' });
+        }
+        const newTask: TaskItem = {
+          id: 'task-' + Date.now(),
           title: title.trim(),
           description,
-          zoneId: taskZoneId,
+          zoneId: taskZoneId || (zones[0]?.id ?? 'zone-1'),
+          status: 'pending',
+          exp,
+          startedAt: null,
+          durationMs: 0,
+          createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
-        await saveTaskToFirestore(updatedTask);
+        await saveTaskToFirestore(newTask);
         toast.fire({
           icon: 'success',
-          title: 'Đã cập nhật công việc!',
+          title: `Đã thêm công việc! (+${exp} EXP)`,
         });
       }
-      setEditingTaskId(null);
-    } else {
-      const newTask: TaskItem = {
-        id: 'task-' + Date.now(),
-        title: title.trim(),
-        description,
-        zoneId: taskZoneId || (zones[0]?.id ?? 'zone-1'),
-        status: 'pending',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      await saveTaskToFirestore(newTask);
-      toast.fire({
-        icon: 'success',
-        title: 'Đã thêm công việc mới thành công!',
-      });
-    }
 
-    setTitle('');
-    setDescription('');
-    setIsFormOpen(false);
+      setTitle('');
+      setDescription('');
+      setIsFormOpen(false);
+    } finally {
+      setEvaluatingExp(false);
+    }
   };
 
   const handleEditClick = (task: TaskItem) => {
@@ -139,10 +180,43 @@ export const HomePage: React.FC = () => {
     const currentIndex = statusOrder.indexOf(task.status);
     const nextStatus = statusOrder[(currentIndex + 1) % statusOrder.length];
 
+    const now = new Date();
+    const nowIso = now.toISOString();
+
+    // Logic timer theo status:
+    // - pending → ongoing: bắt đầu đếm (set startedAt = now)
+    // - ongoing → completed: dừng đếm, tính durationMs = now - startedAt
+    // - completed → pending: reset (startedAt = null, durationMs = 0)
+    // - ongoing → pending (nếu có): reset (startedAt = null, durationMs = 0)
+    // - completed → ongoing (nếu có): bắt đầu đếm lại (set startedAt = now)
+    // - pending → completed (nhảy cóc): durationMs = 0
+    // Lưu ý: Firestore không chấp nhận undefined → luôn dùng null/0 thay thế
+    let startedAt: string | null = task.startedAt ?? null;
+    let durationMs: number = task.durationMs ?? 0;
+
+    if (nextStatus === 'ongoing') {
+      startedAt = nowIso;
+    } else if (nextStatus === 'completed') {
+      if (task.status === 'ongoing' && task.startedAt) {
+        const start = new Date(task.startedAt).getTime();
+        durationMs = now.getTime() - start;
+      } else {
+        // pending → completed (nhảy cóc): không có thời gian thực hiện
+        durationMs = 0;
+      }
+      startedAt = null;
+    } else if (nextStatus === 'pending') {
+      // reset về pending: clear timer
+      startedAt = null;
+      durationMs = 0;
+    }
+
     const updatedTask: TaskItem = {
       ...task,
       status: nextStatus,
-      updatedAt: new Date().toISOString(),
+      startedAt,
+      durationMs,
+      updatedAt: nowIso,
     };
     await saveTaskToFirestore(updatedTask);
 
@@ -171,6 +245,55 @@ export const HomePage: React.FC = () => {
     if (!taskZoneId) setTaskZoneId(newZone.id);
   };
 
+  /**
+   * Handler được gọi khi AI chat quyết định tạo task mới.
+   * - Match zoneName (không phân biệt hoa thường) với zones hiện có,
+   *   fallback zone đầu tiên.
+   * - Đánh giá EXP qua AI.
+   * - Lưu vào Firestore.
+   * - Trả về thông tin task đã tạo để hiển thị success card trong chat.
+   */
+  const handleCreateTaskFromChat = async (input: {
+    title: string;
+    description: string;
+    zoneName?: string;
+  }): Promise<CreatedTaskInfo> => {
+    const trimmedTitle = input.title.trim();
+    if (!trimmedTitle) throw new Error('Title không được rỗng');
+
+    // Match zone theo tên (case-insensitive), fallback zone đầu tiên
+    const matchedZone = input.zoneName
+      ? zones.find((z) => z.name.toLowerCase() === input.zoneName!.toLowerCase())
+      : undefined;
+    const zoneId = matchedZone?.id || zones[0]?.id || 'zone-1';
+    const zoneName = matchedZone?.name || zones[0]?.name || 'Default';
+
+    // Đánh giá EXP
+    let exp = 10;
+    try {
+      exp = await evaluateExp(trimmedTitle, input.description);
+    } catch {
+      /* giữ mặc định */
+    }
+
+    const newTask: TaskItem = {
+      id: 'task-' + Date.now(),
+      title: trimmedTitle,
+      description: input.description,
+      zoneId,
+      status: 'pending',
+      exp,
+      startedAt: null,
+      durationMs: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    await saveTaskToFirestore(newTask);
+
+    return { title: trimmedTitle, zoneName, exp };
+  };
+
   const handleUpdateZone = async (updatedZone: Zone) => {
     await saveZoneToFirestore(updatedZone);
     toast.fire({
@@ -197,7 +320,12 @@ export const HomePage: React.FC = () => {
       const fallbackZoneId = zones.find((z) => z.id !== id)?.id || 'zone-1';
       const tasksToReassign = tasks.filter((t) => t.zoneId === id);
       for (const t of tasksToReassign) {
-        await saveTaskToFirestore({ ...t, zoneId: fallbackZoneId });
+        await saveTaskToFirestore({
+          ...t,
+          startedAt: t.startedAt ?? null,
+          durationMs: t.durationMs ?? 0,
+          zoneId: fallbackZoneId,
+        });
       }
 
       if (selectedZoneId === id) setSelectedZoneId('all');
@@ -217,6 +345,18 @@ export const HomePage: React.FC = () => {
   });
 
   const getZoneById = (id: string) => zones.find((z) => z.id === id);
+
+  // Format milliseconds → "Xh Ym" / "Xm Ys" / "Xs"
+  const formatDuration = (ms: number): string => {
+    if (!ms || ms < 0) return '0s';
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+  };
 
   const renderStatusBadge = (status: TaskStatus) => {
     switch (status) {
@@ -409,9 +549,17 @@ export const HomePage: React.FC = () => {
           <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/30 hover:from-indigo-500 hover:to-violet-500"
+              disabled={evaluatingExp}
+              className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/30 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {editingTaskId ? 'Lưu thay đổi' : 'Thêm công việc'}
+              {evaluatingExp ? (
+                <>
+                  <FontAwesomeIcon icon={faWandMagicSparkles} spin />
+                  <span>AI đang chấm EXP...</span>
+                </>
+              ) : (
+                <span>{editingTaskId ? 'Lưu thay đổi' : 'Thêm công việc'}</span>
+              )}
             </button>
             <button
               type="button"
@@ -474,13 +622,42 @@ export const HomePage: React.FC = () => {
                     </h3>
                   </div>
 
-                  <button
-                    onClick={(e) => handleCycleStatus(task, e)}
-                    className="focus:outline-none flex-shrink-0"
-                    title="Bấm để đổi trạng thái"
-                  >
-                    {renderStatusBadge(task.status)}
-                  </button>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <span
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-extrabold border whitespace-nowrap"
+                      style={{
+                        backgroundColor:
+                          (task.exp ?? 0) >= 200
+                            ? 'rgba(244,63,94,0.15)'
+                            : (task.exp ?? 0) >= 100
+                            ? 'rgba(245,158,11,0.15)'
+                            : 'rgba(16,185,129,0.15)',
+                        color:
+                          (task.exp ?? 0) >= 200
+                            ? '#fb7185'
+                            : (task.exp ?? 0) >= 100
+                            ? '#fbbf24'
+                            : '#34d399',
+                        borderColor:
+                          (task.exp ?? 0) >= 200
+                            ? 'rgba(244,63,94,0.3)'
+                            : (task.exp ?? 0) >= 100
+                            ? 'rgba(245,158,11,0.3)'
+                            : 'rgba(16,185,129,0.3)',
+                      }}
+                      title="Điểm EXP do AI đánh giá"
+                    >
+                      <FontAwesomeIcon icon={faBolt} />
+                      {task.exp ?? 0} EXP
+                    </span>
+                    <button
+                      onClick={(e) => handleCycleStatus(task, e)}
+                      className="focus:outline-none"
+                      title="Bấm để đổi trạng thái"
+                    >
+                      {renderStatusBadge(task.status)}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Inline Action Bar: Date, Expand Toggle & Action Buttons */}
@@ -494,6 +671,20 @@ export const HomePage: React.FC = () => {
                         minute: '2-digit',
                       })}
                     </span>
+
+                    {/* Timer: ongoing = live, completed = total duration, pending = hidden */}
+                    {task.status === 'ongoing' && task.startedAt && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-400 whitespace-nowrap">
+                        <FontAwesomeIcon icon={faClock} />
+                        {formatDuration(Date.now() - new Date(task.startedAt).getTime())}
+                      </span>
+                    )}
+                    {task.status === 'completed' && task.durationMs && task.durationMs > 0 && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 whitespace-nowrap">
+                        <FontAwesomeIcon icon={faClock} />
+                        {formatDuration(task.durationMs)}
+                      </span>
+                    )}
 
                     {task.description && (
                       <button
@@ -564,6 +755,9 @@ export const HomePage: React.FC = () => {
         onUpdateZone={handleUpdateZone}
         onDeleteZone={handleDeleteZone}
       />
+
+      {/* AI Chat Assistant (Floating) */}
+      <ChatPanel zones={zones} onCreateTask={handleCreateTaskFromChat} />
     </div>
   );
 };

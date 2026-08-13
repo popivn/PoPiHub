@@ -1,6 +1,8 @@
 export const CONFIG = {
   TINYMCE_API_KEY: '2xjxexbphkg4d7vees5n9jlhrw3wtcig2sampbjhwepiyi8o',
+  GEMINI_API_KEY: 'AQ.Ab8RN6Ibd-eKaSd4MXeaLTl5yI9Jw-bluPfBQC9ZrFY7Z_s0Kg',
   APP_NAME: 'PoPi Hub -Task Zone Tracker',
+  ROOT_KEY: '363636',
   DEFAULT_ZONES: [
     { id: 'zone-1', name: 'Công việc', color: '#6366f1', icon: 'briefcase' },
     { id: 'zone-2', name: 'Cá nhân', color: '#ec4899', icon: 'user' },
