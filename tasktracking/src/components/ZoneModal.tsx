@@ -7,7 +7,7 @@ interface ZoneModalProps {
   isOpen: boolean;
   onClose: () => void;
   zones: Zone[];
-  onAddZone: (zone: Omit<Zone, 'id'>) => void;
+  onAddZone: (zone: Omit<Zone, 'id' | 'userId'>) => void;
   onUpdateZone: (zone: Zone) => void;
   onDeleteZone: (id: string) => void;
 }
@@ -47,8 +47,10 @@ export const ZoneModal: React.FC<ZoneModalProps> = ({
 
   const handleSaveEdit = (zoneId: string) => {
     if (!editName.trim()) return;
+    const existing = zones.find((z) => z.id === zoneId);
     onUpdateZone({
       id: zoneId,
+      userId: existing?.userId ?? '',
       name: editName.trim(),
       color: editColor,
     });

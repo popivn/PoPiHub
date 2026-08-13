@@ -15,7 +15,9 @@ import {
   faLayerGroup,
   faMaximize,
   faBolt,
-  faWandMagicSparkles
+  faWandMagicSparkles,
+  faChartLine,
+  faUserAstronaut
 } from '@fortawesome/free-solid-svg-icons';
 
 import { CONFIG } from '../config';
@@ -30,9 +32,13 @@ import {
 } from '../utils/storage';
 import { toast, confirmDelete, showAlert } from '../utils/alert';
 import { evaluateExp } from '../utils/gemini';
+import { evaluateRadarScores } from '../utils/radar';
+import { getStoredUserId } from '../utils/auth';
 import { ZoneModal } from '../components/ZoneModal';
 import { TaskDetailModal } from '../components/TaskDetailModal';
 import { ChatPanel, type CreatedTaskInfo } from '../components/ChatPanel';
+import { Dashboard } from './Dashboard';
+import { Profile } from './Profile';
 
 export const HomePage: React.FC = () => {
   const [zones, setZones] = useState<Zone[]>([]);
@@ -52,19 +58,24 @@ export const HomePage: React.FC = () => {
   const [selectedDetailTask, setSelectedDetailTask] = useState<TaskItem | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [evaluatingExp, setEvaluatingExp] = useState(false);
+  // View: 'home' | 'dashboard' | 'profile'
+  const [view, setView] = useState<'home' | 'dashboard' | 'profile'>('home');
   // Tick mỗi giây để cập nhật live timer cho task ongoing
   const [, setTick] = useState(0);
 
+  // User ID từ sessionStorage (set khi auth thành công)
+  const userId = getStoredUserId() || '1';
+
   // Subscribe to Firestore Real-time Updates
   useEffect(() => {
-    const unsubscribeZones = subscribeZones((loadedZones) => {
+    const unsubscribeZones = subscribeZones(userId, (loadedZones) => {
       setZones(loadedZones);
       if (loadedZones.length > 0 && !taskZoneId) {
         setTaskZoneId(loadedZones[0].id);
       }
     });
 
-    const unsubscribeTasks = subscribeTasks((loadedTasks) => {
+    const unsubscribeTasks = subscribeTasks(userId, (loadedTasks) => {
       setTasks(loadedTasks);
     });
 
@@ -126,6 +137,7 @@ export const HomePage: React.FC = () => {
         }
         const newTask: TaskItem = {
           id: 'task-' + Date.now(),
+          userId,
           title: title.trim(),
           description,
           zoneId: taskZoneId || (zones[0]?.id ?? 'zone-1'),
@@ -232,10 +244,11 @@ export const HomePage: React.FC = () => {
     });
   };
 
-  const handleAddZone = async (newZoneData: Omit<Zone, 'id'>) => {
+  const handleAddZone = async (newZoneData: Omit<Zone, 'id' | 'userId'>) => {
     const newZone: Zone = {
       ...newZoneData,
-      id: 'zone-' + Date.now(),
+      id: `${userId}-zone-${Date.now()}`,
+      userId,
     };
     await saveZoneToFirestore(newZone);
     toast.fire({
@@ -278,6 +291,7 @@ export const HomePage: React.FC = () => {
 
     const newTask: TaskItem = {
       id: 'task-' + Date.now(),
+      userId,
       title: trimmedTitle,
       description: input.description,
       zoneId,
@@ -292,6 +306,40 @@ export const HomePage: React.FC = () => {
     await saveTaskToFirestore(newTask);
 
     return { title: trimmedTitle, zoneName, exp };
+  };
+
+  /**
+   * Handler đánh giá lại radar scores bằng AI.
+   * - Filter task completed.
+   * - Gọi AI đánh giá toàn bộ.
+   * - Lưu radarScores vào từng task trong Firestore.
+   */
+  const handleReevaluateRadar = async () => {
+    const completedTasks = tasks.filter((t) => t.status === 'completed');
+    if (completedTasks.length === 0) {
+      toast.fire({ icon: 'warning', title: 'Chưa có task hoàn thành để đánh giá' });
+      return;
+    }
+
+    try {
+      const scores = await evaluateRadarScores(completedTasks);
+
+      // Lưu radarScores vào từng task completed
+      for (const t of completedTasks) {
+        await saveTaskToFirestore({
+          ...t,
+          radarScores: scores,
+          startedAt: t.startedAt ?? null,
+          durationMs: t.durationMs ?? 0,
+          updatedAt: new Date().toISOString(),
+        });
+      }
+
+      toast.fire({ icon: 'success', title: 'Đã đánh giá lại kỹ năng!' });
+    } catch (err: any) {
+      toast.fire({ icon: 'error', title: 'Lỗi đánh giá radar' });
+      console.error('Radar eval error:', err);
+    }
   };
 
   const handleUpdateZone = async (updatedZone: Zone) => {
@@ -358,6 +406,51 @@ export const HomePage: React.FC = () => {
     return `${s}s`;
   };
 
+  // Group tasks theo ngày (dựa trên createdAt), trả về mảng {dateKey, dateLabel, tasks}
+  const groupTasksByDate = (taskList: TaskItem[]) => {
+    const groups: { dateKey: string; dateLabel: string; tasks: TaskItem[] }[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const map = new Map<string, TaskItem[]>();
+    for (const t of taskList) {
+      const d = new Date(t.createdAt);
+      d.setHours(0, 0, 0, 0);
+      const key = d.toISOString().slice(0, 10);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(t);
+    }
+
+    // Sort theo ngày giảm dần (mới nhất trước)
+    const sortedKeys = Array.from(map.keys()).sort((a, b) => b.localeCompare(a));
+    for (const key of sortedKeys) {
+      const d = new Date(key + 'T00:00:00');
+      let label: string;
+      if (d.getTime() === today.getTime()) {
+        label = 'Hôm nay';
+      } else if (d.getTime() === yesterday.getTime()) {
+        label = 'Hôm qua';
+      } else {
+        label = d.toLocaleDateString('vi-VN', {
+          weekday: 'long',
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        });
+      }
+      groups.push({
+        dateKey: key,
+        dateLabel: label,
+        tasks: map.get(key)!,
+      });
+    }
+    return groups;
+  };
+
+  const groupedTasks = groupTasksByDate(filteredTasks);
+
   const renderStatusBadge = (status: TaskStatus) => {
     switch (status) {
       case 'pending':
@@ -381,6 +474,14 @@ export const HomePage: React.FC = () => {
     }
   };
 
+  if (view === 'dashboard') {
+    return <Dashboard tasks={tasks} zones={zones} onBack={() => setView('home')} />;
+  }
+
+  if (view === 'profile') {
+    return <Profile tasks={tasks} onBack={() => setView('home')} onReevaluateRadar={handleReevaluateRadar} />;
+  }
+
   return (
     <div className="w-full max-w-none px-4 sm:px-8 py-4 space-y-4">
       {/* Header Mobile & Desktop */}
@@ -395,13 +496,29 @@ export const HomePage: React.FC = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => setIsZoneModalOpen(true)}
-          className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
-        >
-          <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400" />
-          <span>Zone Manager</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setView('profile')}
+            className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
+          >
+            <FontAwesomeIcon icon={faUserAstronaut} className="text-purple-400" />
+            <span className="hidden sm:inline">Hồ Sơ</span>
+          </button>
+          <button
+            onClick={() => setView('dashboard')}
+            className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
+          >
+            <FontAwesomeIcon icon={faChartLine} className="text-emerald-400" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </button>
+          <button
+            onClick={() => setIsZoneModalOpen(true)}
+            className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
+          >
+            <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400" />
+            <span>Zone Manager</span>
+          </button>
+        </div>
       </header>
 
       {/* Horizontal Zone List */}
@@ -577,160 +694,199 @@ export const HomePage: React.FC = () => {
         </form>
       )}
 
-      {/* SINGLE COLUMN TASK LIST */}
-      <main className="space-y-3">
+      {/* TASK LIST - GROUPED BY DATE */}
+      <main className="space-y-5">
         {filteredTasks.length === 0 ? (
           <div className="text-center py-12 px-4 bg-slate-900/60 border border-dashed border-slate-800 rounded-2xl text-slate-400 text-sm">
             Chưa có công việc nào trong thư mục này.
           </div>
         ) : (
-          filteredTasks.map((task) => {
-            const currentZone = getZoneById(task.zoneId);
-            const isExpanded = expandedTaskId === task.id;
+          groupedTasks.map((group) => {
+            const completedCount = group.tasks.filter((t) => t.status === 'completed').length;
+            const totalCount = group.tasks.length;
+            const dayExp = group.tasks
+              .filter((t) => t.status === 'completed')
+              .reduce((sum, t) => sum + (t.exp ?? 0), 0);
 
             return (
-              <div
-                key={task.id}
-                className={`group relative bg-slate-900 border border-slate-800/80 rounded-xl p-3 space-y-2 shadow-sm hover:border-slate-700 transition-all ${
-                  task.status === 'completed' ? 'opacity-80' : ''
-                }`}
-              >
-                {/* Left accent border line based on status */}
-                <div
-                  className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${
-                    task.status === 'pending'
-                      ? 'bg-amber-500'
-                      : task.status === 'ongoing'
-                      ? 'bg-blue-500'
-                      : 'bg-emerald-500'
-                  }`}
-                />
-
-                {/* Card Header: Zone tag, Title & Status badge */}
-                <div className="flex items-center justify-between gap-2 pl-1">
-                  <div className="flex items-center gap-2 flex-wrap min-w-0">
-                    {currentZone && (
-                      <span
-                        className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap"
-                        style={{ backgroundColor: currentZone.color }}
-                      >
-                        {currentZone.name}
+              <div key={group.dateKey} className="space-y-2.5">
+                {/* Date Legend Header */}
+                <div className="flex items-center gap-3 px-1 sticky top-0 z-10 bg-slate-950/80 backdrop-blur-sm py-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="w-1.5 h-6 rounded-full bg-gradient-to-b from-indigo-500 to-violet-500" />
+                    <h2 className="text-sm font-extrabold text-slate-200 capitalize">
+                      {group.dateLabel}
+                    </h2>
+                  </div>
+                  <div className="flex items-center gap-2 text-[10px] font-bold">
+                    <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+                      {totalCount} task
+                    </span>
+                    {completedCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                        ✓ {completedCount} hoàn thành
                       </span>
                     )}
-                    <h3 className="text-sm font-bold text-slate-100 truncate">
-                      {task.title}
-                    </h3>
+                    {dayExp > 0 && (
+                      <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                        ⚡ {dayExp} EXP
+                      </span>
+                    )}
                   </div>
-
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-extrabold border whitespace-nowrap"
-                      style={{
-                        backgroundColor:
-                          (task.exp ?? 0) >= 200
-                            ? 'rgba(244,63,94,0.15)'
-                            : (task.exp ?? 0) >= 100
-                            ? 'rgba(245,158,11,0.15)'
-                            : 'rgba(16,185,129,0.15)',
-                        color:
-                          (task.exp ?? 0) >= 200
-                            ? '#fb7185'
-                            : (task.exp ?? 0) >= 100
-                            ? '#fbbf24'
-                            : '#34d399',
-                        borderColor:
-                          (task.exp ?? 0) >= 200
-                            ? 'rgba(244,63,94,0.3)'
-                            : (task.exp ?? 0) >= 100
-                            ? 'rgba(245,158,11,0.3)'
-                            : 'rgba(16,185,129,0.3)',
-                      }}
-                      title="Điểm EXP do AI đánh giá"
-                    >
-                      <FontAwesomeIcon icon={faBolt} />
-                      {task.exp ?? 0} EXP
-                    </span>
-                    <button
-                      onClick={(e) => handleCycleStatus(task, e)}
-                      className="focus:outline-none"
-                      title="Bấm để đổi trạng thái"
-                    >
-                      {renderStatusBadge(task.status)}
-                    </button>
-                  </div>
+                  <div className="flex-1 h-px bg-slate-800" />
                 </div>
 
-                {/* Inline Action Bar: Date, Expand Toggle & Action Buttons */}
-                <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/60 pl-1 text-xs">
-                  <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
-                      {new Date(task.createdAt).toLocaleDateString('vi-VN', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </span>
+                {/* Tasks in this date group */}
+                <div className="space-y-3">
+                  {group.tasks.map((task) => {
+                    const currentZone = getZoneById(task.zoneId);
+                    const isExpanded = expandedTaskId === task.id;
 
-                    {/* Timer: ongoing = live, completed = total duration, pending = hidden */}
-                    {task.status === 'ongoing' && task.startedAt && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-400 whitespace-nowrap">
-                        <FontAwesomeIcon icon={faClock} />
-                        {formatDuration(Date.now() - new Date(task.startedAt).getTime())}
-                      </span>
-                    )}
-                    {task.status === 'completed' && task.durationMs && task.durationMs > 0 && (
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 whitespace-nowrap">
-                        <FontAwesomeIcon icon={faClock} />
-                        {formatDuration(task.durationMs)}
-                      </span>
-                    )}
-
-                    {task.description && (
-                      <button
-                        onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
-                        className="flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
-                      >
-                        <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />
-                        <span>{isExpanded ? 'Thu gọn' : 'Xem mô tả'}</span>
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setSelectedDetailTask(task)}
-                      className="px-2 py-1 rounded-md bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-[11px] font-bold flex items-center gap-1 transition-colors"
-                      title="Phóng to full màn hình"
-                    >
-                      <FontAwesomeIcon icon={faMaximize} /> Chi tiết
-                    </button>
-                    <button
-                      onClick={() => handleEditClick(task)}
-                      className="px-2 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <FontAwesomeIcon icon={faPenToSquare} /> Sửa
-                    </button>
-                    <button
-                      onClick={() => handleDeleteTask(task.id)}
-                      className="px-2 py-1 rounded-md bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-[11px] font-semibold flex items-center gap-1 transition-colors"
-                    >
-                      <FontAwesomeIcon icon={faTrashCan} /> Xóa
-                    </button>
-                  </div>
-                </div>
-
-                {/* Description Content - Expanded Area */}
-                {task.description && isExpanded && (
-                  <div className="pl-1 pt-1 animate-in fade-in duration-150">
-                    <div className="bg-slate-950/80 border border-slate-800/80 rounded-lg p-3 text-xs">
+                    return (
                       <div
-                        className="rich-text-content text-slate-200 leading-relaxed space-y-2"
-                        dangerouslySetInnerHTML={{ __html: task.description }}
-                      />
-                    </div>
-                  </div>
-                )}
+                        key={task.id}
+                        className={`group relative bg-slate-900 border border-slate-800/80 rounded-xl p-3 space-y-2 shadow-sm hover:border-slate-700 transition-all ${
+                          task.status === 'completed' ? 'opacity-80' : ''
+                        }`}
+                      >
+                        {/* Left accent border line based on status */}
+                        <div
+                          className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${
+                            task.status === 'pending'
+                              ? 'bg-amber-500'
+                              : task.status === 'ongoing'
+                              ? 'bg-blue-500'
+                              : 'bg-emerald-500'
+                          }`}
+                        />
+
+                        {/* Card Header: Zone tag, Title & Status badge */}
+                        <div className="flex items-center justify-between gap-2 pl-1">
+                          <div className="flex items-center gap-2 flex-wrap min-w-0">
+                            {currentZone && (
+                              <span
+                                className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap"
+                                style={{ backgroundColor: currentZone.color }}
+                              >
+                                {currentZone.name}
+                              </span>
+                            )}
+                            <h3 className="text-sm font-bold text-slate-100 truncate">
+                              {task.title}
+                            </h3>
+                          </div>
+
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <span
+                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-extrabold border whitespace-nowrap"
+                              style={{
+                                backgroundColor:
+                                  (task.exp ?? 0) >= 200
+                                    ? 'rgba(244,63,94,0.15)'
+                                    : (task.exp ?? 0) >= 100
+                                    ? 'rgba(245,158,11,0.15)'
+                                    : 'rgba(16,185,129,0.15)',
+                                color:
+                                  (task.exp ?? 0) >= 200
+                                    ? '#fb7185'
+                                    : (task.exp ?? 0) >= 100
+                                    ? '#fbbf24'
+                                    : '#34d399',
+                                borderColor:
+                                  (task.exp ?? 0) >= 200
+                                    ? 'rgba(244,63,94,0.3)'
+                                    : (task.exp ?? 0) >= 100
+                                    ? 'rgba(245,158,11,0.3)'
+                                    : 'rgba(16,185,129,0.3)',
+                              }}
+                              title="Điểm EXP do AI đánh giá"
+                            >
+                              <FontAwesomeIcon icon={faBolt} />
+                              {task.exp ?? 0} EXP
+                            </span>
+                            <button
+                              onClick={(e) => handleCycleStatus(task, e)}
+                              className="focus:outline-none"
+                              title="Bấm để đổi trạng thái"
+                            >
+                              {renderStatusBadge(task.status)}
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Inline Action Bar: Time, Expand Toggle & Action Buttons */}
+                        <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/60 pl-1 text-xs">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
+                              {new Date(task.createdAt).toLocaleTimeString('vi-VN', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </span>
+
+                            {/* Timer: ongoing = live, completed = total duration, pending = hidden */}
+                            {task.status === 'ongoing' && task.startedAt && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-400 whitespace-nowrap">
+                                <FontAwesomeIcon icon={faClock} />
+                                {formatDuration(Date.now() - new Date(task.startedAt).getTime())}
+                              </span>
+                            )}
+                            {task.status === 'completed' && task.durationMs && task.durationMs > 0 && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 whitespace-nowrap">
+                                <FontAwesomeIcon icon={faClock} />
+                                {formatDuration(task.durationMs)}
+                              </span>
+                            )}
+
+                            {task.description && (
+                              <button
+                                onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                                className="flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+                              >
+                                <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />
+                                <span>{isExpanded ? 'Thu gọn' : 'Xem mô tả'}</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => setSelectedDetailTask(task)}
+                              className="px-2 py-1 rounded-md bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-[11px] font-bold flex items-center gap-1 transition-colors"
+                              title="Phóng to full màn hình"
+                            >
+                              <FontAwesomeIcon icon={faMaximize} /> Chi tiết
+                            </button>
+                            <button
+                              onClick={() => handleEditClick(task)}
+                              className="px-2 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                            >
+                              <FontAwesomeIcon icon={faPenToSquare} /> Sửa
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTask(task.id)}
+                              className="px-2 py-1 rounded-md bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                            >
+                              <FontAwesomeIcon icon={faTrashCan} /> Xóa
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Description Content - Expanded Area */}
+                        {task.description && isExpanded && (
+                          <div className="pl-1 pt-1 animate-in fade-in duration-150">
+                            <div className="bg-slate-950/80 border border-slate-800/80 rounded-lg p-3 text-xs">
+                              <div
+                                className="rich-text-content text-slate-200 leading-relaxed space-y-2"
+                                dangerouslySetInnerHTML={{ __html: task.description }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             );
           })

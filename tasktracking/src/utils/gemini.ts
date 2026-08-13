@@ -95,7 +95,7 @@ export const askGemini = async (
       generationConfig: {
         temperature: 0.7,
         topP: 0.95,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 4096,
       },
       systemInstruction: {
         parts: [{ text: buildChatSystemInstruction(availableZones) }],

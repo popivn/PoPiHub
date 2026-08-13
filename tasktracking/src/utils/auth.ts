@@ -1,6 +1,7 @@
-import { CONFIG } from '../config';
+import { getUserByKey, seedDefaultUser } from './storage';
 
 const STORAGE_KEY = 'popi_access_key';
+const STORAGE_USER_ID = 'popi_user_id';
 
 /**
  * Lấy key từ URL path (ví dụ /363636 → "363636").
@@ -12,17 +13,11 @@ export const getKeyFromUrl = (): string => {
 };
 
 /**
- * Kiểm tra key có khớp với ROOT_KEY không.
+ * Lưu key + userId vào sessionStorage (mất khi đóng tab).
  */
-export const isValidKey = (key: string): boolean => {
-  return key === CONFIG.ROOT_KEY;
-};
-
-/**
- * Lưu key hợp lệ vào sessionStorage (mất khi đóng tab).
- */
-export const saveAccessKey = (key: string) => {
+export const saveAccessKey = (key: string, userId: string) => {
   sessionStorage.setItem(STORAGE_KEY, key);
+  sessionStorage.setItem(STORAGE_USER_ID, userId);
 };
 
 /**
@@ -33,36 +28,50 @@ export const getStoredAccessKey = (): string | null => {
 };
 
 /**
- * Xóa key đã lưu (logout).
+ * Lấy userId đã lưu từ sessionStorage.
  */
-export const clearAccessKey = () => {
-  sessionStorage.removeItem(STORAGE_KEY);
+export const getStoredUserId = (): string | null => {
+  return sessionStorage.getItem(STORAGE_USER_ID);
 };
 
 /**
- * Kiểm tra xem user đã được xác thực chưa (có key hợp lệ trong sessionStorage).
+ * Xóa key + userId đã lưu (logout).
+ */
+export const clearAccessKey = () => {
+  sessionStorage.removeItem(STORAGE_KEY);
+  sessionStorage.removeItem(STORAGE_USER_ID);
+};
+
+/**
+ * Kiểm tra xem user đã được xác thực chưa (có key + userId trong sessionStorage).
  */
 export const isAuthenticated = (): boolean => {
   const stored = getStoredAccessKey();
-  return stored !== null && isValidKey(stored);
+  const userId = getStoredUserId();
+  return stored !== null && userId !== null;
 };
 
 /**
  * Logic chính:
- * - Nếu URL có key hợp lệ → lưu vào sessionStorage, trả về 'authorized'
- * - Nếu URL có key nhưng sai → trả về 'denied_wrong'
- * - Nếu URL không có key nhưng sessionStorage có key hợp lệ → trả về 'authorized'
- * - Nếu URL không có key và không có session → trả về 'denied'
+ * - Nếu URL có key → kiểm tra key trong Firestore `users` collection.
+ *   - Nếu hợp lệ → lưu key + userId vào sessionStorage, trả về 'authorized'.
+ *   - Nếu không hợp lệ → trả về 'denied_wrong'.
+ * - Nếu URL không có key nhưng sessionStorage có → trả về 'authorized'.
+ * - Nếu URL không có key và không có session → trả về 'denied'.
  */
 export type AuthResult = 'authorized' | 'denied' | 'denied_wrong';
 
-export const checkAccess = (): AuthResult => {
+export const checkAccess = async (): Promise<AuthResult> => {
+  // Đảm bảo user default (id=1, key=363636) tồn tại trong DB
+  await seedDefaultUser().catch((err) => console.error('seedDefaultUser error:', err));
+
   const urlKey = getKeyFromUrl();
 
   if (urlKey) {
-    // URL có key
-    if (isValidKey(urlKey)) {
-      saveAccessKey(urlKey);
+    // URL có key → kiểm tra trong Firestore
+    const user = await getUserByKey(urlKey);
+    if (user) {
+      saveAccessKey(user.key, user.id);
       // Clean URL: chuyển về / để không lộ key
       window.history.replaceState({}, '', '/');
       return 'authorized';
