@@ -31,6 +31,10 @@ router.get('/create-character', (req, res) => {
   res.sendFile(path.join(__dirname, '../../client/src/views/create_character.html'));
 });
 
+router.get('/sprite-viewer', (req, res) => {
+  res.sendFile(path.join(__dirname, '../../client/src/views/sprite_viewer.html'));
+});
+
 // 📌 1. [CREATE Routes] - Các Endpoint Tạo Mới Dữ Liệu
 router.use('/api/auth', createAuthRoutes);
 router.use('/api', createPlayerRoutes);

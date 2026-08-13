@@ -1,4 +1,4 @@
-import { Container, Graphics } from 'pixi.js';
+import { Container, Graphics, Sprite } from 'pixi.js';
 import { Bone, Skeleton } from './Skeleton.js';
 
 export class RiggedCharacter {
@@ -18,8 +18,8 @@ export class RiggedCharacter {
     this.buildSkeleton();
     this.buildBodyParts();
     
-    // Add skeleton wireframe gizmo container at top Z layer
-    this.skeleton.gizmoGraphics.zIndex = 100;
+    // Add skeleton wireframe gizmo container at bottom Z layer (under assets)
+    this.skeleton.gizmoGraphics.zIndex = 0;
     this.container.addChild(this.skeleton.gizmoGraphics);
   }
 
@@ -96,14 +96,23 @@ export class RiggedCharacter {
     footRG.roundRect(-2, -6, 14, 12, 4).fill({ color: 0x0284c7 });
     this.attachGraphicToBone('footR', footRG, 2);
 
-    // 3. Torso Graphic
-    const torsoG = new Graphics();
-    torsoG.roundRect(0, -18, 44, 36, 10).fill({ color: 0x0f172a }).stroke({ width: 3, color: 0x00f2fe });
-    torsoG.roundRect(6, -14, 32, 28, 6).fill({ color: 0x1e293b });
-    torsoG.circle(22, 0, 9).fill({ color: 0x00f2fe }).stroke({ width: 2, color: 0xffffff });
-    torsoG.roundRect(30, -24, 12, 10, 3).fill({ color: 0x3b82f6 });
-    torsoG.roundRect(30, 14, 12, 10, 3).fill({ color: 0x3b82f6 });
-    this.attachGraphicToBone('torso', torsoG, 3);
+    // 3. Torso Graphic (Male Japanese Kimono Hakama Outfit Sprite PNG)
+    const torsoContainer = new Container();
+    try {
+      const kimonoSprite = Sprite.from('/assets/torso/japan_kimono.png');
+      kimonoSprite.anchor.set(0.5);
+      kimonoSprite.width = 68;
+      kimonoSprite.height = 68;
+      kimonoSprite.x = 22;
+      kimonoSprite.y = 0;
+      kimonoSprite.rotation = Math.PI / 2; // Orient upright along bone
+      torsoContainer.addChild(kimonoSprite);
+    } catch (e) {
+      const torsoG = new Graphics();
+      torsoG.roundRect(0, -18, 44, 36, 10).fill({ color: 0x0f172a }).stroke({ width: 3, color: 0x00f2fe });
+      torsoContainer.addChild(torsoG);
+    }
+    this.attachGraphicToBone('torso', torsoContainer, 3);
 
     // 4. Head Graphic
     const headG = new Graphics();

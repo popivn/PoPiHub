@@ -600,16 +600,16 @@ function spawnOrUpdateRemotePlayer(pData) {
 }
 
 function setLoggedOutState() {
-  isAuthenticated = false;
-  loginBtnText.textContent = 'Đăng Nhập';
-  if (loginFormView) loginFormView.classList.remove('hidden');
+  // Allow full interactive gameplay in guest mode when not logged in
+  isAuthenticated = true;
+  if (loginBtnText) loginBtnText.textContent = 'Khách (Dev Mode)';
+  if (loginFormView) loginFormView.classList.add('hidden');
   if (userProfileView) {
-    userProfileView.classList.add('hidden');
-    userProfileView.classList.remove('flex');
-  }
-  // Redirect to standalone login page only if not already on /login
-  if (window.location.pathname !== '/login') {
-    window.location.href = '/login';
+    userProfileView.classList.remove('hidden');
+    userProfileView.classList.add('flex');
+    if (profileUsername) profileUsername.textContent = 'Cyber Knight (Guest)';
+    if (profileEmail) profileEmail.textContent = 'guest@genai.local';
+    if (profileCacheTag) profileCacheTag.innerHTML = `<i class="fa-solid fa-user-check mr-1" style="color:#00ff88"></i>Free Exploration Mode (No Auth)`;
   }
 }
 
@@ -724,8 +724,8 @@ async function initRiggingModal() {
 
   rigApp = new Application();
   await rigApp.init({
-    width: 480,
-    height: 480,
+    width: 750,
+    height: 700,
     backgroundColor: 0x070a13,
     antialias: true,
     resolution: window.devicePixelRatio || 1,
@@ -734,11 +734,19 @@ async function initRiggingModal() {
 
   container.appendChild(rigApp.canvas);
 
-  modalRiggedHero = new CharacterBase(rigApp, { name: 'Rigging Preview' });
-  modalRiggedHero.riggedChar.skeleton.showWireframe = true;
-  modalRiggedHero.container.scale.set(1.4);
-  modalRiggedHero.container.x = 240;
-  modalRiggedHero.container.y = 300;
+  modalRiggedHero = new CharacterBase(rigApp, { 
+    name: '',
+    showUI: false,
+    helmet: 'none',
+    hair: 'hair_spiky',
+    face: 'face_hero'
+  });
+  modalRiggedHero.riggedChar.skeleton.showWireframe = false;
+  modalRiggedHero.container.scale.set(1.9);
+  modalRiggedHero.container.scale.x = -1.9; // Clean Flip Body Left
+
+  modalRiggedHero.container.x = 375;
+  modalRiggedHero.container.y = 440;
   rigApp.stage.addChild(modalRiggedHero.container);
 
   rigApp.ticker.add((ticker) => {
@@ -764,6 +772,31 @@ function setupRigModalEvents() {
     if (modalRiggedHero) {
       modalRiggedHero.riggedChar.skeleton.showWireframe = e.target.checked;
     }
+  });
+
+  // Listeners for Interactive Square Asset Item Grid Tiles
+  document.querySelectorAll('.asset-grid').forEach(grid => {
+    const groupName = grid.getAttribute('data-group');
+    const tiles = grid.querySelectorAll('.asset-tile');
+
+    tiles.forEach(tile => {
+      tile.addEventListener('click', () => {
+        // Toggle active border state in grid
+        tiles.forEach(t => t.classList.remove('active'));
+        tile.classList.add('active');
+
+        const val = tile.getAttribute('data-value');
+        if (modalRiggedHero) {
+          const newConfig = {};
+          if (groupName === 'hair') newConfig.hair = val;
+          if (groupName === 'face') newConfig.face = val;
+          if (groupName === 'helmet') newConfig.helmet = val;
+          if (groupName === 'shield') newConfig.shield = val;
+          if (groupName === 'weapon') newConfig.weapon = val;
+          modalRiggedHero.updateConfig(newConfig);
+        }
+      });
+    });
   });
 
   document.querySelectorAll('.btn-preset').forEach((btn) => {

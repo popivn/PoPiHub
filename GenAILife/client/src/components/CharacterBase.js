@@ -16,7 +16,8 @@ export class CharacterBase {
       hp: config.hp || 100,
       maxHp: config.maxHp || 100,
       attack: config.attack || 25,
-      speed: config.speed || 5.5
+      speed: config.speed || 5.5,
+      showUI: config.showUI !== undefined ? config.showUI : true
     };
 
     this.container = new Container();
@@ -38,6 +39,9 @@ export class CharacterBase {
 
   buildOverheadUI() {
     this.uiContainer.removeChildren();
+
+    // Disable overhead UI completely if showUI is false or name is empty
+    if (!this.config.showUI || !this.config.name) return;
 
     // 1. Nameplate Text
     const isEnemy = this.config.type === 'enemy';
@@ -67,11 +71,11 @@ export class CharacterBase {
   }
 
   applyGearConfig() {
-    // Replace Head / Helmet Graphic safely via headBone.displayObject
+    // Replace Head / Helmet / Hair / Face Graphic safely via headBone.displayObject
     const headBone = this.riggedChar.skeleton.getBone('head');
     if (headBone && headBone.displayObject) {
       headBone.displayObject.removeChildren();
-      const newHeadG = GearGraphics.createHelmet(this.config.helmet, this.config.themeColor);
+      const newHeadG = GearGraphics.createHelmet(this.config.helmet, this.config.themeColor, this.config.hair, this.config.face);
       headBone.displayObject.addChild(newHeadG);
       this.riggedChar.parts.head = newHeadG;
     }

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="vi" class="w-full h-full overflow-hidden">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sprite 3/4 Viewer & Adjuster · GenAI Life</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="w-full h-full overflow-hidden flex items-center justify-center" style="background:#060a14">
+
+  <div class="glass flex flex-col rounded-2xl overflow-hidden w-full max-w-6xl h-[92vh]" style="background:rgba(12,20,40,.97);border:1px solid rgba(0,242,254,.3);box-shadow:0 20px 60px rgba(0,0,0,.8)">
+    
+    <!-- Header -->
+    <div class="flex items-center justify-between px-6 py-4" style="border-bottom:1px solid rgba(255,255,255,.08);background:linear-gradient(180deg,rgba(0,242,254,.1) 0%,transparent 100%)">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center justify-center w-10 h-10 rounded-xl shrink-0" style="background:rgba(0,242,254,.15);border:1px solid rgba(0,242,254,.4)">
+          <i class="fa-solid fa-person-walking text-xl" style="color:#00f2fe"></i>
+        </div>
+        <div>
+          <h1 class="text-base font-bold text-white">Sprite 3/4 Studio · Bộ Xem &amp; Tinh Chỉnh Nhân Vật</h1>
+          <p class="text-xs" style="color:#64748b">Xem Sprite mẫu 3/4 Isometric, chỉnh sửa Rigging Skeleton, Pose animation, Nón, Khiên &amp; Vũ khí realtime</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-xs font-semibold px-3.5 py-2 rounded-xl transition-all hover:bg-white/10 text-slate-300 border border-white/10 flex items-center gap-2">
+          <i class="fa-solid fa-house"></i> Về Game
+        </a>
+      </div>
+    </div>
+
+    <!-- Main Workspace (Grid 12 cols) -->
+    <div class="grid grid-cols-12 flex-1 min-h-0 overflow-hidden">
+      
+      <!-- Center Interactive PixiJS Canvas Preview (8 cols) -->
+      <div class="col-span-8 relative flex flex-col items-center justify-center overflow-hidden" style="background:radial-gradient(circle at center, #0d1936 0%, #050912 100%);border-right:1px solid rgba(255,255,255,.07)">
+        
+        <!-- Grid Background overlay -->
+        <div class="absolute inset-0 opacity-15 pointer-events-none" style="background-image: linear-gradient(rgba(0,242,254,.2) 1px, transparent 1px), linear-gradient(90deg, rgba(0,242,254,.2) 1px, transparent 1px); background-size: 32px 32px;"></div>
+        
+        <div id="sprite-canvas-container" class="w-full h-full flex items-center justify-center"></div>
+
+        <!-- Floating Quick View Controls -->
+        <div class="absolute top-4 left-4 flex gap-2 glass p-1.5 rounded-xl border border-white/10">
+          <button id="btn-toggle-wireframe" class="text-xs px-3 py-1.5 rounded-lg bg-cyan-500/20 text-cyan-300 font-medium hover:bg-cyan-500/30 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-bone"></i> Wireframe Off
+          </button>
+          <button id="btn-reset-pose" class="text-xs px-3 py-1.5 rounded-lg bg-slate-700/50 text-slate-300 font-medium hover:bg-slate-700 transition flex items-center gap-1.5">
+            <i class="fa-solid fa-rotate-left"></i> Reset Pose
+          </button>
+        </div>
+
+        <div class="absolute bottom-4 left-4 glass rounded-xl px-4 py-2 flex items-center gap-3 border border-white/10">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-xs font-semibold text-emerald-400 font-mono">SPRITE 3/4 ISOMETRIC OK</span>
+          </div>
+          <span class="text-slate-600">|</span>
+          <span id="txt-scale-info" class="text-xs text-slate-400 font-mono">Scale: 1.8x</span>
+        </div>
+      </div>
+
+      <!-- Right Control Panel (4 cols) -->
+      <div class="col-span-4 flex flex-col h-full overflow-y-auto p-5 gap-5" style="background:rgba(8,15,30,.8)">
+        
+        <!-- Tab Controls Header -->
+        <div class="flex rounded-xl p-1 gap-1" style="background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)">
+          <button id="tab-btn-gear" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-900 bg-gradient-to-r from-cyan-400 to-emerald-400 shadow-md">
+            <i class="fa-solid fa-shield-halved mr-1"></i> Trang Bị
+          </button>
+          <button id="tab-btn-anim" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-white">
+            <i class="fa-solid fa-play mr-1"></i> Động Tác
+          </button>
+          <button id="tab-btn-bones" class="flex-1 py-2 text-xs font-bold rounded-lg transition-all text-slate-400 hover:text-white">
+            <i class="fa-solid fa-sliders mr-1"></i> Khớp Xương
+          </button>
+        </div>
+
+        <!-- Section 1: Gear Customization -->
+        <div id="section-gear" class="flex flex-col gap-4">
+          <h2 class="text-xs font-bold tracking-wider text-cyan-400 uppercase flex items-center gap-2">
+            <i class="fa-solid fa-palette"></i> Tùy Chỉnh Nón, Khiên &amp; Vũ Khí
+          </h2>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-slate-400">Nón / Helmet</label>
+            <select id="select-helmet" class="form-control">
+              <option value="tech_visor">Tech Visor (Kính Sci-Fi Cyan)</option>
+              <option value="knight_helm">Knight Helmet (Mũ Hiệp Sĩ Sắt)</option>
+              <option value="cyber_crown">Cyber Crown (Vương Miện Năng Lượng)</option>
+              <option value="tactical_goggles">Tactical Goggles (Kính Chiến Thuật)</option>
+              <option value="none">Không Đội Mũ</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-slate-400">Khiên Phòng Thủ</label>
+            <select id="select-shield" class="form-control">
+              <option value="star_shield">Star Shield (Khiên Ngôi Sao 3/4)</option>
+              <option value="energy_aegis">Energy Aegis (Khiên Kim Cương)</option>
+              <option value="heavy_bulwark">Heavy Bulwark (Khiên Tháp Hạng Nặng)</option>
+              <option value="neon_ring">Neon Ring (Vòng Năng Lượng)</option>
+              <option value="none">Không Dùng Khiên</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-slate-400">Vũ Khí / Tấn Công</label>
+            <select id="select-weapon" class="form-control">
+              <option value="laser_blade">Laser Blade (Kiếm Laser Xanh)</option>
+              <option value="flame_greatsword">Flame Greatsword (Đại Kiếm Lửa)</option>
+              <option value="plasma_katana">Plasma Katana (Thanh Katana Năng Lượng)</option>
+              <option value="double_saber">Double Saber (Kiếm Đôi Hai Đầu)</option>
+              <option value="none">Không Trang Bị</option>
+            </select>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-slate-400">Màu Sắc Chủ Đạo (Theme Color)</label>
+            <select id="select-theme" class="form-control">
+              <option value="0x00f2fe">Cyber Cyan (#00f2fe)</option>
+              <option value="0xff007f">Neon Crimson (#ff007f)</option>
+              <option value="0xffbb00">Royal Gold (#ffbb00)</option>
+              <option value="0x00ff88">Emerald Green (#00ff88)</option>
+              <option value="0x7f00ff">Shadow Purple (#7f00ff)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Section 2: Animations -->
+        <div id="section-anim" class="hidden flex-col gap-4">
+          <h2 class="text-xs font-bold tracking-wider text-cyan-400 uppercase flex items-center gap-2">
+            <i class="fa-solid fa-person-running"></i> Động Tác Xem Thử
+          </h2>
+          <div class="grid grid-cols-2 gap-2.5">
+            <button data-anim="idle" class="btn-anim py-2 px-3 rounded-xl text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 transition">
+              <i class="fa-solid fa-child mr-1.5"></i> Stand Idle
+            </button>
+            <button data-anim="run" class="btn-anim py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-white/10 hover:bg-slate-700 transition">
+              <i class="fa-solid fa-person-running mr-1.5"></i> Run 3/4
+            </button>
+            <button data-anim="slash" class="btn-anim py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-white/10 hover:bg-slate-700 transition">
+              <i class="fa-solid fa-hand-scissors mr-1.5"></i> Attack Slash
+            </button>
+            <button data-anim="guard" class="btn-anim py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-white/10 hover:bg-slate-700 transition">
+              <i class="fa-solid fa-shield mr-1.5"></i> Shield Guard
+            </button>
+            <button data-anim="wave" class="btn-anim py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-white/10 hover:bg-slate-700 transition">
+              <i class="fa-solid fa-hand-wave mr-1.5"></i> Wave Hand
+            </button>
+            <button data-anim="eat" class="btn-anim py-2 px-3 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 border border-white/10 hover:bg-slate-700 transition">
+              <i class="fa-solid fa-utensils mr-1.5"></i> Eat Action
+            </button>
+          </div>
+        </div>
+
+        <!-- Section 3: Fine-Tune Skeleton Bone Angles -->
+        <div id="section-bones" class="hidden flex-col gap-3">
+          <h2 class="text-xs font-bold tracking-wider text-cyan-400 uppercase flex items-center gap-2">
+            <i class="fa-solid fa-sliders"></i> Điều Chỉnh Góc Xương (Bones Angle)
+          </h2>
+          
+          <div class="flex flex-col gap-3 text-xs overflow-y-auto max-h-[300px] pr-1">
+            <div class="flex flex-col gap-1">
+              <div class="flex justify-between font-mono text-slate-300">
+                <span>Head (Đầu):</span>
+                <span id="val-head" class="text-cyan-400">0°</span>
+              </div>
+              <input type="range" id="slider-head" min="-90" max="90" value="0" class="w-full accent-cyan-400" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <div class="flex justify-between font-mono text-slate-300">
+                <span>Torso (Thân):</span>
+                <span id="val-torso" class="text-cyan-400">-90°</span>
+              </div>
+              <input type="range" id="slider-torso" min="-180" max="0" value="-90" class="w-full accent-cyan-400" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <div class="flex justify-between font-mono text-slate-300">
+                <span>Arm Right (Tay phải):</span>
+                <span id="val-upperArmR" class="text-cyan-400">170°</span>
+              </div>
+              <input type="range" id="slider-upperArmR" min="0" max="360" value="170" class="w-full accent-cyan-400" />
+            </div>
+
+            <div class="flex flex-col gap-1">
+              <div class="flex justify-between font-mono text-slate-300">
+                <span>Arm Left (Tay trái):</span>
+                <span id="val-upperArmL" class="text-cyan-400">170°</span>
+              </div>
+              <input type="range" id="slider-upperArmL" min="0" max="360" value="170" class="w-full accent-cyan-400" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Export / Copy JSON Config -->
+        <div class="mt-auto pt-3 border-t border-white/10 flex flex-col gap-2">
+          <button id="btn-export-json" class="w-full py-2.5 rounded-xl font-bold text-xs bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-500/30 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-code"></i> SAO CHÉP JSON CẤU HÌNH SPRITE
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/src/sprite_viewer.js"></script>
+</body>
+</html>

@@ -128,14 +128,14 @@ html, body {
 }
 
 .modal-card {
-  width: 90vw;
-  max-width: 1020px;
-  height: 88vh;
-  max-height: 780px;
+  width: 98vw;
+  max-width: 1700px;
+  height: 96vh;
+  max-height: 96vh;
   background: rgba(12, 20, 40, 0.97);
-  border: 1px solid rgba(0, 242, 254, 0.25);
+  border: 1px solid rgba(0, 242, 254, 0.35);
   border-radius: 20px;
-  box-shadow: 0 24px 80px rgba(0,0,0,0.8), 0 0 60px rgba(0,242,254,0.08);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.9), 0 0 80px rgba(0,242,254,0.12);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -250,7 +250,89 @@ input:-webkit-autofill:active {
   background: rgba(0,242,254,0.18);
   border-color: var(--primary);
   color: var(--primary);
-  box-shadow: 0 0 8px rgba(0,242,254,0.2);
+  font-weight: 600;
+  box-shadow: 0 0 10px rgba(0,242,254,0.25);
+}
+
+/* ===== SQUARE ASSET ITEM TILES ===== */
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.asset-tile {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 6px;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+}
+
+.asset-tile:hover {
+  border-color: var(--primary);
+  background: rgba(0, 242, 254, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 242, 254, 0.2);
+}
+
+.asset-tile.active {
+  border-color: #00ff88 !important;
+  background: rgba(0, 255, 136, 0.15) !important;
+  box-shadow: 0 0 16px rgba(0, 255, 136, 0.35);
+}
+
+.asset-tile.active::after {
+  content: "✓";
+  position: absolute;
+  top: 3px; right: 4px;
+  font-size: 9px;
+  font-weight: bold;
+  color: #00ff88;
+  background: rgba(0, 0, 0, 0.7);
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #00ff88;
+}
+
+.asset-tile img {
+  width: 100%;
+  height: 60%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.asset-tile i {
+  font-size: 1.25rem;
+  margin-bottom: 2px;
+}
+
+.asset-tile .asset-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: center;
+  line-height: 1.1;
+  margin-top: 4px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 100%;
+}
+
+.asset-tile:hover .asset-label, .asset-tile.active .asset-label {
+  color: #fff;
 }
 
 /* ===== DIVIDER ===== */

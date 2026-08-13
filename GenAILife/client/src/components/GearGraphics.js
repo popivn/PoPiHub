@@ -1,10 +1,52 @@
-import { Graphics } from 'pixi.js';
+import { Container, Graphics, Sprite, Assets, Texture } from 'pixi.js';
+
+// Preload textures into PixiJS Assets Cache
+Assets.add({ alias: 'face_hero', src: '/assets/head/face_hero.png' });
+Assets.add({ alias: 'hair_spiky', src: '/assets/head/hair_spiky.png' });
+Assets.load(['face_hero', 'hair_spiky']).catch(() => {});
 
 export class GearGraphics {
-  // 🪖 1. HELMET GRAPHICS
-  static createHelmet(type = 'tech_visor', themeColor = 0x00f2fe) {
+  // 🪖 1. HELMET / HEAD / HAIR / FACE GRAPHICS WITH REAL PNG TEXTURES
+  static createHelmet(type = 'none', themeColor = 0x00f2fe, hairType = 'hair_spiky', faceType = 'face_hero') {
+    const headContainer = new Container();
     const g = new Graphics();
 
+    // 1. Render Base Face PNG Texture if faceType selected or when no full helmet is present
+    if (faceType !== 'none' && (type === 'none' || type === 'cyber_crown' || type === 'tactical_goggles')) {
+      try {
+        const faceTex = Texture.from('/assets/head/face_hero.png');
+        const faceSprite = new Sprite(faceTex);
+        faceSprite.anchor.set(0.5);
+        faceSprite.width = 44;
+        faceSprite.height = 44;
+        faceSprite.scale.x *= -1; // Flip face HORIZONTALLY to match body orientation looking left
+        faceSprite.x = 16;
+        faceSprite.y = 0;
+        faceSprite.rotation = Math.PI / 2;
+        headContainer.addChild(faceSprite);
+      } catch (e) {}
+    } else if (type === 'none' || type === 'cyber_crown' || type === 'tactical_goggles') {
+      // Fallback base head shape if face is 'none'
+      g.roundRect(0, -18, 32, 34, 14).fill({ color: 0xffdbac }).stroke({ width: 2, color: 0xe0ac69 });
+    }
+
+    // 2. Render Hair PNG Texture if hairType selected (layered over face)
+    if (hairType !== 'none' && (type === 'none' || type === 'cyber_crown' || type === 'tactical_goggles')) {
+      try {
+        const hairTex = Texture.from('/assets/head/hair_spiky.png');
+        const hairSprite = new Sprite(hairTex);
+        hairSprite.anchor.set(0.5);
+        hairSprite.width = 52;
+        hairSprite.height = 52;
+        hairSprite.scale.x *= -1; // Flip hair HORIZONTALLY to match body orientation looking left
+        hairSprite.x = 18;
+        hairSprite.y = 0;
+        hairSprite.rotation = Math.PI / 2;
+        headContainer.addChild(hairSprite);
+      } catch (e) {}
+    }
+
+    // 3. Render Helmets / Accessories on top
     if (type === 'tech_visor') {
       // Tech Visor Helmet
       g.roundRect(0, -18, 34, 36, 14).fill({ color: 0x0f172a }).stroke({ width: 3, color: themeColor });
@@ -14,22 +56,20 @@ export class GearGraphics {
     } else if (type === 'knight_helm') {
       // Knight Iron Helmet
       g.roundRect(0, -18, 36, 36, 12).fill({ color: 0x334155 }).stroke({ width: 3, color: 0x94a3b8 });
-      g.rect(12, -14, 18, 5).fill({ color: themeColor }); // Horizontal Eye Slot
-      g.poly([0, -18, 14, -28, 28, -18]).fill({ color: 0x475569 }); // Crest
+      g.rect(12, -14, 18, 5).fill({ color: themeColor });
+      g.poly([0, -18, 14, -28, 28, -18]).fill({ color: 0x475569 });
     } else if (type === 'cyber_crown') {
       // Cyber Energy Crown
-      g.circle(16, 0, 15).fill({ color: 0x0f172a }).stroke({ width: 2.5, color: themeColor });
-      g.poly([8, -20, 16, -30, 24, -20, 16, -16]).fill({ color: themeColor });
-      g.circle(16, 0, 4).fill({ color: 0xffffff });
+      g.poly([8, -20, 16, -30, 24, -20, 16, -16]).fill({ color: themeColor }).stroke({ width: 2, color: 0xffffff });
+      g.circle(16, -18, 3).fill({ color: 0xffffff });
     } else if (type === 'tactical_goggles') {
       // Tactical Goggles
-      g.roundRect(0, -16, 32, 32, 16).fill({ color: 0x1e293b }).stroke({ width: 2, color: 0x64748b });
-      g.roundRect(8, -10, 14, 20, 5).fill({ color: 0xff007f }); // Dual Goggles Lens
+      g.roundRect(8, -10, 14, 20, 5).fill({ color: 0xff007f });
       g.circle(15, -4, 2).fill({ color: 0xffffff });
     }
-    // If 'none', returns empty Graphics
 
-    return g;
+    headContainer.addChild(g);
+    return headContainer;
   }
 
   // 🛡️ 2. SHIELD GRAPHICS

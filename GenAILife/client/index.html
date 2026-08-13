@@ -353,7 +353,7 @@
           <div id="rig-canvas-container"></div>
           <div class="absolute bottom-3 left-3 glass rounded-lg px-2.5 py-1.5">
             <label class="toggle-label cursor-pointer">
-              <input type="checkbox" id="toggle-wireframe" checked class="accent-violet-500 w-3 h-3" />
+              <input type="checkbox" id="toggle-wireframe" class="accent-violet-500 w-3 h-3" />
               <span><i class="fa-solid fa-vector-square mr-1 text-[9px]"></i>Bone Wireframe</span>
             </label>
           </div>
@@ -361,6 +361,131 @@
 
         <!-- Right: Rigging Controls -->
         <div class="flex flex-col gap-0 overflow-y-auto" style="background:rgba(8,15,30,.6)">
+
+          <!-- ─── Asset Preview Selection (Square Grid Tiles) ─── -->
+          <div style="border-bottom:1px solid rgba(255,255,255,.06)">
+            <button class="collapse-btn w-full flex items-center justify-between px-3 py-2 cursor-pointer transition-colors hover:bg-white/[.03]"
+                    data-target="sec-rig-assets">
+              <span class="flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase" style="color:#00f2fe">
+                <i class="fa-solid fa-shapes"></i> Preview Character Assets Grid
+              </span>
+              <i class="fa-solid fa-chevron-down chevron-icon text-[9px]"></i>
+            </button>
+            <div id="sec-rig-assets" class="collapse-content">
+              <div class="flex flex-col gap-3 px-3 pb-3">
+                
+                <!-- Hair Assets Grid -->
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[10px] font-bold tracking-wider uppercase flex items-center gap-1" style="color:#00f2fe">
+                    <i class="fa-solid fa-user text-[9px]"></i> Tóc / Hair Assets (Đơn lẻ)
+                  </label>
+                  <div class="asset-grid" data-group="hair">
+                    <div class="asset-tile active" data-value="hair_spiky" title="Spiky Anime Hair">
+                      <img src="/assets/head/hair_spiky.png" alt="Hair Spiky" />
+                      <span class="asset-label">Spiky Anime</span>
+                    </div>
+                    <div class="asset-tile" data-value="none" title="Không tóc">
+                      <i class="fa-solid fa-ban text-slate-500"></i>
+                      <span class="asset-label">Không Tóc</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Face Assets Grid -->
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[10px] font-bold tracking-wider uppercase flex items-center gap-1" style="color:#00ff88">
+                    <i class="fa-solid fa-face-smile text-[9px]"></i> Khuôn Mặt / Face Assets (Đơn lẻ)
+                  </label>
+                  <div class="asset-grid" data-group="face">
+                    <div class="asset-tile active" data-value="face_hero" title="Calm Hero Face">
+                      <img src="/assets/head/face_hero.png" alt="Face Hero" />
+                      <span class="asset-label">Calm Hero</span>
+                    </div>
+                    <div class="asset-tile" data-value="none" title="Mặt mặc định">
+                      <i class="fa-solid fa-ban text-slate-500"></i>
+                      <span class="asset-label">Mặc Định</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Helmet Assets Grid -->
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[10px] font-bold tracking-wider uppercase flex items-center gap-1" style="color:#38bdf8">
+                    <i class="fa-solid fa-helmet-safety text-[9px]"></i> Nón / Helmet Assets
+                  </label>
+                  <div class="asset-grid" data-group="helmet">
+                    <div class="asset-tile active" data-value="tech_visor" title="Tech Visor">
+                      <i class="fa-solid fa-vr-cardboard text-cyan-400"></i>
+                      <span class="asset-label">Tech Visor</span>
+                    </div>
+                    <div class="asset-tile" data-value="knight_helm" title="Knight Helm">
+                      <i class="fa-solid fa-shield-cat text-slate-300"></i>
+                      <span class="asset-label">Knight Helm</span>
+                    </div>
+                    <div class="asset-tile" data-value="cyber_crown" title="Cyber Crown">
+                      <i class="fa-solid fa-crown text-yellow-400"></i>
+                      <span class="asset-label">Crown</span>
+                    </div>
+                    <div class="asset-tile" data-value="none" title="Không nón">
+                      <i class="fa-solid fa-ban text-slate-500"></i>
+                      <span class="asset-label">Không Nón</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Shield Assets Grid -->
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[10px] font-bold tracking-wider uppercase flex items-center gap-1" style="color:#ffbb00">
+                    <i class="fa-solid fa-shield text-[9px]"></i> Khiên / Shield Assets
+                  </label>
+                  <div class="asset-grid" data-group="shield">
+                    <div class="asset-tile active" data-value="star_shield" title="Star Shield 3/4">
+                      <i class="fa-solid fa-shield-halved text-sky-400"></i>
+                      <span class="asset-label">Star Shield</span>
+                    </div>
+                    <div class="asset-tile" data-value="energy_aegis" title="Energy Aegis">
+                      <i class="fa-solid fa-gem text-cyan-300"></i>
+                      <span class="asset-label">Energy Aegis</span>
+                    </div>
+                    <div class="asset-tile" data-value="heavy_bulwark" title="Heavy Bulwark">
+                      <i class="fa-solid fa-square text-slate-400"></i>
+                      <span class="asset-label">Bulwark</span>
+                    </div>
+                    <div class="asset-tile" data-value="none" title="Không khiên">
+                      <i class="fa-solid fa-ban text-slate-500"></i>
+                      <span class="asset-label">Không Khiên</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Weapon Assets Grid -->
+                <div class="flex flex-col gap-1.5">
+                  <label class="text-[10px] font-bold tracking-wider uppercase flex items-center gap-1" style="color:#ff007f">
+                    <i class="fa-solid fa-khanda text-[9px]"></i> Vũ Khí / Weapon Assets
+                  </label>
+                  <div class="asset-grid" data-group="weapon">
+                    <div class="asset-tile active" data-value="laser_blade" title="Laser Blade">
+                      <i class="fa-solid fa-wand-magic-sparkles text-cyan-400"></i>
+                      <span class="asset-label">Laser Blade</span>
+                    </div>
+                    <div class="asset-tile" data-value="flame_greatsword" title="Flame Greatsword">
+                      <i class="fa-solid fa-fire text-rose-500"></i>
+                      <span class="asset-label">Flame Sword</span>
+                    </div>
+                    <div class="asset-tile" data-value="plasma_katana" title="Plasma Katana">
+                      <i class="fa-solid fa-location-crosshairs text-emerald-400"></i>
+                      <span class="asset-label">Katana</span>
+                    </div>
+                    <div class="asset-tile" data-value="none" title="Không trang bị">
+                      <i class="fa-solid fa-ban text-slate-500"></i>
+                      <span class="asset-label">Không Kiếm</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
 
           <!-- ─── Animation Presets ─── -->
           <div style="border-bottom:1px solid rgba(255,255,255,.06)">
