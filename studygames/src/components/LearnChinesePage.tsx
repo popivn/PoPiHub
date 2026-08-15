@@ -5,8 +5,6 @@ import {
   faRotate,
   faChevronRight,
   faVolumeHigh,
-  faGamepad,
-  faLayerGroup,
   faCheckCircle,
   faXmarkCircle,
   faLightbulb,
@@ -14,13 +12,15 @@ import {
   faBuilding,
   faHouse,
   faLaptopCode,
-  faBook,
   faChevronDown,
   faCheck,
+  faBookOpen,
+  faGamepad,
   type IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 import { useI18n } from '../i18n';
-import LanguageDropdown from './LanguageDropdown';
+import Navbar from './Navbar';
+import { API_BASE_URL } from '../auth/authClient';
 
 export interface ExampleSentence {
   sentence: string;
@@ -541,7 +541,6 @@ const CATEGORIES: Category[] = [
   { id: 'office', name: 'Nơi Công Sở', nameEn: 'Office & Work', icon: faBuilding },
   { id: 'home', name: 'Giao Tiếp Tại Nhà', nameEn: 'Home Life', icon: faHouse },
   { id: 'it', name: 'Lĩnh Vực IT', nameEn: 'IT Sector', icon: faLaptopCode },
-  { id: 'basic', name: 'Căn Bản HSK', nameEn: 'Basic HSK', icon: faBook },
 ];
 
 export default function LearnChinesePage() {
@@ -599,8 +598,8 @@ export default function LearnChinesePage() {
   const fetchCharacters = async (catId: string) => {
     try {
       const url = catId === 'all'
-        ? 'http://localhost:3000/learn/chinese'
-        : `http://localhost:3000/learn/chinese?category=${catId}`;
+        ? `${API_BASE_URL}/learn/chinese`
+        : `${API_BASE_URL}/learn/chinese?category=${catId}`;
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -671,58 +670,11 @@ export default function LearnChinesePage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-200">
-      {/* Top Header Navbar */}
-      <header className="sticky top-0 z-50 backdrop-blur-md bg-slate-950/80 border-b border-teal-500/20 px-3 sm:px-8 py-2.5 sm:py-3 flex items-center justify-between shadow-lg shadow-teal-500/10">
-        <div className="flex items-center gap-2 sm:gap-4">
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <span className="font-pacifico italic text-base sm:text-xl text-teal-400 drop-shadow-[0_0_10px_rgba(45,212,191,0.4)]">
-              SliStudy
-            </span>
-            <span className="text-[10px] sm:text-xs bg-teal-500/20 text-teal-300 font-semibold px-1.5 sm:px-2 py-0.5 rounded-full border border-teal-500/30 whitespace-nowrap">
-              {lang === 'en' ? 'Chinese Learn' : 'Học Chữ Hán'}
-            </span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          {/* Mode Switcher */}
-          <div className="bg-slate-900 border border-slate-800 p-1 rounded-full flex gap-1 text-xs font-semibold">
-            <button
-              onClick={() => setMode('flashcard')}
-              className={`px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
-                mode === 'flashcard'
-                  ? 'bg-teal-400 text-slate-950 shadow-md shadow-teal-400/20'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title={lang === 'en' ? 'Vocabulary Feed' : 'Bảng Tin Từ Vựng'}
-            >
-              <FontAwesomeIcon icon={faLayerGroup} />
-              <span className="hidden sm:inline">
-                {lang === 'en' ? 'Vocabulary Feed' : 'Bảng Tin Từ Vựng'}
-              </span>
-            </button>
-            <button
-              onClick={() => setMode('quiz')}
-              className={`px-3 py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
-                mode === 'quiz'
-                  ? 'bg-teal-400 text-slate-950 shadow-md shadow-teal-400/20'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title={lang === 'en' ? `Slime Quiz (${score} pts)` : `Slime Quiz (${score} đ)`}
-            >
-              <FontAwesomeIcon icon={faGamepad} />
-              <span className="hidden sm:inline">
-                {lang === 'en' ? `Slime Quiz (${score} pts)` : `Slime Quiz (${score} đ)`}
-              </span>
-            </button>
-          </div>
-
-          <LanguageDropdown />
-        </div>
-      </header>
+      {/* Top Shared Navbar */}
+      <Navbar tagline={lang === 'en' ? 'Chinese Learn' : 'Học Chữ Hán'} />
 
       {/* Breadcrumb Navigation Bar */}
-      <nav className="w-full px-4 sm:px-8 pt-4 pb-1 flex items-center justify-start gap-2 text-xs text-slate-400 font-semibold">
+      <div className="w-full px-4 sm:px-8 pt-4 pb-1 flex items-center justify-start gap-2 text-xs text-slate-400 font-semibold">
         <Link to="/" className="hover:text-teal-400 transition-colors flex items-center gap-1.5">
           <FontAwesomeIcon icon={faHouse} className="text-xs text-teal-400" />
           <span>{lang === 'en' ? 'Home' : 'Trang chủ'}</span>
@@ -731,12 +683,12 @@ export default function LearnChinesePage() {
         <span className="text-slate-200 font-bold">
           {lang === 'en' ? 'Chinese Learning' : 'Học Chữ Hán'}
         </span>
-      </nav>
+      </div>
 
-      {/* Topic Category Filter Section (Mobile Dropdown & Desktop Pills) */}
-      <div className="sticky top-[57px] sm:top-[61px] z-40 w-full bg-slate-950/90 backdrop-blur-md py-2.5 px-4 sm:px-8 border-b border-slate-800/60 mb-6 flex items-center justify-center shadow-lg">
+      {/* Topic Category Filter & Mode Switcher Sticky Bar (Cùng 1 hàng ngang) */}
+      <div className="sticky top-[64px] sm:top-[72px] z-40 w-full bg-slate-950/90 backdrop-blur-md py-2.5 px-4 sm:px-8 border-b border-slate-800/60 mt-4 sm:mt-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-3 shadow-lg">
         {/* MOBILE VIEW: Custom Sleek Category Dropdown Popover (< sm) */}
-        <div className="w-full max-w-xs block sm:hidden relative">
+        <div className="w-full block sm:hidden relative">
           <button
             type="button"
             onClick={() => setIsCatDropdownOpen(!isCatDropdownOpen)}
@@ -793,22 +745,67 @@ export default function LearnChinesePage() {
                     </button>
                   );
                 })}
+
+                {/* Border ngăn cách & Mode Switcher Items nằm trong Dropdown trên Mobile */}
+                <div className="border-t border-slate-800/90 pt-1.5 mt-1.5 space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('flashcard');
+                      setIsCatDropdownOpen(false);
+                    }}
+                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                      mode === 'flashcard'
+                        ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 shadow-md shadow-teal-500/30'
+                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-teal-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FontAwesomeIcon icon={faBookOpen} className={mode === 'flashcard' ? 'text-slate-950' : 'text-teal-400'} />
+                      <span>{lang === 'en' ? 'Vocabulary Feed' : 'Bảng Tin Từ Vựng'}</span>
+                    </div>
+                    {mode === 'flashcard' && (
+                      <FontAwesomeIcon icon={faCheck} className="text-slate-950 text-xs" />
+                    )}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMode('quiz');
+                      setIsCatDropdownOpen(false);
+                    }}
+                    className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                      mode === 'quiz'
+                        ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 shadow-md shadow-teal-500/30'
+                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-teal-300'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <FontAwesomeIcon icon={faGamepad} className={mode === 'quiz' ? 'text-slate-950' : 'text-teal-400'} />
+                      <span>{lang === 'en' ? `Slime Quiz (${score})` : `Slime Quiz (${score}đ)`}</span>
+                    </div>
+                    {mode === 'quiz' && (
+                      <FontAwesomeIcon icon={faCheck} className="text-slate-950 text-xs" />
+                    )}
+                  </button>
+                </div>
               </div>
             </>
           )}
         </div>
 
-        {/* DESKTOP VIEW: Horizontal Pills List (>= sm) */}
-        <div className="hidden sm:flex items-center gap-2 overflow-x-auto scrollbar-none justify-center">
+        {/* DESKTOP VIEW: Horizontal Category Pills List (>= sm) */}
+        <div className="hidden sm:flex items-center gap-2.5 overflow-x-auto scrollbar-none justify-start flex-1 py-1">
           {CATEGORIES.map((cat) => {
             const catTitle = lang === 'en' ? cat.nameEn : cat.name;
             return (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 border ${
+                className={`px-4 py-2 rounded-full text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 border shrink-0 ${
                   selectedCategory === cat.id
-                    ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 border-teal-300 shadow-md shadow-teal-500/25 scale-105'
+                    ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 border-teal-300 shadow-lg shadow-teal-500/30 ring-1 ring-teal-300/50'
                     : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
                 }`}
               >
@@ -817,6 +814,32 @@ export default function LearnChinesePage() {
               </button>
             );
           })}
+        </div>
+
+        {/* Desktop Mode Switcher Buttons (Ẩn trên mobile, hiện trên desktop) */}
+        <div className="hidden sm:flex bg-slate-900/90 border border-slate-800/90 p-1 rounded-full gap-1 text-xs font-semibold shrink-0 shadow-inner">
+          <button
+            type="button"
+            onClick={() => setMode('flashcard')}
+            className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+              mode === 'flashcard'
+                ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 font-extrabold shadow-md shadow-teal-400/20'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <span>{lang === 'en' ? 'Vocabulary Feed' : 'Bảng Tin Từ Vựng'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode('quiz')}
+            className={`px-3.5 py-1.5 rounded-full transition-all flex items-center gap-1.5 cursor-pointer ${
+              mode === 'quiz'
+                ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 font-extrabold shadow-md shadow-teal-400/20'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <span>{lang === 'en' ? `Slime Quiz (${score})` : `Slime Quiz (${score}đ)`}</span>
+          </button>
         </div>
       </div>
 

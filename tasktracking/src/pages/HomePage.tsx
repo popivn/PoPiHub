@@ -493,11 +493,19 @@ export const HomePage: React.FC = () => {
   };
 
   if (view === 'dashboard') {
-    return <Dashboard tasks={tasks} zones={zones} onBack={() => setView('home')} />;
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-950 overflow-y-auto">
+        <Dashboard tasks={tasks} zones={zones} onBack={() => setView('home')} />
+      </div>
+    );
   }
 
   if (view === 'profile') {
-    return <Profile tasks={tasks} onBack={() => setView('home')} onReevaluateRadar={handleReevaluateRadar} />;
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-950 overflow-y-auto">
+        <Profile tasks={tasks} onBack={() => setView('home')} onReevaluateRadar={handleReevaluateRadar} />
+      </div>
+    );
   }
 
   return (

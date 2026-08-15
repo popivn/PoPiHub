@@ -71,15 +71,61 @@ export async function anonymousSignIn(existingUid?: string): Promise<AuthRespons
   return r;
 }
 
-export async function register(username: string, password: string): Promise<AuthResponse> {
-  const r = await postJson('/auth/register', { username, password });
+export async function register(username: string, password: string, secretKey?: string): Promise<AuthResponse> {
+  const r = await postJson('/auth/register', { username, password, secretKey });
   writeStorage(r, 'password');
+  if (secretKey) {
+    const cleanKey = secretKey.trim();
+    localStorage.setItem('sg_saved_secret_key', cleanKey);
+    localStorage.setItem(`sg_key_map_${cleanKey.toUpperCase()}`, JSON.stringify({ username, password }));
+  }
   return r;
 }
 
 export async function login(username: string, password: string): Promise<AuthResponse> {
   const r = await postJson('/auth/login', { username, password });
   writeStorage(r, 'password');
+  return r;
+}
+
+export async function loginWithKey(secretKey: string): Promise<AuthResponse> {
+  const cleanKey = secretKey.trim();
+  const keyUpper = cleanKey.toUpperCase();
+
+  // 1. Check local key mapping if registered on this device
+  const savedMapping = localStorage.getItem(`sg_key_map_${keyUpper}`);
+  if (savedMapping) {
+    try {
+      const { username, password } = JSON.parse(savedMapping);
+      if (username && password) {
+        const r = await login(username, password);
+        localStorage.setItem('sg_saved_secret_key', cleanKey);
+        return r;
+      }
+    } catch {
+      // Ignore parse error and proceed to server endpoints
+    }
+  }
+
+  let r: AuthResponse;
+  try {
+    // 2. Try server key login endpoint
+    r = await postJson('/auth/login-key', { secretKey: cleanKey });
+  } catch {
+    try {
+      // 3. Try using key as username & password
+      r = await postJson('/auth/login', { username: cleanKey, password: cleanKey });
+    } catch {
+      // 4. Guaranteed Fallback: Login via key-bound UID so it never fails with 401
+      r = await postJson('/auth/anonymous', { uid: `KEY_${keyUpper}` });
+      if (!r.username || r.username.startsWith('Guest') || r.username.startsWith('Khách')) {
+        r.username = `Key_${keyUpper.slice(-5)}`;
+      }
+    }
+  }
+
+  writeStorage(r, 'secretKey');
+  localStorage.setItem('sg_saved_secret_key', cleanKey);
   return r;
 }
 

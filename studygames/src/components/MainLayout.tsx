@@ -1,38 +1,24 @@
 import type { AuthState } from '../auth/authClient';
 import type { Player } from '../players/playersClient';
+import Navbar from './Navbar';
 import './MainLayout.css';
 
 interface Props {
-  auth: AuthState;
-  player: Player | null;
+  auth?: AuthState;
+  player?: Player | null;
+  onLoginClick?: () => void;
+  onOpenPlayers?: () => void;
+  onLogout?: () => void;
   children: React.ReactNode;
 }
 
-/**
- * MainLayout — khung chính cho mọi trang sau login.
- * Hiển thị avatar + tên player ở góc trên bên trái.
- */
-export default function MainLayout({ auth, player, children }: Props) {
-  const accountLabel = auth.username
-    ? auth.username
-    : auth.provider === 'anonymous'
-      ? 'Guest'
-      : 'Sign in';
-
+export default function MainLayout({ player, children }: Props) {
   return (
-    <div className="main-layout">
-      {player && (
-        <div className="ml-profile">
-          <div className={`ml-profile-avatar type-${player.slimeType}`}>
-            <span className="ml-profile-emoji">{player.avatar || '🦊'}</span>
-          </div>
-          <div className="ml-profile-info">
-            <div className="ml-profile-name">{player.name}</div>
-            <div className="ml-profile-user">{accountLabel}</div>
-          </div>
-        </div>
-      )}
-      {children}
+    <div className="main-layout flex flex-col min-h-screen bg-slate-950 text-slate-200">
+      <Navbar tagline="Social Slime" currentPlayer={player} />
+      <div className="flex-1 relative w-full h-full">
+        {children}
+      </div>
     </div>
   );
 }

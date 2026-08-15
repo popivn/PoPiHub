@@ -11,6 +11,9 @@ export default defineConfig({
     proxy: {
       '/auth': 'http://localhost:3000',
       '/players': 'http://localhost:3000',
+      '/settings': 'http://localhost:3000',
+      '/bo': 'http://localhost:3000',
+      '/learn': 'http://localhost:3000',
     },
   },
 })

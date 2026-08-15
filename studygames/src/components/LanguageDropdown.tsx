@@ -65,7 +65,7 @@ export default function LanguageDropdown() {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 rounded-full px-2.5 py-1 border border-slate-700 bg-slate-900/80 text-slate-200 text-xs font-medium hover:border-teal-400 hover:text-teal-300 transition-all shadow-sm focus:outline-none cursor-pointer"
+        className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 border border-slate-700/80 bg-slate-900/90 text-slate-200 text-xs font-medium hover:border-teal-400/80 hover:text-teal-300 hover:scale-105 active:scale-95 hover:shadow-md hover:shadow-teal-500/20 transition-all duration-200 shadow-sm focus:outline-none cursor-pointer"
         aria-expanded={isOpen}
       >
         <CurrentFlag />

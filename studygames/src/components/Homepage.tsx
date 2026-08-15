@@ -6,7 +6,6 @@ import { type Player } from '../players/playersClient';
 import LoginModal from './LoginModal';
 import PlayerManager from './PlayerManager';
 import MainLayout from './MainLayout';
-import LanguageDropdown from './LanguageDropdown';
 import './Homepage.css';
 
 function HatButton({
@@ -60,7 +59,6 @@ export default function Homepage() {
   const [auth, setAuth] = useState<AuthState>(() => getAuthState());
   const [loginOpen, setLoginOpen] = useState(!auth.accessToken);
   const [playersOpen, setPlayersOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [player, setPlayer] = useState<Player | null>(null);
 
   // Tạo game một lần.
@@ -114,12 +112,6 @@ export default function Homepage() {
     gameRef.current?.requestJump();
   };
 
-  const accountLabel = auth.username
-    ? auth.username
-    : auth.provider === 'anonymous'
-      ? 'Guest'
-      : 'Sign in';
-
   const onSelectPlayer = (p: Player) => {
     setPlayer(p);
     setPlayersOpen(false);
@@ -128,47 +120,19 @@ export default function Homepage() {
   const handleLogout = () => {
     clearAuth();
     setPlayer(null);
-    setMenuOpen(false);
     setAuth(getAuthState());
   };
 
   return (
-    <MainLayout auth={auth} player={player}>
+    <MainLayout
+      auth={auth}
+      player={player}
+      onLoginClick={() => setLoginOpen(true)}
+      onOpenPlayers={() => setPlayersOpen(true)}
+      onLogout={handleLogout}
+    >
       <main className="homepage">
         <div className="homepage-stage" ref={viewportRef} />
-        <div className="account-wrap flex items-center gap-3">
-          <LanguageDropdown />
-          <div className="relative">
-            <button
-              type="button"
-              className="account-btn"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label="Account"
-            >
-              <span className="account-btn-dot" data-on={auth.accessToken ? 'true' : 'false'} />
-              {accountLabel}
-            </button>
-            {menuOpen && (
-              <div className="account-menu">
-                <div className="account-menu-hd">{accountLabel}</div>
-                {auth.accessToken ? (
-                  <>
-                    <button type="button" onClick={() => { setMenuOpen(false); setPlayersOpen(true); }}>
-                      Players
-                    </button>
-                    <button type="button" onClick={handleLogout}>
-                      Log out
-                    </button>
-                  </>
-                ) : (
-                  <button type="button" onClick={() => { setMenuOpen(false); setLoginOpen(true); }}>
-                    Sign in
-                  </button>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
       <LoginModal
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
