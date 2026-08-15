@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGlobe, faChevronDown, faCheck } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { useI18n } from '../i18n';
 
 const FlagVN = () => (
