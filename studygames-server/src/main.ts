@@ -5,10 +5,12 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // CORS cho frontend (Vite dev server ở :5173)
+  // CORS: hỗ trợ nhiều origins hoặc '*' cho phép mọi nguồn
+  const rawOrigins = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
+  const allowAll = rawOrigins.trim() === '*';
   app.enableCors({
-    origin: (process.env.CORS_ORIGIN ?? 'http://localhost:5173').split(','),
-    credentials: true,
+    origin: allowAll ? true : rawOrigins.split(',').map((o) => o.trim()),
+    credentials: !allowAll,
   });
 
   // Log mọi request đến (method, url, status, response time)
