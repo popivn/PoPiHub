@@ -6,6 +6,7 @@ import { type Player } from '../players/playersClient';
 import LoginModal from './LoginModal';
 import PlayerManager from './PlayerManager';
 import MainLayout from './MainLayout';
+import LanguageDropdown from './LanguageDropdown';
 import './Homepage.css';
 
 function HatButton({
@@ -135,36 +136,39 @@ export default function Homepage() {
     <MainLayout auth={auth} player={player}>
       <main className="homepage">
         <div className="homepage-stage" ref={viewportRef} />
-        <div className="account-wrap">
-        <button
-          type="button"
-          className="account-btn"
-          onClick={() => setMenuOpen((v) => !v)}
-          aria-label="Account"
-        >
-          <span className="account-btn-dot" data-on={auth.accessToken ? 'true' : 'false'} />
-          {accountLabel}
-        </button>
-        {menuOpen && (
-          <div className="account-menu">
-            <div className="account-menu-hd">{accountLabel}</div>
-            {auth.accessToken ? (
-              <>
-                <button type="button" onClick={() => { setMenuOpen(false); setPlayersOpen(true); }}>
-                  Players
-                </button>
-                <button type="button" onClick={handleLogout}>
-                  Log out
-                </button>
-              </>
-            ) : (
-              <button type="button" onClick={() => { setMenuOpen(false); setLoginOpen(true); }}>
-                Sign in
-              </button>
+        <div className="account-wrap flex items-center gap-3">
+          <LanguageDropdown />
+          <div className="relative">
+            <button
+              type="button"
+              className="account-btn"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Account"
+            >
+              <span className="account-btn-dot" data-on={auth.accessToken ? 'true' : 'false'} />
+              {accountLabel}
+            </button>
+            {menuOpen && (
+              <div className="account-menu">
+                <div className="account-menu-hd">{accountLabel}</div>
+                {auth.accessToken ? (
+                  <>
+                    <button type="button" onClick={() => { setMenuOpen(false); setPlayersOpen(true); }}>
+                      Players
+                    </button>
+                    <button type="button" onClick={handleLogout}>
+                      Log out
+                    </button>
+                  </>
+                ) : (
+                  <button type="button" onClick={() => { setMenuOpen(false); setLoginOpen(true); }}>
+                    Sign in
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
-      </div>
+        </div>
       <LoginModal
         open={loginOpen}
         onClose={() => setLoginOpen(false)}

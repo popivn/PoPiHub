@@ -65,6 +65,15 @@ body {
   margin: 0;
 }
 
+/* Disable image dragging globally */
+img {
+  user-select: none;
+  -webkit-user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 h1,
 h2 {
   font-family: var(--heading);

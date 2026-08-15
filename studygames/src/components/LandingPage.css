@@ -1,1 +1,116 @@
 @import "tailwindcss";
+
+/* Hamburger Button Keyframe Animations */
+@keyframes hamburgerSpinOpen {
+  0% {
+    transform: rotate(0deg) scale(0.8);
+    opacity: 0.4;
+  }
+  60% {
+    transform: rotate(195deg) scale(1.18);
+  }
+  100% {
+    transform: rotate(180deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes hamburgerSpinClose {
+  0% {
+    transform: rotate(180deg) scale(0.8);
+    opacity: 0.4;
+  }
+  60% {
+    transform: rotate(-15deg) scale(1.18);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes hamburgerPulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.4), inset 0 0 8px rgba(45, 212, 191, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 16px 3px rgba(45, 212, 191, 0.55), inset 0 0 12px rgba(45, 212, 191, 0.35);
+  }
+}
+
+.animate-hamburger-open {
+  animation: hamburgerSpinOpen 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-hamburger-close {
+  animation: hamburgerSpinClose 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.hamburger-active-glow {
+  animation: hamburgerPulseGlow 2s infinite ease-in-out;
+  border-color: rgba(45, 212, 191, 0.7) !important;
+  color: #2dd4bf !important;
+  background-color: rgba(15, 23, 42, 0.95) !important;
+}
+
+.font-pacifico {
+  font-family: 'Pacifico', cursive;
+}
+
+/* Hero Mascot Logo Float / Pulse In-Out Keyframe Animation */
+@keyframes heroLogoFloatInOut {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 0 35px rgba(45, 212, 191, 0.35));
+  }
+  50% {
+    transform: translateY(-18px) scale(1.05);
+    filter: drop-shadow(0 0 65px rgba(45, 212, 191, 0.65));
+  }
+}
+
+.animate-hero-logo {
+  transition: transform 0.3s ease, filter 0.3s ease;
+  cursor: pointer;
+}
+
+.animate-hero-logo:hover {
+  animation: heroLogoFloatInOut 3.5s ease-in-out infinite;
+}
+
+/* 3D Flip Card Styles */
+.card-flip-perspective {
+  perspective: 1000px;
+}
+
+.card-flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.card-flip-inner.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: 1.5rem;
+}
+
+.card-face-front {
+  transform: rotateY(0deg);
+  z-index: 2;
+}
+
+.card-face-back {
+  transform: rotateY(180deg);
+  z-index: 1;
+}
