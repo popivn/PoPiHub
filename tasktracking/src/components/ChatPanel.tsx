@@ -8,8 +8,18 @@ import {
   faComments,
   faCircleCheck,
   faBolt,
+  faChevronDown,
+  faBrain,
+  faSitemap,
 } from '@fortawesome/free-solid-svg-icons';
-import { askGemini, parseAction, type ChatMessage } from '../utils/gemini';
+import {
+  askGemini,
+  askOpenRouter,
+  parseAction,
+  OPENROUTER_MODELS,
+  type ChatMessage,
+  type AIProvider,
+} from '../utils/gemini';
 import { toast } from '../utils/alert';
 import type { Zone } from '../types';
 
@@ -37,14 +47,29 @@ interface ChatPanelProps {
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({ zones, onCreateTask }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [provider, setProvider] = useState<AIProvider>(
+    () => (sessionStorage.getItem('popi_ai_provider') as AIProvider) || 'gemini'
+  );
+  const [openrouterModel, setOpenrouterModel] = useState<string>(
+    () => sessionStorage.getItem('popi_openrouter_model') || 'nvidia/nemotron-3-super-120b-a12b:free'
+  );
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [messages, setMessages] = useState<UiMessage[]>([
     {
       role: 'model',
-      text: 'Xin chào! Tôi là trợ lý AI của PoPi Hub. Hôm nay bạn cần thêm task gì?',
+      text: 'Xin chào! Tôi là trợ lý AI của Task Tracker. Hôm nay bạn cần thêm task gì?',
     },
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Persist provider + model
+  useEffect(() => {
+    sessionStorage.setItem('popi_ai_provider', provider);
+  }, [provider]);
+  useEffect(() => {
+    sessionStorage.setItem('popi_openrouter_model', openrouterModel);
+  }, [openrouterModel]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -74,11 +99,15 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ zones, onCreateTask }) => 
 
     try {
       const zoneNames = zones.map((z) => z.name);
-      const raw = await askGemini(
-        nextHistory.slice(0, -1).map((m) => ({ role: m.role, text: m.text })),
-        text,
-        zoneNames
-      );
+      // Giới hạn lịch sử gửi đi: tối đa 5 tin nhắn gần nhất (ít token, tiết kiệm quota)
+      const recentHistory = nextHistory
+        .slice(-6, -1)
+        .map((m) => ({ role: m.role, text: m.text }));
+
+      const raw =
+        provider === 'openrouter'
+          ? await askOpenRouter(recentHistory, text, zoneNames, openrouterModel)
+          : await askGemini(recentHistory, text, zoneNames);
 
       const parsed = parseAction(raw);
 
@@ -153,25 +182,101 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ zones, onCreateTask }) => 
 
       {/* Chat Panel */}
       {isOpen && (
-        <div className="fixed bottom-24 right-5 z-50 w-[calc(100vw-2.5rem)] sm:w-96 max-h-[70vh] flex flex-col bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200">
+        <div className="fixed bottom-24 right-5 z-50 w-[calc(100vw-1.5rem)] sm:w-[30rem] md:w-[36rem] h-[75vh] max-h-[700px] flex flex-col bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl shadow-black/50 overflow-hidden animate-in fade-in slide-in-from-bottom-3 duration-200">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-indigo-600/20 to-violet-600/20 border-b border-slate-800">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white">
-                <FontAwesomeIcon icon={faRobot} />
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
+                <FontAwesomeIcon icon={faRobot} className="text-lg" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-100">PoPi AI Assistant</h3>
-                <p className="text-[10px] text-emerald-400 font-medium">● Online · Gemini</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-[10px] text-slate-400 font-medium">
+                    {provider === 'gemini' ? 'Gemini 3.5 Flash' : OPENROUTER_MODELS.find((m) => m.id === openrouterModel)?.label || openrouterModel}
+                  </p>
+                </div>
               </div>
             </div>
-            <button
-              onClick={handleClear}
-              className="text-slate-400 hover:text-red-400 transition-colors p-1.5"
-              title="Xóa lịch sử chat"
-            >
-              <FontAwesomeIcon icon={faTrashCan} className="text-xs" />
-            </button>
+
+            <div className="flex items-center gap-1.5">
+              {/* Provider selector */}
+              <div className="flex items-center bg-slate-950/60 border border-slate-700 rounded-lg p-0.5">
+                <button
+                  onClick={() => {
+                    setProvider('gemini');
+                    setShowModelDropdown(false);
+                  }}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-bold transition-all ${
+                    provider === 'gemini'
+                      ? 'bg-indigo-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                  title="Gemini"
+                >
+                  <FontAwesomeIcon icon={faBrain} />
+                  <span className="hidden sm:inline">Gemini</span>
+                </button>
+                <button
+                  onClick={() => setProvider('openrouter')}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[10px] font-bold transition-all ${
+                    provider === 'openrouter'
+                      ? 'bg-violet-600 text-white shadow-md'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                  title="OpenRouter"
+                >
+                  <FontAwesomeIcon icon={faSitemap} />
+                  <span className="hidden sm:inline">OpenRouter</span>
+                </button>
+              </div>
+
+              {/* Model selector (OpenRouter) */}
+              {provider === 'openrouter' && (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowModelDropdown((v) => !v)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-950/60 border border-slate-700 text-[10px] font-bold text-slate-300 hover:bg-slate-800 transition-colors"
+                    title="Chọn model"
+                  >
+                    <span className="hidden sm:inline max-w-[90px] truncate">
+                      {OPENROUTER_MODELS.find((m) => m.id === openrouterModel)?.label || openrouterModel}
+                    </span>
+                    <FontAwesomeIcon icon={faChevronDown} className="text-[8px]" />
+                  </button>
+                  {showModelDropdown && (
+                    <div className="absolute right-0 top-full mt-1.5 w-64 bg-slate-800 border border-slate-700 rounded-xl shadow-2xl z-50 max-h-72 overflow-y-auto">
+                      {OPENROUTER_MODELS.map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => {
+                            setOpenrouterModel(m.id);
+                            setShowModelDropdown(false);
+                          }}
+                          className={`w-full text-left px-3.5 py-2.5 hover:bg-slate-700 transition-colors first:rounded-t-xl last:rounded-b-xl border-b border-slate-700/50 last:border-0 ${
+                            openrouterModel === m.id ? 'bg-indigo-600/20' : ''
+                          }`}
+                        >
+                          <p className="text-[11px] font-bold text-slate-200 flex items-center gap-1.5">
+                            {openrouterModel === m.id && <span className="text-emerald-400">✓</span>}
+                            {m.label}
+                          </p>
+                          <p className="text-[9px] text-slate-500 mt-0.5">{m.desc}</p>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button
+                onClick={handleClear}
+                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                title="Xóa lịch sử chat"
+              >
+                <FontAwesomeIcon icon={faTrashCan} className="text-xs" />
+              </button>
+            </div>
           </div>
 
           {/* Messages */}
@@ -234,16 +339,16 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({ zones, onCreateTask }) => 
           </div>
 
           {/* Input */}
-          <div className="border-t border-slate-800 p-2.5 bg-slate-900">
-            <div className="flex items-end gap-2">
+          <div className="border-t border-slate-800 p-3 bg-slate-900">
+            <div className="flex items-end gap-2.5">
               <textarea
                 ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Nhập tin nhắn... (Enter để gửi)"
-                rows={1}
-                className="flex-1 resize-none bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 max-h-24"
+                placeholder="Nhập tin nhắn... (Shift+Enter xuống dòng, Enter gửi)"
+                rows={2}
+                className="flex-1 resize-y bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 min-h-[3.5rem] max-h-40 w-full"
                 disabled={loading}
               />
               <button

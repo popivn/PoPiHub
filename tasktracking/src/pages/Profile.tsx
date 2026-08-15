@@ -20,8 +20,31 @@ import {
   faChevronUp,
   faStar,
   faWandMagicSparkles,
+  // IT criteria icons
+  faBrain,
+  faCode,
+  faSitemap,
+  faBroom,
+  faBug,
+  faVial,
+  faShieldHalved,
+  faGears,
+  faBookOpen,
+  // Language criteria icons
+  faBook,
+  faPenNib,
+  faHeadphones,
+  faMicrophone,
+  faBookOpenReader,
+  faPenToSquare,
+  faVolumeHigh,
+  faComments,
+  // Category icons
+  faLaptopCode,
+  faLanguage,
 } from '@fortawesome/free-solid-svg-icons';
-import type { TaskItem } from '../types';
+import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
+import type { TaskItem, SkillCategoryId } from '../types';
 import {
   EXP_LEVELS,
   SUB_LEVELS_PER_REALM,
@@ -30,26 +53,38 @@ import {
   type ExpLevel,
 } from '../utils/expLevels';
 import {
-  RADAR_CRITERIA,
+  SKILL_CATEGORIES,
+  getSkillCategory,
   aggregateRadarScores,
   radarScoresToChartData,
+  hasRadarDataForCategory,
 } from '../utils/radar';
 import { getStoredAccessKey } from '../utils/auth';
+
+/** Map FA icon name string → IconDefinition */
+const ICON_MAP: Record<string, IconDefinition> = {
+  faBrain, faCode, faSitemap, faBroom, faBug, faBolt, faVial,
+  faShieldHalved, faGears, faBookOpen,
+  faBook, faPenNib, faHeadphones, faMicrophone, faBookOpenReader,
+  faPenToSquare, faVolumeHigh, faComments,
+  faLaptopCode, faLanguage,
+};
 
 interface ProfileProps {
   tasks: TaskItem[];
   onBack: () => void;
-  /** Handler đánh giá lại radar scores bằng AI, lưu vào DB */
-  onReevaluateRadar: () => Promise<void>;
+  /** Handler đánh giá lại radar scores bằng AI, lưu vào DB theo category */
+  onReevaluateRadar: (categoryId: SkillCategoryId) => Promise<void>;
 }
 
 export const Profile: React.FC<ProfileProps> = ({ tasks, onBack, onReevaluateRadar }) => {
   const [showAllLevels, setShowAllLevels] = useState(false);
   const [evaluatingRadar, setEvaluatingRadar] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<SkillCategoryId>('it');
 
   const accessKey = getStoredAccessKey() || 'unknown';
 
-  const { totalExp, stats, levelInfo, radarScores, radarData, hasRadarData } = useMemo(() => {
+  const { totalExp, stats, levelInfo, radarScores, radarData, hasRadarData, currentCategory } = useMemo(() => {
     const totalExp = tasks
       .filter((t) => t.status === 'completed')
       .reduce((sum, t) => sum + (t.exp ?? 0), 0);
@@ -61,9 +96,10 @@ export const Profile: React.FC<ProfileProps> = ({ tasks, onBack, onReevaluateRad
       .reduce((sum, t) => sum + (t.durationMs ?? 0), 0);
 
     const levelInfo = getLevelInfo(totalExp);
-    const radarScores = aggregateRadarScores(tasks);
-    const radarData = radarScoresToChartData(radarScores);
-    const hasRadarData = tasks.some((t) => t.radarScores);
+    const cat = getSkillCategory(selectedCategory);
+    const radarScores = aggregateRadarScores(tasks, selectedCategory);
+    const radarData = radarScoresToChartData(radarScores, selectedCategory);
+    const hasRadarData = hasRadarDataForCategory(tasks, selectedCategory);
 
     return {
       totalExp,
@@ -72,8 +108,9 @@ export const Profile: React.FC<ProfileProps> = ({ tasks, onBack, onReevaluateRad
       radarScores,
       radarData,
       hasRadarData,
+      currentCategory: cat,
     };
-  }, [tasks]);
+  }, [tasks, selectedCategory]);
 
   const fmtDur = (ms: number) => {
     const h = Math.floor(ms / 3600000);
@@ -293,13 +330,15 @@ export const Profile: React.FC<ProfileProps> = ({ tasks, onBack, onReevaluateRad
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div>
             <h3 className="text-sm font-bold text-slate-100">Đánh Giá Kỹ Năng</h3>
-            <p className="text-[11px] text-slate-500 mt-0.5">10 tiêu chí năng lực (0-100)</p>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              {currentCategory.criteria.length} tiêu chí — {currentCategory.label} (0-100)
+            </p>
           </div>
           <button
             onClick={async () => {
               setEvaluatingRadar(true);
               try {
-                await onReevaluateRadar();
+                await onReevaluateRadar(selectedCategory);
               } finally {
                 setEvaluatingRadar(false);
               }
@@ -310,6 +349,24 @@ export const Profile: React.FC<ProfileProps> = ({ tasks, onBack, onReevaluateRad
             <FontAwesomeIcon icon={faWandMagicSparkles} spin={evaluatingRadar} />
             <span>{evaluatingRadar ? 'AI đang đánh giá...' : 'Đánh giá lại'}</span>
           </button>
+        </div>
+
+        {/* Category selector */}
+        <div className="flex items-center gap-1.5 mb-4 bg-slate-950/60 border border-slate-800 rounded-lg p-0.5">
+          {SKILL_CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all flex-1 justify-center ${
+                selectedCategory === cat.id
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              <FontAwesomeIcon icon={ICON_MAP[cat.icon] || faStar} />
+              <span className="truncate">{cat.label}</span>
+            </button>
+          ))}
         </div>
 
         {hasRadarData ? (
@@ -349,13 +406,13 @@ export const Profile: React.FC<ProfileProps> = ({ tasks, onBack, onReevaluateRad
 
             {/* Criteria breakdown list */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-4 pt-4 border-t border-slate-800">
-              {RADAR_CRITERIA.map((c) => {
+              {currentCategory.criteria.map((c) => {
                 const score = radarScores[c.key] ?? 0;
                 const color =
                   score >= 70 ? '#10b981' : score >= 40 ? '#f59e0b' : '#ef4444';
                 return (
                   <div key={c.key} className="flex items-center gap-2 group relative">
-                    <span className="text-base flex-shrink-0">{c.emoji}</span>
+                    <FontAwesomeIcon icon={ICON_MAP[c.icon] || faStar} className="text-base flex-shrink-0 text-slate-400" />
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
                         <span className="text-[11px] font-bold text-slate-300 truncate">

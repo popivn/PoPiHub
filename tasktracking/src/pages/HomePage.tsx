@@ -17,7 +17,11 @@ import {
   faBolt,
   faWandMagicSparkles,
   faChartLine,
-  faUserAstronaut
+  faUserAstronaut,
+  faBars,
+  faXmark,
+  faList,
+  faHourglassHalf
 } from '@fortawesome/free-solid-svg-icons';
 
 import { CONFIG } from '../config';
@@ -33,6 +37,7 @@ import {
 import { toast, confirmDelete, showAlert } from '../utils/alert';
 import { evaluateExp } from '../utils/gemini';
 import { evaluateRadarScores } from '../utils/radar';
+import type { SkillCategoryId } from '../types';
 import { getStoredUserId } from '../utils/auth';
 import { ZoneModal } from '../components/ZoneModal';
 import { TaskDetailModal } from '../components/TaskDetailModal';
@@ -60,8 +65,13 @@ export const HomePage: React.FC = () => {
   const [evaluatingExp, setEvaluatingExp] = useState(false);
   // View: 'home' | 'dashboard' | 'profile'
   const [view, setView] = useState<'home' | 'dashboard' | 'profile'>('home');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [zoneDropdownOpen, setZoneDropdownOpen] = useState(false);
+  const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
   // Tick mỗi giây để cập nhật live timer cho task ongoing
   const [, setTick] = useState(0);
+  // Đồng hồ live HH:MM:SS
+  const [clockTime, setClockTime] = useState(() => new Date());
 
   // User ID từ sessionStorage (set khi auth thành công)
   const userId = getStoredUserId() || '1';
@@ -92,6 +102,12 @@ export const HomePage: React.FC = () => {
     const id = setInterval(() => setTick((t) => t + 1), 1000);
     return () => clearInterval(id);
   }, [tasks]);
+
+  // Đồng hồ live cập nhật mỗi giây
+  useEffect(() => {
+    const id = setInterval(() => setClockTime(new Date()), 1000);
+    return () => clearInterval(id);
+  }, []);
 
   const handleTaskSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -314,7 +330,7 @@ export const HomePage: React.FC = () => {
    * - Gọi AI đánh giá toàn bộ.
    * - Lưu radarScores vào từng task trong Firestore.
    */
-  const handleReevaluateRadar = async () => {
+  const handleReevaluateRadar = async (categoryId: SkillCategoryId = 'it') => {
     const completedTasks = tasks.filter((t) => t.status === 'completed');
     if (completedTasks.length === 0) {
       toast.fire({ icon: 'warning', title: 'Chưa có task hoàn thành để đánh giá' });
@@ -322,13 +338,14 @@ export const HomePage: React.FC = () => {
     }
 
     try {
-      const scores = await evaluateRadarScores(completedTasks);
+      const scores = await evaluateRadarScores(completedTasks, categoryId);
 
-      // Lưu radarScores vào từng task completed
+      // Lưu radarScores vào từng task completed (merge với category hiện có)
       for (const t of completedTasks) {
+        const existingScores = t.radarScores ?? {};
         await saveTaskToFirestore({
           ...t,
-          radarScores: scores,
+          radarScores: { ...existingScores, [categoryId]: scores },
           startedAt: t.startedAt ?? null,
           durationMs: t.durationMs ?? 0,
           updatedAt: new Date().toISOString(),
@@ -418,7 +435,8 @@ export const HomePage: React.FC = () => {
     for (const t of taskList) {
       const d = new Date(t.createdAt);
       d.setHours(0, 0, 0, 0);
-      const key = d.toISOString().slice(0, 10);
+      // Dùng local date (không toISOString để tránh lệch timezone UTC)
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(t);
     }
@@ -489,40 +507,140 @@ export const HomePage: React.FC = () => {
         <div className="flex items-center gap-3">
           <img src="/logo.jpg" alt="Logo" className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow-md" />
           <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-wider uppercase" style={{ fontFamily: "'Orbitron', sans-serif", letterSpacing: '0.08em' }}>
               {CONFIG.APP_NAME}
             </h1>
-            <p className="text-xs text-slate-400 font-medium">Firebase Realtime Sync Active</p>
+            <p className="text-xs sm:text-sm font-bold text-slate-400 tracking-widest tabular-nums" style={{ fontFamily: "'Orbitron', sans-serif" }}>
+              {clockTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setView('profile')}
-            className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
-          >
-            <FontAwesomeIcon icon={faUserAstronaut} className="text-purple-400" />
-            <span className="hidden sm:inline">Hồ Sơ</span>
-          </button>
-          <button
-            onClick={() => setView('dashboard')}
-            className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
-          >
-            <FontAwesomeIcon icon={faChartLine} className="text-emerald-400" />
-            <span className="hidden sm:inline">Dashboard</span>
-          </button>
-          <button
-            onClick={() => setIsZoneModalOpen(true)}
-            className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
-          >
-            <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400" />
-            <span>Zone Manager</span>
-          </button>
+          {/* Hamburger menu — mobile only */}
+          <div className="relative lg:hidden">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className={`hamburger-btn ${menuOpen ? 'active' : ''} flex items-center justify-center w-10 h-10 bg-slate-900 border border-slate-800 hover:border-indigo-500 rounded-xl text-slate-200 transition-all active:scale-90 shadow-sm`}
+              title="Menu"
+            >
+              <FontAwesomeIcon icon={menuOpen ? faXmark : faBars} className="text-base" />
+            </button>
+
+            {menuOpen && (
+              <>
+                {/* Click-outside overlay */}
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setMenuOpen(false)}
+                />
+                {/* Dropdown menu */}
+                <div className="menu-dropdown absolute right-0 top-full mt-2 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden">
+                  <button
+                    onClick={() => { setView('profile'); setMenuOpen(false); }}
+                    className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800 transition-colors text-left"
+                  >
+                    <FontAwesomeIcon icon={faUserAstronaut} className="text-purple-400 w-5" />
+                    <span className="text-sm font-bold text-slate-200">Hồ Sơ</span>
+                  </button>
+                  <button
+                    onClick={() => { setView('dashboard'); setMenuOpen(false); }}
+                    className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800 transition-colors text-left border-t border-slate-800/50"
+                  >
+                    <FontAwesomeIcon icon={faChartLine} className="text-emerald-400 w-5" />
+                    <span className="text-sm font-bold text-slate-200">Dashboard</span>
+                  </button>
+                  <button
+                    onClick={() => { setIsZoneModalOpen(true); setMenuOpen(false); }}
+                    className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800 transition-colors text-left border-t border-slate-800/50"
+                  >
+                    <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400 w-5" />
+                    <span className="text-sm font-bold text-slate-200">Zone Manager</span>
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Desktop buttons — lg and up */}
+          <div className="hidden lg:flex items-center gap-2">
+            <button
+              onClick={() => setView('profile')}
+              className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
+            >
+              <FontAwesomeIcon icon={faUserAstronaut} className="text-purple-400" />
+              <span>Hồ Sơ</span>
+            </button>
+            <button
+              onClick={() => setView('dashboard')}
+              className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
+            >
+              <FontAwesomeIcon icon={faChartLine} className="text-emerald-400" />
+              <span>Dashboard</span>
+            </button>
+            <button
+              onClick={() => setIsZoneModalOpen(true)}
+              className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
+            >
+              <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400" />
+              <span>Zone Manager</span>
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* Horizontal Zone List */}
-      <div className="flex gap-2.5 overflow-x-auto py-1 no-scrollbar">
+      {/* Zone Selector — Mobile: dropdown, Desktop: horizontal pills */}
+      {/* Mobile dropdown */}
+      <div className="sm:hidden relative">
+        <button
+          onClick={() => setZoneDropdownOpen((v) => !v)}
+          className="flex items-center justify-between w-full gap-2 px-4 py-2.5 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all"
+        >
+          <span className="flex items-center gap-2">
+            <FontAwesomeIcon icon={faLayerGroup} className="text-indigo-400" />
+            {selectedZoneId === 'all'
+              ? `Tất cả (${tasks.length})`
+              : `${zones.find((z) => z.id === selectedZoneId)?.name || 'Zone'} (${tasks.filter((t) => t.zoneId === selectedZoneId).length})`}
+          </span>
+          <FontAwesomeIcon icon={zoneDropdownOpen ? faChevronUp : faChevronDown} className="text-slate-500 text-[10px]" />
+        </button>
+
+        {zoneDropdownOpen && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setZoneDropdownOpen(false)} />
+            <div className="menu-dropdown absolute left-0 right-0 top-full mt-1.5 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden">
+              <button
+                onClick={() => { setSelectedZoneId('all'); setZoneDropdownOpen(false); }}
+                className={`menu-item w-full flex items-center gap-3 px-4 py-3 transition-colors text-left ${
+                  selectedZoneId === 'all' ? 'bg-indigo-600/20 text-indigo-300' : 'hover:bg-slate-800 text-slate-200'
+                }`}
+              >
+                <FontAwesomeIcon icon={faLayerGroup} className="text-indigo-400 w-4" />
+                <span className="text-sm font-bold">Tất cả ({tasks.length})</span>
+              </button>
+              {zones.map((z) => {
+                const count = tasks.filter((t) => t.zoneId === z.id).length;
+                const isSelected = selectedZoneId === z.id;
+                return (
+                  <button
+                    key={z.id}
+                    onClick={() => { setSelectedZoneId(z.id); setZoneDropdownOpen(false); }}
+                    className={`menu-item w-full flex items-center gap-3 px-4 py-3 transition-colors text-left border-t border-slate-800/50 ${
+                      isSelected ? 'bg-slate-800' : 'hover:bg-slate-800'
+                    }`}
+                  >
+                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: z.color }} />
+                    <span className="text-sm font-bold text-slate-200">{z.name} ({count})</span>
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Desktop horizontal pills */}
+      <div className="hidden sm:flex gap-2.5 overflow-x-auto py-1 no-scrollbar">
         <button
           className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
             selectedZoneId === 'all'
@@ -578,21 +696,56 @@ export const HomePage: React.FC = () => {
           className="flex-1 py-3 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
           <FontAwesomeIcon icon={isFormOpen ? faChevronUp : faPlus} />
-          <span>{editingTaskId ? 'Sửa công việc' : isFormOpen ? 'Đóng khung nhập' : 'Tạo công việc mới'}</span>
+          <span>{editingTaskId ? 'Sửa công việc' : isFormOpen ? 'Đóng khung nhập' : <><span className="sm:hidden">Tạo mới</span><span className="hidden sm:inline">Tạo công việc mới</span></>}</span>
         </button>
 
+        {/* Status filter — icon-only on mobile, icon+text on desktop */}
         <div className="relative">
-          <FontAwesomeIcon icon={faFilter} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none" />
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-4 py-3 text-xs font-bold text-slate-200 focus:outline-none focus:border-indigo-500 appearance-none cursor-pointer"
+          <button
+            onClick={() => setStatusDropdownOpen((v) => !v)}
+            className="flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl px-3.5 py-3 text-xs font-bold text-slate-200 transition-all active:scale-95"
+            title="Lọc trạng thái"
           >
-            <option value="all">Tất cả trạng thái</option>
-            <option value="pending">Pending</option>
-            <option value="ongoing">Ongoing</option>
-            <option value="completed">Completed</option>
-          </select>
+            <FontAwesomeIcon icon={faFilter} className="text-slate-400" />
+            <FontAwesomeIcon
+              icon={statusFilter === 'all' ? faList : statusFilter === 'pending' ? faClock : statusFilter === 'ongoing' ? faHourglassHalf : faCircleCheck}
+              className={
+                statusFilter === 'all' ? 'text-indigo-400' :
+                statusFilter === 'pending' ? 'text-slate-400' :
+                statusFilter === 'ongoing' ? 'text-blue-400' : 'text-emerald-400'
+              }
+            />
+            <span className="hidden sm:inline">
+              {statusFilter === 'all' ? 'Tất cả' : statusFilter === 'pending' ? 'Pending' : statusFilter === 'ongoing' ? 'Ongoing' : 'Completed'}
+            </span>
+            <FontAwesomeIcon icon={statusDropdownOpen ? faChevronUp : faChevronDown} className="text-slate-500 text-[10px]" />
+          </button>
+
+          {statusDropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownOpen(false)} />
+              <div className="menu-dropdown absolute right-0 top-full mt-1.5 w-44 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden">
+                {([
+                  { value: 'all', icon: faList, label: 'Tất cả', color: 'text-indigo-400' },
+                  { value: 'pending', icon: faClock, label: 'Pending', color: 'text-slate-400' },
+                  { value: 'ongoing', icon: faHourglassHalf, label: 'Ongoing', color: 'text-blue-400' },
+                  { value: 'completed', icon: faCircleCheck, label: 'Completed', color: 'text-emerald-400' },
+                ] as const).map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => { setStatusFilter(opt.value); setStatusDropdownOpen(false); }}
+                    className={`menu-item w-full flex items-center gap-3 px-4 py-3 transition-colors text-left border-b border-slate-800/50 last:border-0 ${
+                      statusFilter === opt.value ? 'bg-slate-800' : 'hover:bg-slate-800'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={opt.icon} className={`${opt.color} w-4`} />
+                    <span className="text-sm font-bold text-slate-200">{opt.label}</span>
+                    {statusFilter === opt.value && <span className="text-emerald-400 ml-auto text-xs">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -720,16 +873,16 @@ export const HomePage: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-2 text-[10px] font-bold">
                     <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
-                      {totalCount} task
+                      {totalCount}
                     </span>
                     {completedCount > 0 && (
                       <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                        ✓ {completedCount} hoàn thành
+                        ✓ {completedCount}<span className="hidden sm:inline"> hoàn thành</span>
                       </span>
                     )}
                     {dayExp > 0 && (
                       <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                        ⚡ {dayExp} EXP
+                        ⚡ {dayExp}<span className="hidden sm:inline"> EXP</span>
                       </span>
                     )}
                   </div>
@@ -760,7 +913,7 @@ export const HomePage: React.FC = () => {
                           }`}
                         />
 
-                        {/* Card Header: Zone tag, Title & Status badge */}
+                        {/* Card Header: Zone tag, EXP & Status badge */}
                         <div className="flex items-center justify-between gap-2 pl-1">
                           <div className="flex items-center gap-2 flex-wrap min-w-0">
                             {currentZone && (
@@ -771,9 +924,6 @@ export const HomePage: React.FC = () => {
                                 {currentZone.name}
                               </span>
                             )}
-                            <h3 className="text-sm font-bold text-slate-100 truncate">
-                              {task.title}
-                            </h3>
                           </div>
 
                           <div className="flex items-center gap-1.5 flex-shrink-0">
@@ -813,6 +963,11 @@ export const HomePage: React.FC = () => {
                             </button>
                           </div>
                         </div>
+
+                        {/* Title row */}
+                        <h3 className="text-sm font-bold text-slate-100 truncate pl-1">
+                          {task.title}
+                        </h3>
 
                         {/* Inline Action Bar: Time, Expand Toggle & Action Buttons */}
                         <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/60 pl-1 text-xs">
@@ -855,19 +1010,19 @@ export const HomePage: React.FC = () => {
                               className="px-2 py-1 rounded-md bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-[11px] font-bold flex items-center gap-1 transition-colors"
                               title="Phóng to full màn hình"
                             >
-                              <FontAwesomeIcon icon={faMaximize} /> Chi tiết
+                              <FontAwesomeIcon icon={faMaximize} /><span className="hidden sm:inline">Chi tiết</span>
                             </button>
                             <button
                               onClick={() => handleEditClick(task)}
                               className="px-2 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold flex items-center gap-1 transition-colors"
                             >
-                              <FontAwesomeIcon icon={faPenToSquare} /> Sửa
+                              <FontAwesomeIcon icon={faPenToSquare} /><span className="hidden sm:inline">Sửa</span>
                             </button>
                             <button
                               onClick={() => handleDeleteTask(task.id)}
                               className="px-2 py-1 rounded-md bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-[11px] font-semibold flex items-center gap-1 transition-colors"
                             >
-                              <FontAwesomeIcon icon={faTrashCan} /> Xóa
+                              <FontAwesomeIcon icon={faTrashCan} /><span className="hidden sm:inline">Xóa</span>
                             </button>
                           </div>
                         </div>

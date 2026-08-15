@@ -1,35 +1,68 @@
 import { CONFIG } from '../config';
-import type { RadarScores, TaskItem } from '../types';
+import type { TaskItem, SkillCategoryId } from '../types';
 
-const GEMINI_MODEL = 'gemini-3.5-flash';
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
+const OPENROUTER_MODEL = 'nvidia/nemotron-3-super-120b-a12b:free';
 
-/** Định nghĩa 10 tiêu chí radar */
-export const RADAR_CRITERIA: { key: keyof RadarScores; label: string; emoji: string; description: string }[] = [
-  { key: 'problemSolving', label: 'Problem Solving', emoji: '🧠', description: 'Phân tích và giải quyết vấn đề' },
-  { key: 'programming', label: 'Programming', emoji: '💻', description: 'Khả năng viết code và sử dụng ngôn ngữ lập trình' },
-  { key: 'systemDesign', label: 'System Design', emoji: '🏗️', description: 'Thiết kế hệ thống, kiến trúc, module' },
-  { key: 'codeQuality', label: 'Code Quality', emoji: '🧹', description: 'Code sạch, dễ đọc, dễ bảo trì' },
-  { key: 'debugging', label: 'Debugging', emoji: '🐛', description: 'Tìm và xử lý lỗi' },
-  { key: 'performance', label: 'Performance', emoji: '⚡', description: 'Tối ưu tốc độ, bộ nhớ, tài nguyên' },
-  { key: 'testing', label: 'Testing', emoji: '🧪', description: 'Khả năng kiểm thử và đảm bảo độ tin cậy' },
-  { key: 'security', label: 'Security', emoji: '🔐', description: 'Nhận thức và xử lý vấn đề bảo mật' },
-  { key: 'engineering', label: 'Engineering', emoji: '🔧', description: 'Git, tooling, deployment, automation, workflow' },
-  { key: 'learning', label: 'Learning', emoji: '📚', description: 'Khả năng học công nghệ mới và thích nghi' },
+/** Định nghĩa category kỹ năng */
+export interface SkillCategory {
+  id: SkillCategoryId;
+  label: string;
+  icon: string; // FA icon name
+  description: string;
+  criteria: { key: string; label: string; icon: string; description: string }[];
+}
+
+/** 10 tiêu chí CNTT */
+export const IT_CRITERIA = [
+  { key: 'problemSolving', label: 'Problem Solving', icon: 'faBrain', description: 'Phân tích và giải quyết vấn đề' },
+  { key: 'programming', label: 'Programming', icon: 'faCode', description: 'Khả năng viết code và sử dụng ngôn ngữ lập trình' },
+  { key: 'systemDesign', label: 'System Design', icon: 'faSitemap', description: 'Thiết kế hệ thống, kiến trúc, module' },
+  { key: 'codeQuality', label: 'Code Quality', icon: 'faBroom', description: 'Code sạch, dễ đọc, dễ bảo trì' },
+  { key: 'debugging', label: 'Debugging', icon: 'faBug', description: 'Tìm và xử lý lỗi' },
+  { key: 'performance', label: 'Performance', icon: 'faBolt', description: 'Tối ưu tốc độ, bộ nhớ, tài nguyên' },
+  { key: 'testing', label: 'Testing', icon: 'faVial', description: 'Khả năng kiểm thử và đảm bảo độ tin cậy' },
+  { key: 'security', label: 'Security', icon: 'faShieldHalved', description: 'Nhận thức và xử lý vấn đề bảo mật' },
+  { key: 'engineering', label: 'Engineering', icon: 'faGears', description: 'Git, tooling, deployment, automation, workflow' },
+  { key: 'learning', label: 'Learning', icon: 'faBookOpen', description: 'Khả năng học công nghệ mới và thích nghi' },
 ];
 
-const DEFAULT_SCORES: RadarScores = {
-  problemSolving: 0,
-  programming: 0,
-  systemDesign: 0,
-  codeQuality: 0,
-  debugging: 0,
-  performance: 0,
-  testing: 0,
-  security: 0,
-  engineering: 0,
-  learning: 0,
-};
+/** 8 tiêu chí ngôn ngữ */
+export const LANGUAGE_CRITERIA = [
+  { key: 'vocabulary', label: 'Vocabulary', icon: 'faBook', description: 'Lượng từ vựng và khả năng sử dụng' },
+  { key: 'grammar', label: 'Grammar', icon: 'faPenNib', description: 'Ngữ pháp chính xác và tự nhiên' },
+  { key: 'listening', label: 'Listening', icon: 'faHeadphones', description: 'Khả năng nghe hiểu' },
+  { key: 'speaking', label: 'Speaking', icon: 'faMicrophone', description: 'Khả năng giao tiếp口头' },
+  { key: 'reading', label: 'Reading', icon: 'faBookOpenReader', description: 'Khả năng đọc hiểu văn bản' },
+  { key: 'writing', label: 'Writing', icon: 'faPenToSquare', description: 'Khả năng viết câu, đoạn, bài' },
+  { key: 'pronunciation', label: 'Pronunciation', icon: 'faVolumeHigh', description: 'Phát âm rõ ràng, chuẩn' },
+  { key: 'fluency', label: 'Fluency', icon: 'faComments', description: 'Sự trôi chảy, phản xạ ngôn ngữ' },
+];
+
+/** Danh sách category */
+export const SKILL_CATEGORIES: SkillCategory[] = [
+  {
+    id: 'it',
+    label: 'Công Nghệ Thông Tin',
+    icon: 'faLaptopCode',
+    description: 'Kỹ năng lập trình và kỹ thuật',
+    criteria: IT_CRITERIA,
+  },
+  {
+    id: 'language',
+    label: 'Kỹ Năng Ngôn Ngữ',
+    icon: 'faLanguage',
+    description: 'Kỹ năng ngôn ngữ và giao tiếp',
+    criteria: LANGUAGE_CRITERIA,
+  },
+];
+
+/** Lấy category theo id */
+export const getSkillCategory = (id: SkillCategoryId): SkillCategory =>
+  SKILL_CATEGORIES.find((c) => c.id === id) || SKILL_CATEGORIES[0];
+
+/** Alias giữ tương thích ngược */
+export const RADAR_CRITERIA = IT_CRITERIA;
 
 /**
  * Strip HTML tags → plain text
@@ -43,11 +76,9 @@ const stripHtml = (html: string): string => {
 };
 
 /**
- * Xây prompt gửi AI để đánh giá radar scores cho danh sách task.
- * AI sẽ xem từng task (title + description + status + exp + durationMs)
- * và chấm điểm 0-100 cho 10 tiêu chí kỹ năng.
+ * Xây prompt gửi AI để đánh giá radar scores cho danh sách task theo category.
  */
-const buildRadarPrompt = (tasks: TaskItem[]): string => {
+const buildRadarPrompt = (tasks: TaskItem[], category: SkillCategory): string => {
   const taskSummaries = tasks
     .map((t, i) => {
       const desc = stripHtml(t.description).slice(0, 200);
@@ -56,115 +87,163 @@ const buildRadarPrompt = (tasks: TaskItem[]): string => {
     })
     .join('\n\n');
 
-  const criteriaList = RADAR_CRITERIA.map(
-    (c) => `- ${c.key}: ${c.emoji} ${c.label} — ${c.description}`
-  ).join('\n');
+  const criteriaList = category.criteria
+    .map((c) => `- ${c.key}: ${c.label} — ${c.description}`)
+    .join('\n');
 
-  return `Bạn là hệ thống đánh giá kỹ năng kỹ thuật. Dựa vào danh sách task đã hoàn thành của một lập trình viên, hãy đánh giá năng lực theo 10 tiêu chí dưới đây.
+  const keys = category.criteria.map((c) => `"${c.key}":0`).join(',');
+  const exampleJson = `{${keys}}`;
 
-## 10 tiêu chí (mỗi tiêu chí 0-100):
+  const contextLine =
+    category.id === 'it'
+      ? 'hệ thống đánh giá kỹ năng kỹ thuật (lập trình, kiến trúc, tooling)'
+      : 'hệ thống đánh giá kỹ năng ngôn ngữ (từ vựng, ngữ pháp, giao tiếp)';
+
+  return `Bạn là ${contextLine}, một giám khảo KHẮT KHE và đòi hỏi cao. Dựa vào danh sách task đã hoàn thành, hãy đánh giá năng lực thực tế theo ${category.criteria.length} tiêu chí dưới đây.
+
+## ${category.criteria.length} tiêu chí (mỗi tiêu chí 0-100):
 ${criteriaList}
 
 ## Danh sách task (${tasks.length} task):
 ${taskSummaries}
 
-## Quy tắc:
-- Chấm điểm 0-100 cho mỗi tiêu chí dựa trên nội dung, độ phức tạp, và kỹ năng thể hiện qua task.
-- Task completed mới được tính. Task pending/ongoing chỉ tham khảo nhẹ.
-- Task có description chi tiết, code, kiến trúc → điểm cao hơn.
-- Task đơn giản (nhắn tin, đọc email) → điểm thấp.
+## Quy tắc đánh giá KHẮT KHE:
+- Chỉ chấm điểm khi có BẰNG CHỨNG rõ ràng trong task thể hiện kỹ năng đó.
+- KHÔNG cho điểm lót tay, KHÔNG suy đoán, KHÔNG tặng điểm.
+- Nếu KHÔNG có task nào liên quan đến tiêu chí → 0 điểm. Mạnh dạn cho 0.
+- Điểm 0-30: chưa thể hiện hoặc chỉ chạm nhẹ.
+- Điểm 31-50: có làm nhưng hời hợt, thiếu chiều sâu.
+- Điểm 51-70: có thể hiện rõ, có chiều sâu vừa phải.
+- Điểm 71-85: thể hiện tốt, có tư duy và thực hành bài bản.
+- Điểm 86-100: xuất sắc, mastery, chỉ cho khi thực sự ấn tượng.
+- Task completed mới được tính. Task pending/ongoing KHÔNG tính.
+- Đánh giá dựa trên CHẤT LƯỢNG và ĐỘ PHỨC TẠP thực tế, KHÔNG dựa trên số lượng task.
 - Nếu không có task nào → tất cả = 0.
 
 ## Output BẮT BUỘC: JSON đúng định dạng, KHÔNG kèm giải thích, KHÔNG markdown:
-{"problemSolving":75,"programming":80,"systemDesign":50,"codeQuality":65,"debugging":60,"performance":40,"testing":30,"security":35,"engineering":55,"learning":70}`;
+${exampleJson}`;
 };
 
 /**
- * Gọi Gemini để đánh giá radar scores dựa trên danh sách task.
+ * Gọi OpenRouter (model free) để đánh giá radar scores theo category.
  * @param tasks Danh sách task (chỉ completed mới được tính đáng kể)
- * @returns RadarScores với 10 tiêu chí (0-100)
+ * @param categoryId Loại kỹ năng cần đánh giá
+ * @returns Record<string, number> với các tiêu chí (0-100)
  */
-export const evaluateRadarScores = async (tasks: TaskItem[]): Promise<RadarScores> => {
-  if (tasks.length === 0) return { ...DEFAULT_SCORES };
+export const evaluateRadarScores = async (
+  tasks: TaskItem[],
+  categoryId: SkillCategoryId = 'it'
+): Promise<Record<string, number>> => {
+  const category = getSkillCategory(categoryId);
+  if (tasks.length === 0) {
+    const empty: Record<string, number> = {};
+    for (const c of category.criteria) empty[c.key] = 0;
+    return empty;
+  }
 
-  const prompt = buildRadarPrompt(tasks);
+  const prompt = buildRadarPrompt(tasks, category);
 
-  const res = await fetch(`${ENDPOINT}?key=${CONFIG.GEMINI_API_KEY}`, {
+  const res = await fetch(OPENROUTER_ENDPOINT, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Authorization': `Bearer ${CONFIG.OPENROUTER_API_KEY}`,
+      'HTTP-Referer': CONFIG.OPENROUTER_REFERER,
+      'X-Title': CONFIG.OPENROUTER_TITLE,
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.3,
-        topP: 0.9,
-        maxOutputTokens: 256,
-      },
+      model: OPENROUTER_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0,
+      top_p: 1,
+      max_tokens: 2048,
+      seed: 42,
     }),
   });
 
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(`Gemini Radar lỗi (${res.status}): ${errText}`);
+    throw new Error(`OpenRouter Radar lỗi (${res.status}): ${errText}`);
   }
 
   const data = await res.json();
-  const raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  console.debug('[evaluateRadarScores] AI raw response:', JSON.stringify(raw));
+  const raw = data?.choices?.[0]?.message?.content || '';
+  console.debug(`[evaluateRadarScores:${categoryId}] AI raw response:`, JSON.stringify(raw));
 
   // Tìm JSON trong response
   const jsonMatch = raw.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
-    console.warn('[evaluateRadarScores] Không tìm thấy JSON, dùng mặc định. Raw:', raw);
-    return { ...DEFAULT_SCORES };
+    console.warn(`[evaluateRadarScores:${categoryId}] Không tìm thấy JSON. Raw:`, raw);
+    const empty: Record<string, number> = {};
+    for (const c of category.criteria) empty[c.key] = 0;
+    return empty;
   }
 
   try {
     const parsed = JSON.parse(jsonMatch[0]);
-    const scores: RadarScores = { ...DEFAULT_SCORES };
-    for (const criteria of RADAR_CRITERIA) {
-      const val = parsed[criteria.key];
-      if (typeof val === 'number') {
-        scores[criteria.key] = Math.max(0, Math.min(100, Math.round(val)));
-      }
+    const scores: Record<string, number> = {};
+    for (const c of category.criteria) {
+      const val = parsed[c.key];
+      scores[c.key] = typeof val === 'number' ? Math.max(0, Math.min(100, Math.round(val))) : 0;
     }
     return scores;
   } catch (err) {
-    console.warn('[evaluateRadarScores] JSON parse lỗi:', err, 'Raw:', raw);
-    return { ...DEFAULT_SCORES };
+    console.warn(`[evaluateRadarScores:${categoryId}] JSON parse lỗi:`, err, 'Raw:', raw);
+    const empty: Record<string, number> = {};
+    for (const c of category.criteria) empty[c.key] = 0;
+    return empty;
   }
 };
 
 /**
- * Tính điểm radar tổng hợp từ tất cả task (lấy trung bình).
- * Dùng khi hiển thị radar từ dữ liệu đã lưu trong từng task.
+ * Tính điểm radar tổng hợp từ tất cả task (lấy trung bình) theo category.
  */
-export const aggregateRadarScores = (tasks: TaskItem[]): RadarScores => {
-  const tasksWithScores = tasks.filter((t) => t.radarScores);
-  if (tasksWithScores.length === 0) return { ...DEFAULT_SCORES };
+export const aggregateRadarScores = (
+  tasks: TaskItem[],
+  categoryId: SkillCategoryId = 'it'
+): Record<string, number> => {
+  const category = getSkillCategory(categoryId);
+  const empty: Record<string, number> = {};
+  for (const c of category.criteria) empty[c.key] = 0;
 
-  const sum = { ...DEFAULT_SCORES };
+  const tasksWithScores = tasks.filter((t) => t.radarScores?.[categoryId]);
+  if (tasksWithScores.length === 0) return empty;
+
+  const sum: Record<string, number> = { ...empty };
   for (const t of tasksWithScores) {
-    const s = t.radarScores!;
-    for (const criteria of RADAR_CRITERIA) {
-      sum[criteria.key] += s[criteria.key] ?? 0;
+    const s = t.radarScores![categoryId]!;
+    for (const c of category.criteria) {
+      sum[c.key] += s[c.key] ?? 0;
     }
   }
 
-  const avg = { ...DEFAULT_SCORES };
-  for (const criteria of RADAR_CRITERIA) {
-    avg[criteria.key] = Math.round(sum[criteria.key] / tasksWithScores.length);
+  const avg: Record<string, number> = { ...empty };
+  for (const c of category.criteria) {
+    avg[c.key] = Math.round(sum[c.key] / tasksWithScores.length);
   }
   return avg;
 };
 
 /**
- * Chuyển RadarScores → mảng data cho recharts RadarChart.
+ * Chuyển scores → mảng data cho recharts RadarChart theo category.
  */
-export const radarScoresToChartData = (scores: RadarScores) => {
-  return RADAR_CRITERIA.map((c) => ({
-    criteria: `${c.emoji} ${c.label}`,
+export const radarScoresToChartData = (
+  scores: Record<string, number>,
+  categoryId: SkillCategoryId = 'it'
+) => {
+  const category = getSkillCategory(categoryId);
+  return category.criteria.map((c) => ({
+    criteria: c.label,
     shortLabel: c.label,
     value: scores[c.key] ?? 0,
     fullMark: 100,
   }));
 };
+
+/**
+ * Kiểm tra task có radarScores cho category nào đó không.
+ */
+export const hasRadarDataForCategory = (
+  tasks: TaskItem[],
+  categoryId: SkillCategoryId
+): boolean => tasks.some((t) => t.radarScores?.[categoryId]);

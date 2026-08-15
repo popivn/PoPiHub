@@ -6,6 +6,27 @@ export interface ChatMessage {
   text: string;
 }
 
+/** Loại AI provider */
+export type AIProvider = 'gemini' | 'openrouter';
+
+/** Danh sách model cho OpenRouter */
+export const OPENROUTER_MODELS = [
+  // Free models (suffix :free, $0 token) — danh sách live từ OpenRouter 2026-08-14
+  { id: 'nvidia/nemotron-3-super-120b-a12b:free', label: 'Nemotron 3 Super 120B (Free)', desc: 'Mặc định, mạnh, đa năng' },
+  { id: 'google/gemma-4-31b-it:free', label: 'Gemma 4 31B (Free)', desc: 'Google, ổn định' },
+  { id: 'google/gemma-4-26b-a4b-it:free', label: 'Gemma 4 26B A4B (Free)', desc: 'Google, nhanh hơn' },
+  { id: 'openai/gpt-oss-20b:free', label: 'GPT-OSS 20B (Free)', desc: 'OpenAI open-source' },
+  { id: 'nvidia/nemotron-3-ultra-550b-a55b:free', label: 'Nemotron 3 Ultra 550B (Free)', desc: 'Lớn nhất, reasoning mạnh' },
+  { id: 'nvidia/nemotron-3-nano-30b-a3b:free', label: 'Nemotron 3 Nano 30B (Free)', desc: 'Nhẹ, nhanh' },
+  { id: 'cohere/north-mini-code:free', label: 'North Mini Code (Free)', desc: 'Cohere, tối ưu code' },
+  { id: 'poolside/laguna-s-2.1:free', label: 'Laguna S 2.1 (Free)', desc: 'Poolside, coding agent' },
+  { id: 'openrouter/free', label: 'Auto Free Router', desc: 'Tự chọn model free phù hợp' },
+  // Paid models (cần credit)
+  { id: 'openai/gpt-4o-mini', label: 'GPT-4o Mini', desc: 'Rẻ, nhanh, ổn định' },
+  { id: 'openai/gpt-4o', label: 'GPT-4o', desc: 'Mạnh, đa năng' },
+  { id: 'anthropic/claude-3.5-sonnet', label: 'Claude 3.5 Sonnet', desc: 'Chất lượng cao' },
+];
+
 /** Kết quả parse JSON hành động từ câu trả lời của AI */
 export interface ParsedAction {
   /** Phần text hiển thị cho user (đã bỏ JSON block) */
@@ -28,7 +49,7 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMI
 const buildChatSystemInstruction = (availableZones: string[]) => {
   const zoneList = availableZones.length > 0 ? availableZones.join(', ') : '(chưa có zone nào)';
   const multipleZones = availableZones.length > 1;
-  return `Bạn là trợ lý AI thân thiện của app "PoPi Hub - Task Zone Tracker", một ứng dụng quản lý công việc.
+  return `Bạn là trợ lý AI thân thiện của app "Task Tracker", một ứng dụng quản lý công việc.
 
 Vai trò chính: GIÚP USER TẠO TASK MỚI thông qua hội thoại.
 
@@ -110,6 +131,157 @@ export const askGemini = async (
 
   const data = await res.json();
   const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  return reply?.trim() || 'Xin lỗi, tôi không tạo được câu trả lời lúc này.';
+};
+
+/**
+ * Gọi Free.ai API (OpenAI-compatible) để sinh câu trả lời.
+ * @param history Tin nhắn trước đó
+ * @param userMessage Tin nhắn mới
+ * @param availableZones Danh sách zone
+ * @param model Model ID (vd: qwen7b, openai/gpt-4o)
+ */
+export const askFreeAI = async (
+  history: ChatMessage[],
+  userMessage: string,
+  availableZones: string[] = [],
+  model: string = 'qwen7b'
+): Promise<string> => {
+  const systemPrompt = buildChatSystemInstruction(availableZones);
+
+  // Convert history sang OpenAI format (role: user/assistant)
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history.map((m) => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.text,
+    })),
+    { role: 'user', content: userMessage },
+  ];
+
+  const res = await fetch(CONFIG.FREE_AI_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${CONFIG.FREE_AI_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature: 0.7,
+      top_p: 0.95,
+      max_tokens: 4096,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Free AI lỗi (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  const reply = data?.choices?.[0]?.message?.content;
+  return reply?.trim() || 'Xin lỗi, tôi không tạo được câu trả lời lúc này.';
+};
+
+/**
+ * Gọi Blaze API (OpenAI-compatible).
+ * Free plan: 150 requests/day, curated models.
+ * @param history Tin nhắn trước đó
+ * @param userMessage Tin nhắn mới
+ * @param availableZones Danh sách zone
+ * @param model Model ID (vd: gpt-4o-mini)
+ */
+export const askBlaze = async (
+  history: ChatMessage[],
+  userMessage: string,
+  availableZones: string[] = [],
+  model: string = 'gpt-4o-mini'
+): Promise<string> => {
+  const systemPrompt = buildChatSystemInstruction(availableZones);
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history.map((m) => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.text,
+    })),
+    { role: 'user', content: userMessage },
+  ];
+
+  const res = await fetch(CONFIG.BLAZE_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${CONFIG.BLAZE_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature: 0.7,
+      top_p: 0.95,
+      max_tokens: 4096,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Blaze API lỗi (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  const reply = data?.choices?.[0]?.message?.content;
+  return reply?.trim() || 'Xin lỗi, tôi không tạo được câu trả lời lúc này.';
+};
+
+/**
+ * Gọi OpenRouter API (OpenAI-compatible).
+ * @param history Tin nhắn trước đó
+ * @param userMessage Tin nhắn mới
+ * @param availableZones Danh sách zone
+ * @param model Model ID (vd: openai/gpt-4o-mini)
+ */
+export const askOpenRouter = async (
+  history: ChatMessage[],
+  userMessage: string,
+  availableZones: string[] = [],
+  model: string = 'nvidia/nemotron-3-super-120b-a12b:free'
+): Promise<string> => {
+  const systemPrompt = buildChatSystemInstruction(availableZones);
+
+  const messages = [
+    { role: 'system', content: systemPrompt },
+    ...history.map((m) => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.text,
+    })),
+    { role: 'user', content: userMessage },
+  ];
+
+  const res = await fetch(CONFIG.OPENROUTER_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${CONFIG.OPENROUTER_API_KEY}`,
+      'HTTP-Referer': CONFIG.OPENROUTER_REFERER,
+      'X-Title': CONFIG.OPENROUTER_TITLE,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      messages,
+      temperature: 0.7,
+      top_p: 0.95,
+      max_tokens: 4096,
+    }),
+  });
+
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`OpenRouter lỗi (${res.status}): ${errText}`);
+  }
+
+  const data = await res.json();
+  const reply = data?.choices?.[0]?.message?.content;
   return reply?.trim() || 'Xin lỗi, tôi không tạo được câu trả lời lúc này.';
 };
 

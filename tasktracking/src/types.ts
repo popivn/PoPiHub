@@ -16,8 +16,8 @@ export interface User {
   createdAt: string;
 }
 
-/** 10 tiêu chí đánh giá kỹ năng (radar chart) */
-export interface RadarScores {
+/** 10 tiêu chí đánh giá kỹ năng CNTT (radar chart) */
+export interface ITScores {
   problemSolving: number;   // 🧠 Problem Solving
   programming: number;      // 💻 Programming
   systemDesign: number;     // 🏗️ System Design
@@ -29,6 +29,27 @@ export interface RadarScores {
   engineering: number;      // 🔧 Engineering
   learning: number;         // 📚 Learning
 }
+
+/** 8 tiêu chí đánh giá kỹ năng ngôn ngữ (radar chart) */
+export interface LanguageScores {
+  vocabulary: number;       // 📖 Vocabulary
+  grammar: number;          // ✏️ Grammar
+  listening: number;        // 👂 Listening
+  speaking: number;         // 🗣️ Speaking
+  reading: number;          // 📕 Reading
+  writing: number;          // ✍️ Writing
+  pronunciation: number;    // 🔊 Pronunciation
+  fluency: number;          // 💬 Fluency
+}
+
+/** Alias giữ tương thích ngược */
+export type RadarScores = ITScores;
+
+/** Loại category kỹ năng */
+export type SkillCategoryId = 'it' | 'language';
+
+/** Map điểm radar theo category */
+export type RadarScoresMap = Partial<Record<SkillCategoryId, Record<string, number>>>;
 
 export interface TaskItem {
   id: string;
@@ -42,8 +63,8 @@ export interface TaskItem {
   startedAt?: string | null;
   /** Tổng thời gian thực hiện (ms) khi task completed. Reset về 0 khi về pending. */
   durationMs?: number;
-  /** Điểm radar do AI đánh giá cho từng task (0-100 mỗi tiêu chí) */
-  radarScores?: RadarScores | null;
+  /** Điểm radar do AI đánh giá, lưu theo category (vd: { it: {...}, language: {...} }) */
+  radarScores?: RadarScoresMap | null;
   createdAt: string;
   updatedAt: string;
 }
