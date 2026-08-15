@@ -1,0 +1,81 @@
+/* MainLayout — khung chính, profile card góc trên trái */
+
+.main-layout {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.ml-profile {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px 8px 8px;
+  border-radius: 999px;
+  background: rgba(10, 16, 30, 0.55);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  user-select: none;
+  -webkit-user-select: none;
+  animation: ml-slide-in 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+@keyframes ml-slide-in {
+  from { transform: translateX(-12px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.ml-profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.ml-profile-avatar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  opacity: 0.25;
+}
+.ml-profile-avatar.type-nature::before { background: radial-gradient(circle, #46d6a0, #2bbf86); }
+.ml-profile-avatar.type-frost::before { background: radial-gradient(circle, #6cc8ff, #3b8ac2); }
+.ml-profile-avatar.type-ember::before { background: radial-gradient(circle, #ff8d3f, #e0523d); }
+.ml-profile-avatar.type-shadow::before { background: radial-gradient(circle, #a78bfa, #4c1d95); }
+.ml-profile-avatar.type-royal::before { background: radial-gradient(circle, #f4c542, #c99a2e); }
+
+.ml-profile-emoji {
+  position: relative;
+  font-size: 22px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.4));
+}
+
+.ml-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.ml-profile-name {
+  font: 700 14px ui-sans-serif, system-ui, sans-serif;
+  color: #e7ecf5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+.ml-profile-user {
+  font: 500 11px ui-sans-serif, system-ui, sans-serif;
+  color: rgba(231, 236, 245, 0.6);
+  white-space: nowrap;
+}
