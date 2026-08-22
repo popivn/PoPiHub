@@ -9,7 +9,7 @@ async function bootstrap() {
 
   // Phục vụ các tệp tĩnh (hình ảnh, favicon...) từ thư mục public
   const publicPath = join(__dirname, '..', 'public');
-  const clientPublicPath = join(__dirname, '..', '..', 'studygames', 'public');
+  const clientPublicPath = join(__dirname, '..', '..', 'studygames-client', 'public');
   app.use(express.static(publicPath));
   app.use(express.static(clientPublicPath));
 
