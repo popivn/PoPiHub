@@ -26,23 +26,32 @@ export function getFirebaseAdmin(): admin.app.App {
   const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
 
   let credential: admin.credential.Credential | undefined;
+  // projectId lấy từ service account JSON (nếu có) — tránh xung đột khi
+  // FIREBASE_PROJECT_ID trong env trỏ tới project khác với key JSON.
+  let saProjectId: string | undefined;
 
   if (serviceAccountJson) {
-    // Nội dung JSON trong env (deploy)
-    credential = admin.credential.cert(JSON.parse(serviceAccountJson));
+    // Nội dung JSON trong env (deploy). dotenv có thể bọc multi-line bằng
+    // single quotes; JSON.parse tự xử lý whitespace và `\n` trong private_key.
+    const sa = JSON.parse(serviceAccountJson);
+    saProjectId = sa.project_id;
+    credential = admin.credential.cert(sa);
   } else if (serviceAccountPath) {
     // Đường dẫn file JSON (dev) — resolve relative to cwd, not source file
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    credential = admin.credential.cert(require(resolve(serviceAccountPath)));
+    const sa = require(resolve(serviceAccountPath));
+    saProjectId = sa.project_id;
+    credential = admin.credential.cert(sa);
   } else {
     // Application Default Credentials
     credential = admin.credential.applicationDefault();
   }
 
-  admin.initializeApp({
-    credential,
-    projectId: process.env.FIREBASE_PROJECT_ID ?? 'xianria-4f68a',
-  });
+  // Ưu tiên projectId từ service account; fallback sang env (dùng cho ADC).
+  const projectId = saProjectId ?? process.env.FIREBASE_PROJECT_ID;
+  admin.initializeApp(
+    projectId ? { credential, projectId } : { credential },
+  );
 
   initialized = true;
   return admin.app();

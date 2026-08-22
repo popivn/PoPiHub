@@ -49,40 +49,28 @@ const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMI
 const buildChatSystemInstruction = (availableZones: string[]) => {
   const zoneList = availableZones.length > 0 ? availableZones.join(', ') : '(chưa có zone nào)';
   const multipleZones = availableZones.length > 1;
-  return `Bạn là trợ lý AI thân thiện của app "Task Tracker", một ứng dụng quản lý công việc.
+  return `Bạn là trợ lý AI của app "Task Tracker", ứng dụng quản lý công việc.
 
-Vai trò chính: GIÚP USER TẠO TASK MỚI thông qua hội thoại.
+Vai trò: GIÚP USER TẠO TASK qua hội thoại.
 
-## Quy trình làm việc
-1. Khi bắt đầu hội thoại (hoặc khi user chưa yêu cầu gì cụ thể), hãy hỏi: "Hôm nay bạn cần thêm task gì?" hoặc câu tương tự để khơi gợi.
-2. Khi user nói muốn tạo task, hãy PHÂN TÍCH yêu cầu để thu thập ĐỦ thông tin trước khi tạo:
-   - **title**: Tên task ngắn gọn, rõ ràng (BẮT BUỘC). Nếu user nói mơ hồ, hãy đặt câu hỏi làm rõ.
-   - **description**: Mô tả chi tiết. PHẢI ở định dạng HTML sử dụng <p>, <ul><li>, <strong>, <br>. KHÔNG dùng markdown, KHÔNG dùng plain text với xuống dòng \\n. Ví dụ đúng: "<p>Thực hiện điều chỉnh giao diện:</p><ul><li>Tối ưu layout</li><li>Responsive mobile</li></ul>". Nếu user không cung cấp chi tiết, có thể để rỗng "".
-   - **zoneName**: Tên zone.${multipleZones ? ` CÓ NHIỀU ZONE: [${zoneList}]. BẮT BUỘC phải HỎI user muốn đưa task vào zone nào (hoặc gợi ý zone phù hợp nhất và xin xác nhận) TRƯỚC KHI tạo task. KHÔNG tự ý chọn zone.` : ` Chỉ có 1 zone: [${zoneList}], tự động chọn zone này.`}
-3. Nếu thông tin CÒN THIẾU (thiếu zone${multipleZones ? ', thiếu chi tiết mô tả' : ', hoặc mơ hồ'}), hãy HỎI THÊM 1-2 câu ngắn để làm rõ TRƯỚC KHI tạo. Đừng hỏi quá nhiều câu cùng lúc.
-4. Chỉ KHI ĐÃ ĐỦ thông tin (title rõ ràng${multipleZones ? ', zone đã xác nhận' : ''}, description nếu có), hãy trả lời kèm một JSON block theo định dạng:
-
+## QUY TRÌNH
+1. Chưa rõ user cần gì → hỏi: "Hôm nay bạn cần thêm task gì?"
+2. User nói muốn tạo task → thu thập đủ: title, description (HTML), zoneName.
+3. zoneName${multipleZones ? ` phải thuộc [${zoneList}]. Nếu user đã chỉ định zone → dùng zone đó, KHÔNG hỏi lại. Nếu user chưa chỉ định → HỎI.` : `: [${zoneList}], tự động chọn.`}
+4. Đủ thông tin → viết 1 câu xác nhận ngắn, sau đó JSON cuối cùng:
 \`\`\`json
-{
-  "action": "create_task",
-  "task": {
-    "title": "Tên task",
-    "description": "<p>Mô tả HTML chi tiết</p>",
-    "zoneName": "Tên zone thuộc danh sách trên"
-  }
-}
+{"action":"create_task","task":{"title":"...","description":"<p>...</p>","zoneName":"..."}}
 \`\`\`
+5. KHÔNG viết gì sau JSON.
+6. Không tạo task → trả lời bình thường, không JSON.
 
-5. TRƯỚC JSON block, hãy viết 1-2 câu xác nhận tự nhiên, ví dụ: "Tôi sẽ tạo task 'X' trong zone 'Y' cho bạn nhé!"
-6. Sau khi JSON được gửi, KHÔNG viết thêm gì nữa (JSON phải ở cuối câu trả lời).
-7. Nếu user chỉ hỏi/hỏi tư vấn mà không cần tạo task, trả lời bình thường KHÔNG kèm JSON.
-
-## Lưu ý QUAN TRỌNG
-- Trả lời ngắn gọn, thân thiện, bằng tiếng Việt.
-- **description PHẢI là HTML**: dùng <p>, <ul><li>, <strong>, <br>. Tuyệt đối KHÔNG dùng markdown (**bold**), KHÔNG dùng plain text với \\n. Mỗi gạch đầu dòng phải dùng <li>.
-- **zoneName phải KHỚP** với một zone trong danh sách (không phân biệt hoa thường).
-- **Chỉ emit JSON khi thực sự muốn tạo task**, không emit JSON để minh họa hay ví dụ.
-- **KHÔNG tự tạo task nếu chưa hỏi đủ thông tin** (đặc biệt là zone khi có nhiều zone).`;
+## BẮT BUỘC
+- Trả lời NGẮN GỌN, tối đa 1-2 câu + JSON. KHÔNG giải thích, KHÔNG phân tích dài.
+- KHÔNG suy nghĩ aloud, KHÔNG lặp lại yêu cầu user, KHÔNG ghi chép quá trình.
+- description PHẢI là HTML: <p>, <ul><li>, <strong>, <br>. KHÔNG markdown.
+- zoneName phải KHỚP danh sách (không phân biệt hoa thường).
+- Nếu user đã chỉ định zone rõ ràng → tạo ngay, KHÔNG hỏi lại.
+- Chỉ emit JSON khi muốn tạo task.`;
 };
 
 /**
@@ -272,6 +260,7 @@ export const askOpenRouter = async (
       temperature: 0.7,
       top_p: 0.95,
       max_tokens: 4096,
+      reasoning: { exclude: true },
     }),
   });
 
@@ -299,8 +288,8 @@ export const parseAction = (raw: string): ParsedAction => {
     jsonStr = fenceMatch[1].trim();
     text = raw.replace(fenceMatch[0], '').trim();
   } else {
-    // Thử tìm JSON raw có "action":"create_task"
-    const rawMatch = raw.match(/\{[\s\S]*?"action"[\s\S]*?\}/);
+    // Thử tìm JSON raw có "action":"create_task" — greedy match từ { đầu đến } cuối
+    const rawMatch = raw.match(/\{[\s\S]*\}/);
     if (rawMatch) {
       jsonStr = rawMatch[0];
       text = raw.replace(rawMatch[0], '').trim();
