@@ -8,7 +8,7 @@ import {
   faArrowRight,
   faMagnifyingGlass,
   faGraduationCap,
-  faSparkles,
+  faWandMagicSparkles,
   faFilter,
 } from '@fortawesome/free-solid-svg-icons';
 import { useI18n } from '../i18n';
@@ -183,7 +183,7 @@ export default function LessonsPage() {
         {/* BREADCRUMB & HERO HEADER */}
         <div className="space-y-4 text-center sm:text-left border-b border-slate-800/80 pb-8">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-bold shadow-sm">
-            <FontAwesomeIcon icon={faSparkles} className="text-teal-300" />
+            <FontAwesomeIcon icon={faWandMagicSparkles} className="text-teal-300" />
             <span>{lang === 'en' ? 'Structured Course Path' : 'Lộ Trình Học Theo Bài Học'}</span>
           </div>
 

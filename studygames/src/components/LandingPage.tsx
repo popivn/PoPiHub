@@ -6,6 +6,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useI18n } from '../i18n';
 import Navbar from './Navbar';
+import Loading from './Loading';
 import { fetchTopicSettings, type TopicItem } from '../services/courseService';
 import './LandingPage.css';
 
@@ -25,11 +26,25 @@ const renderHighlightedText = (text: string) => {
 export default function LandingPage() {
   const { t, lang } = useI18n();
   const [topics, setTopics] = useState<TopicItem[]>([]);
+  const [topicsLoading, setTopicsLoading] = useState(true);
+  const [topicsError, setTopicsError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchTopicSettings().then((data) => {
-      setTopics(data || []);
-    });
+    // Page render ngay lập tức với loading ring, fetch chạy ngầm sau khi mount.
+    let cancelled = false;
+    fetchTopicSettings()
+      .then((data) => {
+        if (!cancelled) setTopics(data || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setTopicsError(err?.message ?? 'Không tải được chủ đề học');
+      })
+      .finally(() => {
+        if (!cancelled) setTopicsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -88,7 +103,18 @@ export default function LandingPage() {
             </div>
 
             {/* DYNAMIC FIELDSET LEGEND FOR EACH TOPIC */}
-            {topics.filter((t) => t.active !== false).map((topic) => (
+            {topicsLoading ? (
+              <Loading visual="ring" size="lg" label="Đang tải chủ đề học…" minHeight={240} />
+            ) : topicsError ? (
+              <div className="text-center py-12 text-rose-400 text-sm">
+                {topicsError}
+              </div>
+            ) : topics.filter((t) => t.active !== false).length === 0 ? (
+              <div className="text-center py-12 text-slate-500 text-sm">
+                Chưa có chủ đề học nào.
+              </div>
+            ) : (
+              topics.filter((t) => t.active !== false).map((topic) => (
               <fieldset key={topic.id} className="border border-teal-500/40 rounded-3xl p-6 sm:p-8 bg-slate-900/80 backdrop-blur-xl shadow-2xl relative overflow-hidden group hover:border-teal-400/70 transition-all duration-300 w-full mb-8">
                 <legend className="ml-4 sm:ml-8 px-3.5 py-1 rounded-full bg-slate-950 border border-teal-400/80 text-teal-300 font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-md shadow-teal-500/20">
                   <span className="text-xs">🇨🇳</span>
@@ -135,7 +161,8 @@ export default function LandingPage() {
                   ))}
                 </div>
               </fieldset>
-            ))}
+              ))
+            )}
           </div>
         </section>
 
