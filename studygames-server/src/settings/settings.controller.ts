@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Body, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { SettingsService, TopicItem, MinigameSettings } from './settings.service';
+import { SettingsService, TopicItem } from './settings.service';
+import type { MinigameSettings } from './settings.service';
 import { getStorage } from '../app/firebase-admin';
 
 @Controller('bo')
