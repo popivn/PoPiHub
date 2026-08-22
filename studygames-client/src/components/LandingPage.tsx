@@ -23,6 +23,8 @@ const renderHighlightedText = (text: string) => {
   );
 };
 
+const GAME_URL = (import.meta as any).env?.VITE_GAME_URL ?? 'http://localhost:3636';
+
 export default function LandingPage() {
   const { t, lang } = useI18n();
   const [topics, setTopics] = useState<TopicItem[]>([]);
@@ -75,8 +77,8 @@ export default function LandingPage() {
             <p className="max-w-2xl text-lg md:text-xl text-slate-400 leading-relaxed mb-10">
               {renderHighlightedText(t('hero.subtitle'))}
             </p>
-            <Link
-              to="/social"
+            <a
+              href={GAME_URL}
               className="mt-4 sm:mt-6 inline-block group transition-transform duration-200 hover:scale-105 active:scale-95"
             >
               <img
@@ -85,7 +87,7 @@ export default function LandingPage() {
                 draggable={false}
                 className="h-36 sm:h-40 md:h-48 w-auto object-contain drop-shadow-[0_12px_28px_rgba(45,212,191,0.45)] group-hover:drop-shadow-[0_16px_36px_rgba(45,212,191,0.65)] transition-all select-none"
               />
-            </Link>
+            </a>
           </div>
         </section>
 

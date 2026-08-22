@@ -1,7 +1,6 @@
 
 import { I18nProvider } from './i18n';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Homepage from './components/Homepage';
 import LandingPage from './components/LandingPage';
 import LearnChinesePage from './components/LearnChinesePage';
 import LessonsPage from './components/LessonsPage';
@@ -14,7 +13,6 @@ function Router() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/learn/chinese" element={<LearnChinesePage />} />
         <Route path="/learn/lessons" element={<LessonsPage />} />
-        <Route path="/social" element={<Homepage />} />
         <Route path="/view/loading" element={<LoadingPreviewPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

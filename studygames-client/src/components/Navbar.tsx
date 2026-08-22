@@ -18,6 +18,8 @@ import PlayerManager from './PlayerManager';
 import { getAuthState, clearAuth, type AuthState } from '../auth/authClient';
 import { listPlayers, type Player } from '../players/playersClient';
 
+const GAME_URL = (import.meta as any).env?.VITE_GAME_URL ?? 'http://localhost:3636';
+
 interface Props {
   showNavLinks?: boolean;
   tagline?: string;
@@ -130,13 +132,13 @@ export default function Navbar({
               <FontAwesomeIcon icon={faBook} className="text-teal-400 text-xs" />
               <span>{lang === 'en' ? 'Learn Chinese' : 'Học Chữ Hán'}</span>
             </Link>
-            <Link
-              to="/social"
+            <a
+              href={GAME_URL}
               className="rounded-full px-3.5 py-1.5 bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 font-bold text-xs hover:-translate-y-0.5 hover:shadow-lg hover:shadow-teal-500/30 transition-all flex items-center gap-1.5"
             >
               <FontAwesomeIcon icon={faGamepad} className="text-xs" />
               <span>{t('nav.play')}</span>
-            </Link>
+            </a>
           </nav>
         )}
 
@@ -274,14 +276,14 @@ export default function Navbar({
             <span>{lang === 'en' ? 'Learn Chinese' : 'Học Chữ Hán'}</span>
           </Link>
           <div className="pt-1">
-            <Link
-              to="/social"
+            <a
+              href={GAME_URL}
               onClick={() => setMobileMenuOpen(false)}
               className="w-full flex items-center justify-center gap-2 rounded-full px-4 py-2 bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 font-bold text-xs shadow-md shadow-teal-500/20"
             >
               <FontAwesomeIcon icon={faGamepad} className="text-xs" />
               <span>{t('nav.play')}</span>
-            </Link>
+            </a>
           </div>
         </div>
       )}

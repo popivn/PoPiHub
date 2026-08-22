@@ -2,12 +2,10 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faBookOpen,
   faClock,
   faLayerGroup,
   faArrowRight,
   faMagnifyingGlass,
-  faGraduationCap,
   faWandMagicSparkles,
   faFilter,
 } from '@fortawesome/free-solid-svg-icons';
