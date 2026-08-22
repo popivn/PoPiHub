@@ -11,12 +11,12 @@ import {
   faUser,
   faBook,
 } from '@fortawesome/free-solid-svg-icons';
-import { useI18n } from '../i18n';
-import LanguageDropdown from './LanguageDropdown';
-import LoginModal from './LoginModal';
-import PlayerManager from './PlayerManager';
-import { getAuthState, clearAuth, type AuthState } from '../auth/authClient';
-import { listPlayers, type Player } from '../players/playersClient';
+import { useI18n } from '../../i18n';
+import { LanguageDropdown } from '../helpers';
+import LoginModal from '../LoginModal';
+import PlayerManager from '../PlayerManager';
+import { getAuthState, clearAuth, type AuthState } from '../../auth/authClient';
+import { listPlayers, type Player } from '../../players/playersClient';
 
 const GAME_URL = (import.meta as any).env?.VITE_GAME_URL ?? 'http://localhost:3636';
 

@@ -488,11 +488,11 @@ export class LearnService {
 
   getCategories(): CategoryItem[] {
     return [
-      { id: 'all', name: 'Tất cả chủ đề', icon: '🌐', count: this.defaultCharacters.length },
-      { id: 'office', name: 'Nơi Công Sở', icon: '🏢', count: 4 },
-      { id: 'home', name: 'Giao Tiếp Tại Nhà', icon: '🏠', count: 4 },
-      { id: 'it', name: 'Lĩnh Vực IT', icon: '💻', count: 4 },
-      { id: 'basic', name: 'Căn Bản HSK', icon: '📚', count: 2 },
+      { id: 'all', name: 'Tất cả chủ đề', icon: 'faLayerGroup', count: this.defaultCharacters.length },
+      { id: 'office', name: 'Nơi Công Sở', icon: 'faBriefcase', count: 4 },
+      { id: 'home', name: 'Giao Tiếp Tại Nhà', icon: 'faHouseChimney', count: 4 },
+      { id: 'it', name: 'Lĩnh Vực IT', icon: 'faLaptopCode', count: 4 },
+      { id: 'basic', name: 'Căn Bản HSK', icon: 'faBookOpen', count: 2 },
     ];
   }
 

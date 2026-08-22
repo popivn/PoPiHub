@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faCheck } from '@fortawesome/free-solid-svg-icons';
-import { useI18n } from '../i18n';
+import { useI18n } from '../../../i18n';
 
 const FlagVN = () => (
   <svg viewBox="0 0 900 600" className="w-5 h-3.5 rounded-xs shrink-0 shadow-xs inline-block align-middle" aria-hidden="true">

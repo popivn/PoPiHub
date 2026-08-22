@@ -1,9 +1,7 @@
 
 import { I18nProvider } from './i18n';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LandingPage from './components/LandingPage';
-import LearnChinesePage from './components/LearnChinesePage';
-import LessonsPage from './components/LessonsPage';
+import { LandingPage, LearnChinesePage, LessonsPage } from './components/page';
 import LoadingPreviewPage from './components/preview/LoadingPreviewPage';
 
 function Router() {

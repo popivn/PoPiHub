@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import Loading from '../Loading';
+import { Loading } from '../helpers';
 import './LoadingPreviewPage.css';
 
 type Size = 'sm' | 'md' | 'lg';

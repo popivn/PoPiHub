@@ -4,10 +4,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowRight,
 } from '@fortawesome/free-solid-svg-icons';
-import { useI18n } from '../i18n';
-import Navbar from './Navbar';
-import Loading from './Loading';
-import { fetchTopicSettings, type TopicItem } from '../services/courseService';
+import { useI18n } from '../../../i18n';
+import { Navbar } from '../../layout';
+import { Loading } from '../../helpers';
+import { fetchTopicSettings, type TopicItem } from '../../../services/courseService';
 import './LandingPage.css';
 
 const renderHighlightedText = (text: string) => {

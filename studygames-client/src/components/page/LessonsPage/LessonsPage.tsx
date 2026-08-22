@@ -9,9 +9,9 @@ import {
   faWandMagicSparkles,
   faFilter,
 } from '@fortawesome/free-solid-svg-icons';
-import { useI18n } from '../i18n';
-import MainLayout from './MainLayout';
-import { API_BASE_URL } from '../auth/authClient';
+import { useI18n } from '../../../i18n';
+import { MainLayout } from '../../layout';
+import { API_BASE_URL } from '../../../auth/authClient';
 
 export interface LessonItem {
   id: string;
@@ -31,114 +31,10 @@ export interface LessonItem {
   active: boolean;
 }
 
-const DEFAULT_LESSONS: LessonItem[] = [
-  {
-    id: 'lesson_1_greetings',
-    courseId: 'chinese_hub',
-    lessonNumber: 1,
-    title: 'Bài 1: Chào Hỏi & Giới Thiệu Bản Thân',
-    titleEn: 'Lesson 1: Greetings & Self-Introduction',
-    description: 'Học cách chào hỏi cơ bản, nói lời cảm ơn, tạm biệt và tự giới thiệu tên tuổi bằng tiếng Trung chuẩn.',
-    descriptionEn: 'Learn basic greetings, saying thanks, goodbyes, and introducing yourself in Chinese.',
-    topicName: 'Giao Tiếp Cơ Bản',
-    topicNameEn: 'Basic Greetings',
-    category: 'greetings',
-    icon: '👋',
-    level: 'HSK 1 • A1',
-    durationMinutes: 15,
-    totalCards: 12,
-    active: true,
-  },
-  {
-    id: 'lesson_2_numbers',
-    courseId: 'chinese_hub',
-    lessonNumber: 2,
-    title: 'Bài 2: Con Số, Thời Gian & Ngày Tháng',
-    titleEn: 'Lesson 2: Numbers, Time & Calendar',
-    description: 'Nắm vững cách đếm từ 1-100, nói thời gian giờ phút và đọc ngày tháng năm chính xác.',
-    descriptionEn: 'Master counting 1-100, telling time, and reading dates accurately in Chinese.',
-    topicName: 'Con Số & Thời Gian',
-    topicNameEn: 'Numbers & Time',
-    category: 'numbers',
-    icon: '🔢',
-    level: 'HSK 1 • A1',
-    durationMinutes: 20,
-    totalCards: 15,
-    active: true,
-  },
-  {
-    id: 'lesson_3_food',
-    courseId: 'chinese_hub',
-    lessonNumber: 3,
-    title: 'Bài 3: Gọi Món & Ẩm Thực Nhà Hàng',
-    titleEn: 'Lesson 3: Restaurant Dining & Food Ordering',
-    description: 'Học từ vựng về món ăn nổi tiếng, cách gọi món tại quán ăn và thanh toán tiền mặt/mã QR.',
-    descriptionEn: 'Learn vocabulary for famous dishes, ordering food at restaurants, and making payments.',
-    topicName: 'Ẩm Thực & Nhà Hàng',
-    topicNameEn: 'Dining & Food',
-    category: 'food',
-    icon: '🍜',
-    level: 'HSK 2 • A2',
-    durationMinutes: 25,
-    totalCards: 18,
-    active: true,
-  },
-  {
-    id: 'lesson_4_office',
-    courseId: 'chinese_hub',
-    lessonNumber: 4,
-    title: 'Bài 4: Giao Tiếp Văn Phòng & IT',
-    titleEn: 'Lesson 4: Office & Workplace IT Chinese',
-    description: 'Từ vựng chuyên ngành IT, viết email công việc, họp online và trao đổi công việc hàng ngày.',
-    descriptionEn: 'IT technical vocabulary, writing work emails, online meetings, and daily office tasks.',
-    topicName: 'Công Việc & IT',
-    topicNameEn: 'Workplace & IT',
-    category: 'it',
-    icon: '💻',
-    level: 'HSK 2 • A2',
-    durationMinutes: 30,
-    totalCards: 20,
-    active: true,
-  },
-  {
-    id: 'lesson_5_home',
-    courseId: 'chinese_hub',
-    lessonNumber: 5,
-    title: 'Bài 5: Gia Đình & Đời Sống Thường Ngày',
-    titleEn: 'Lesson 5: Family & Daily Household Life',
-    description: 'Hỏi thăm sức khỏe người thân, mô tả hoạt động gia đình và giao tiếp đời thường thân mật.',
-    descriptionEn: 'Asking about family health, describing household activities, and friendly chats.',
-    topicName: 'Gia Đình & Đời Sống',
-    topicNameEn: 'Family & Daily Life',
-    category: 'home',
-    icon: '🏠',
-    level: 'HSK 2 • A2',
-    durationMinutes: 25,
-    totalCards: 16,
-    active: true,
-  },
-  {
-    id: 'lesson_6_travel',
-    courseId: 'chinese_hub',
-    lessonNumber: 6,
-    title: 'Bài 6: Du Lịch, Hỏi Đường & Đặt Phòng',
-    titleEn: 'Lesson 6: Travel, Directions & Hotel Booking',
-    description: 'Giao tiếp tại sân bay, hỏi đường đi, bắt xe taxi và đặt phòng khách sạn thuận tiện khi đi du lịch.',
-    descriptionEn: 'Airport conversations, asking for directions, catching taxis, and booking hotel rooms.',
-    topicName: 'Du Lịch & Di Chuyển',
-    topicNameEn: 'Travel & Transport',
-    category: 'travel',
-    icon: '✈️',
-    level: 'HSK 3 • B1',
-    durationMinutes: 35,
-    totalCards: 25,
-    active: true,
-  },
-];
-
 export default function LessonsPage() {
   const { lang } = useI18n();
-  const [lessons, setLessons] = useState<LessonItem[]>(DEFAULT_LESSONS);
+  const [lessons, setLessons] = useState<LessonItem[]>([]);
+  const [lessonsLoading, setLessonsLoading] = useState<boolean>(true);
   const [selectedTopic, setSelectedTopic] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
@@ -150,7 +46,8 @@ export default function LessonsPage() {
           setLessons(data);
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLessonsLoading(false));
   }, []);
 
   // Extract unique topics for filter bar
@@ -249,7 +146,14 @@ export default function LessonsPage() {
         </div>
 
         {/* LESSONS GRID CONTAINER (2 Columns on Desktop lg, 1 Column on Mobile/Tablet) */}
-        {filteredLessons.length === 0 ? (
+        {lessonsLoading ? (
+          <div className="text-center py-16 bg-slate-900/40 border border-slate-800/60 rounded-3xl space-y-3">
+            <div className="inline-block w-10 h-10 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin" />
+            <p className="text-slate-400 text-sm font-semibold">
+              {lang === 'en' ? 'Loading lessons...' : 'Đang tải bài học...'}
+            </p>
+          </div>
+        ) : filteredLessons.length === 0 ? (
           <div className="text-center py-16 bg-slate-900/40 border border-slate-800/60 rounded-3xl space-y-3">
             <FontAwesomeIcon icon={faFilter} className="text-3xl text-slate-600" />
             <p className="text-slate-400 text-sm font-semibold">

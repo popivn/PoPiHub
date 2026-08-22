@@ -21,6 +21,8 @@ async function bootstrap() {
     credentials: !allowAll,
   });
 
+  app.setGlobalPrefix('api', { exclude: ['public'] });
+
   // Log mọi request đến (method, url, status, response time)
   app.use((req: Request, res: Response, next: NextFunction) => {
     const start = Date.now();

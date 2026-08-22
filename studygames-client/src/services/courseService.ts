@@ -23,27 +23,6 @@ export interface TopicItem {
   courses: CourseItem[];
 }
 
-export const DEFAULT_TOPICS: TopicItem[] = [
-  {
-    id: 'topic_chinese',
-    name: 'Tiếng Trung',
-    nameEn: 'Chinese',
-    active: true,
-    courses: [
-      {
-        id: 'chinese_hub',
-        title: 'Học Mặt Chữ Tiếng Trung',
-        titleEn: 'Chinese Learning Hub',
-        description: 'Ghi nhớ bộ thủ, phát âm, pinyin và nhận diện mặt chữ Hán qua các bài lướt thẻ 3D & trò chơi Slime Quiz tương tác thú vị.',
-        descriptionEn: 'Memorize radicals, pronunciation, pinyin and recognize Chinese characters through interactive 3D flashcards & Slime Quiz games.',
-        image: '/chinese_course_thumb.jpg',
-        link: '/learn/chinese',
-        active: true,
-      },
-    ],
-  },
-];
-
 /**
  * Cache topic settings trong localStorage với TTL (mặc định 5 phút).
  * Tránh fetch lại khi user quay lại LandingPage trong thời gian ngắn.
