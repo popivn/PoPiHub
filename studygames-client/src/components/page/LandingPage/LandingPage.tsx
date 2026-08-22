@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowRight,
+  faGamepad,
 } from '@fortawesome/free-solid-svg-icons';
 import { useI18n } from '../../../i18n';
 import { Navbar } from '../../layout';
@@ -88,6 +89,75 @@ export default function LandingPage() {
                 className="h-36 sm:h-40 md:h-48 w-auto object-contain drop-shadow-[0_12px_28px_rgba(45,212,191,0.45)] group-hover:drop-shadow-[0_16px_36px_rgba(45,212,191,0.65)] transition-all select-none"
               />
             </a>
+          </div>
+        </section>
+
+        {/* SECTION: MINI GAME */}
+        <section id="minigame" className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-16">
+          <div className="w-full space-y-8">
+            <div className="mb-8 text-center md:text-left">
+              <h2
+                className="text-left text-3xl sm:text-4xl font-extrabold text-slate-100 mb-4 uppercase tracking-wider flex items-center gap-3"
+                style={{ color: '#f8fafc', forcedColorAdjust: 'none', WebkitTextFillColor: '#f8fafc' }}
+              >
+                <span>{t('minigame.title')}</span>
+              </h2>
+              <div className="w-full h-0.5 bg-gradient-to-r from-teal-400/80 via-teal-500/30 to-slate-800/20 rounded-full shadow-[0_0_8px_rgba(45,212,191,0.4)]" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Slime Quiz Card */}
+              <Link
+                to="/learn/chinese"
+                className="group bg-slate-950/60 border border-slate-800/80 hover:border-teal-500/40 rounded-3xl p-6 flex flex-col gap-4 transition-all duration-300 shadow-xl hover:shadow-teal-500/10"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-teal-400/20 to-cyan-500/20 border border-teal-500/30 flex items-center justify-center shrink-0">
+                  <FontAwesomeIcon icon={faGamepad} className="text-2xl text-teal-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-slate-100 group-hover:text-teal-300 transition-colors">
+                    {lang === 'en' ? 'Slime Quiz' : 'Slime Quiz'}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                    {lang === 'en'
+                      ? 'Guess the meaning of Chinese characters. Fast, fun, and addictive.'
+                      : 'Đoán nghĩa chữ Hán nhanh chóng. Vui nhộn và gây nghiện.'}
+                  </p>
+                </div>
+                <div className="flex items-center justify-end pt-2 border-t border-slate-800/80">
+                  <span className="inline-flex items-center gap-2 text-xs font-bold text-teal-300 group-hover:text-teal-200 transition-colors">
+                    <span>{t('minigame.play')}</span>
+                    <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
+                  </span>
+                </div>
+              </Link>
+
+              {/* Play Xianria Card */}
+              <a
+                href={GAME_URL}
+                className="group bg-slate-950/60 border border-slate-800/80 hover:border-teal-500/40 rounded-3xl p-6 flex flex-col gap-4 transition-all duration-300 shadow-xl hover:shadow-teal-500/10"
+              >
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center shrink-0">
+                  <FontAwesomeIcon icon={faArrowRight} className="text-2xl text-amber-400" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-bold text-slate-100 group-hover:text-teal-300 transition-colors">
+                    {lang === 'en' ? 'Xianria World' : 'Thế Giới Xianria'}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                    {lang === 'en'
+                      ? 'Jump into the slime world, explore and collect friends.'
+                      : 'Nhảy vào thế giới slime, khám phá và kết bạn.'}
+                  </p>
+                </div>
+                <div className="flex items-center justify-end pt-2 border-t border-slate-800/80">
+                  <span className="inline-flex items-center gap-2 text-xs font-bold text-teal-300 group-hover:text-teal-200 transition-colors">
+                    <span>{t('minigame.play')}</span>
+                    <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
+                  </span>
+                </div>
+              </a>
+            </div>
           </div>
         </section>
 

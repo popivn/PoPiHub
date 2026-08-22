@@ -4,12 +4,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBars,
   faXmark,
-  faStar,
-  faCircleInfo,
   faGamepad,
   faRightToBracket,
   faUser,
-  faBook,
 } from '@fortawesome/free-solid-svg-icons';
 import { useI18n } from '../../i18n';
 import { LanguageDropdown } from '../helpers';
@@ -116,22 +113,7 @@ export default function Navbar({
 
         {/* Center Nav Links */}
         {showNavLinks && (
-          <nav className="hidden md:flex items-center gap-4 text-xs font-semibold">
-            <a href="/#features" className="text-slate-300 hover:text-teal-400 transition-colors flex items-center gap-1">
-              <FontAwesomeIcon icon={faStar} className="text-teal-400 text-xs" />
-              <span>{t('nav.features')}</span>
-            </a>
-            <a href="/#about" className="text-slate-300 hover:text-teal-400 transition-colors flex items-center gap-1">
-              <FontAwesomeIcon icon={faCircleInfo} className="text-teal-400 text-xs" />
-              <span>{t('nav.about')}</span>
-            </a>
-            <Link
-              to="/learn/chinese"
-              className="text-slate-300 hover:text-teal-400 transition-colors flex items-center gap-1"
-            >
-              <FontAwesomeIcon icon={faBook} className="text-teal-400 text-xs" />
-              <span>{lang === 'en' ? 'Learn Chinese' : 'Học Chữ Hán'}</span>
-            </Link>
+          <nav className="hidden md:flex items-center gap-4 text-xs font-semibold ml-auto lg:mr-3">
             <a
               href={GAME_URL}
               className="rounded-full px-3.5 py-1.5 bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 font-bold text-xs hover:-translate-y-0.5 hover:shadow-lg hover:shadow-teal-500/30 transition-all flex items-center gap-1.5"
@@ -139,6 +121,7 @@ export default function Navbar({
               <FontAwesomeIcon icon={faGamepad} className="text-xs" />
               <span>{t('nav.play')}</span>
             </a>
+            <span className="h-5 w-px bg-teal-500/30 shrink-0" aria-hidden="true" />
           </nav>
         )}
 
@@ -169,7 +152,7 @@ export default function Navbar({
                 type="button"
                 onClick={() => setUserMenuOpen((v) => !v)}
                 className={`group bg-slate-900/90 border border-teal-500/40 text-teal-300 hover:border-teal-400 hover:text-slate-950 hover:bg-gradient-to-r hover:from-teal-400 hover:to-cyan-400 font-semibold flex items-center justify-center shadow-sm shadow-teal-500/10 hover:shadow-lg hover:shadow-teal-500/30 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shrink-0 ${
-                  activePlayer ? 'w-8 h-8 sm:w-auto sm:h-8 sm:px-3 rounded-full text-xs' : 'w-8 h-8 rounded-full p-0'
+                  activePlayer ? 'w-8 h-8 sm:w-auto sm:h-8 sm:px-3 rounded-full text-xs' : 'w-8 h-8 lg:w-auto lg:h-8 lg:px-3 rounded-full p-0 lg:rounded-full text-xs'
                 }`}
               >
                 {activePlayer ? (
@@ -178,10 +161,13 @@ export default function Navbar({
                     <span className="font-bold hidden sm:inline">{activePlayer.name}</span>
                   </div>
                 ) : (
-                  <FontAwesomeIcon
-                    icon={faUser}
-                    className="text-teal-400 text-xs group-hover:text-slate-950 transition-colors"
-                  />
+                  <div className="flex items-center gap-1.5 justify-center">
+                    <FontAwesomeIcon
+                      icon={faUser}
+                      className="text-teal-400 text-xs group-hover:text-slate-950 transition-colors"
+                    />
+                    <span className="font-bold hidden lg:inline">{accountLabel}</span>
+                  </div>
                 )}
               </button>
 
@@ -223,10 +209,11 @@ export default function Navbar({
             <button
               type="button"
               onClick={() => setLoginOpen(true)}
-              className="group w-8 h-8 rounded-full bg-slate-900/90 border border-teal-500/50 text-teal-300 hover:border-teal-400 hover:text-slate-950 hover:bg-gradient-to-r hover:from-teal-400 hover:to-cyan-400 flex items-center justify-center transition-all duration-200 shadow-md shadow-teal-500/15 hover:shadow-lg hover:shadow-teal-400/30 hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+              className="group w-8 h-8 lg:w-auto lg:h-8 lg:px-3 rounded-full bg-slate-900/90 border border-teal-500/50 text-teal-300 hover:border-teal-400 hover:text-slate-950 hover:bg-gradient-to-r hover:from-teal-400 hover:to-cyan-400 flex items-center justify-center gap-1.5 transition-all duration-200 shadow-md shadow-teal-500/15 hover:shadow-lg hover:shadow-teal-400/30 hover:scale-105 active:scale-95 cursor-pointer shrink-0 text-xs font-bold"
               title={lang === 'en' ? 'Login / Register' : 'Đăng nhập / Đăng ký'}
             >
               <FontAwesomeIcon icon={faRightToBracket} className="text-xs text-teal-400 group-hover:text-slate-950 transition-colors" />
+              <span className="hidden lg:inline">{lang === 'en' ? 'Sign in' : 'Đăng nhập'}</span>
             </button>
           )}
         </div>
@@ -252,39 +239,13 @@ export default function Navbar({
       {showNavLinks && mobileMenuOpen && (
         <div className="md:hidden border-b border-slate-800/80 bg-slate-950/95 backdrop-blur-xl px-6 py-4 flex flex-col gap-3 shadow-2xl relative z-[9998] animate-in fade-in slide-in-from-top-2">
           <a
-            href="/#features"
+            href={GAME_URL}
             onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-3 text-slate-200 hover:text-teal-400 text-sm font-medium py-1.5 transition-colors border-b border-slate-800/40"
+            className="w-full flex items-center justify-center gap-2 rounded-full px-4 py-2 bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 font-bold text-xs shadow-md shadow-teal-500/20"
           >
-            <FontAwesomeIcon icon={faStar} className="text-teal-400 text-xs w-4" />
-            <span>{t('nav.features')}</span>
+            <FontAwesomeIcon icon={faGamepad} className="text-xs" />
+            <span>{t('nav.play')}</span>
           </a>
-          <a
-            href="/#about"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-3 text-slate-200 hover:text-teal-400 text-sm font-medium py-1.5 transition-colors border-b border-slate-800/40"
-          >
-            <FontAwesomeIcon icon={faCircleInfo} className="text-teal-400 text-xs w-4" />
-            <span>{t('nav.about')}</span>
-          </a>
-          <Link
-            to="/learn/chinese"
-            onClick={() => setMobileMenuOpen(false)}
-            className="flex items-center gap-3 text-slate-200 hover:text-teal-400 text-sm font-medium py-1.5 transition-colors border-b border-slate-800/40"
-          >
-            <FontAwesomeIcon icon={faBook} className="text-teal-400 text-xs w-4" />
-            <span>{lang === 'en' ? 'Learn Chinese' : 'Học Chữ Hán'}</span>
-          </Link>
-          <div className="pt-1">
-            <a
-              href={GAME_URL}
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full flex items-center justify-center gap-2 rounded-full px-4 py-2 bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 font-bold text-xs shadow-md shadow-teal-500/20"
-            >
-              <FontAwesomeIcon icon={faGamepad} className="text-xs" />
-              <span>{t('nav.play')}</span>
-            </a>
-          </div>
         </div>
       )}
     </>

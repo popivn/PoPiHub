@@ -1,5 +1,8 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { getFirestore } from '../app/firebase-admin';
+import { DictionaryService } from './dictionary.service';
+import { readFileSync, readdirSync } from 'node:fs';
+import { resolve, basename, extname } from 'node:path';
 
 export interface ChineseCharacterExample {
   sentence: string;
@@ -13,9 +16,11 @@ export interface ChineseCharacterItem {
   pinyin: string;
   hanViet: string;
   meaning: string;
+  meaningEn?: string;
   level: string;
-  category: string;       // Tên thể loại (vd: Nơi Công Sở, Lĩnh Vực IT)
-  categoryId: string;     // ID thể loại (vd: office, it, home, basic)
+  category: string;
+  categoryEn?: string;
+  categoryId: string;
   radical: string;
   strokeCount: number;
   examples: ChineseCharacterExample[];
@@ -24,8 +29,39 @@ export interface ChineseCharacterItem {
 export interface CategoryItem {
   id: string;
   name: string;
+  nameEn?: string;
   icon: string;
   count?: number;
+}
+
+export interface ChineseCharacterPage {
+  items: ChineseCharacterItem[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
+/** Số từ vựng tải mỗi trang — đủ lấp đầy 1-3 cột grid mà không fetch quá nặng. */
+export const CHINESE_PAGE_SIZE = 24;
+
+interface CacheCursor {
+  o: number;
+}
+interface FirestoreCursor {
+  d: string;
+}
+type Cursor = CacheCursor | FirestoreCursor;
+
+function decodeCursor(raw?: string): Cursor | null {
+  if (!raw) return null;
+  try {
+    return JSON.parse(Buffer.from(raw, 'base64').toString('utf-8')) as Cursor;
+  } catch {
+    return null;
+  }
+}
+
+function encodeCursor(cursor: Cursor): string {
+  return Buffer.from(JSON.stringify(cursor), 'utf-8').toString('base64');
 }
 
 export interface LessonItem {
@@ -46,408 +82,115 @@ export interface LessonItem {
   active: boolean;
 }
 
-@Injectable()
-export class LearnService {
-  private readonly defaultCharacters: ChineseCharacterItem[] = [
-    {
-        "id": "cn_it_001",
-        "char": "码",
-        "pinyin": "mǎ",
-        "hanViet": "Mã",
-        "meaning": "Mã, ký hiệu, con số (trong Mã code)",
-        "level": "IT",
-        "category": "Lĩnh Vực IT",
-        "categoryId": "it",
-        "radical": "石 (Thạch - bộ 112)",
-        "strokeCount": 8,
-        "examples": [
-            {
-                "sentence": "写代码。",
-                "pinyin": "Xiě dàimǎ.",
-                "meaning": "Viết mã code."
-            },
-            {
-                "sentence": "源码已经更新。",
-                "pinyin": "Yuánmǎ yǐjīng gēngxīn.",
-                "meaning": "Mã nguồn đã được cập nhật."
-            }
-        ]
-    },
-    {
-        "id": "cn_it_002",
-        "char": "网",
-        "pinyin": "wǎng",
-        "hanViet": "Võng",
-        "meaning": "Mạng, lưới, internet",
-        "level": "IT",
-        "category": "Lĩnh Vực IT",
-        "categoryId": "it",
-        "radical": "冂 (Quynh - bộ 13) / 网 (Võng)",
-        "strokeCount": 6,
-        "examples": [
-            {
-                "sentence": "上网查资料。",
-                "pinyin": "Shàngwǎng chá zīliào.",
-                "meaning": "Lên mạng tra cứu tài liệu."
-            },
-            {
-                "sentence": "网络连接正常。",
-                "pinyin": "Wǎnglù liánjiē zhèngcháng.",
-                "meaning": "Kết nối mạng bình thường."
-            }
-        ]
-    },
-    {
-        "id": "cn_it_003",
-        "char": "电",
-        "pinyin": "diàn",
-        "hanViet": "Điện",
-        "meaning": "Điện, máy tính, thiết bị điện tử",
-        "level": "IT",
-        "category": "Lĩnh Vực IT",
-        "categoryId": "it",
-        "radical": "田 (Điền - bộ 102)",
-        "strokeCount": 5,
-        "examples": [
-            {
-                "sentence": "电脑关机了。",
-                "pinyin": "Diànnǎo guānjī le.",
-                "meaning": "Máy tính đã tắt nguồn."
-            },
-            {
-                "sentence": "电子邮件。",
-                "pinyin": "Diànzǐ yóujiàn.",
-                "meaning": "Thư điện tử (Email)."
-            }
-        ]
-    },
-    {
-        "id": "cn_it_004",
-        "char": "库",
-        "pinyin": "kù",
-        "hanViet": "Khố",
-        "meaning": "Kho, cơ sở dữ liệu (Database)",
-        "level": "IT",
-        "category": "Lĩnh Vực IT",
-        "categoryId": "it",
-        "radical": "广 (Quảng - bộ 53)",
-        "strokeCount": 7,
-        "examples": [
-            {
-                "sentence": "数据库连接成功。",
-                "pinyin": "Shùjùkù liánjiē chénggōng.",
-                "meaning": "Kết nối cơ sở dữ liệu thành công."
-            }
-        ]
-    },
-    {
-        "id": "cn_it_005",
-        "char": "端",
-        "pinyin": "duān",
-        "hanViet": "Đoan",
-        "meaning": "Đầu, mút, giao diện (Frontend/Backend)",
-        "level": "IT",
-        "category": "Lĩnh Vực IT",
-        "categoryId": "it",
-        "radical": "立 (Lập - bộ 117)",
-        "strokeCount": 14,
-        "examples": [
-            {
-                "sentence": "前端开发。",
-                "pinyin": "Qiánduān kāifā.",
-                "meaning": "Phát triển Frontend."
-            },
-            {
-                "sentence": "后端接口。",
-                "pinyin": "Hòuduān jiēkǒu.",
-                "meaning": "Endpoint API Backend."
-            }
-        ]
-    },
-    {
-        "id": "cn_off_001",
-        "char": "公",
-        "pinyin": "gōng",
-        "hanViet": "Công",
-        "meaning": "Công ty, công sở, chung, công cộng",
-        "level": "Work",
-        "category": "Nơi Công Sở",
-        "categoryId": "office",
-        "radical": "八 (Bát - bộ 12)",
-        "strokeCount": 4,
-        "examples": [
-            {
-                "sentence": "我在科技公司工作。",
-                "pinyin": "Wǒ zài kējì gōngsī gōngzuò.",
-                "meaning": "Tôi làm việc ở công ty công nghệ."
-            },
-            {
-                "sentence": "办公室在五楼。",
-                "pinyin": "Bàngōngshì zài wǔ lóu.",
-                "meaning": "Văn phòng ở tầng 5."
-            }
-        ]
-    },
-    {
-        "id": "cn_off_002",
-        "char": "会",
-        "pinyin": "huì",
-        "hanViet": "Hội",
-        "meaning": "Cuộc họp, hội nghị, biết làm",
-        "level": "Work",
-        "category": "Nơi Công Sở",
-        "categoryId": "office",
-        "radical": "人 (Nhân - bộ 9)",
-        "strokeCount": 6,
-        "examples": [
-            {
-                "sentence": "我们九点开会。",
-                "pinyin": "Wǒmen jiǔ diǎn kāihuì.",
-                "meaning": "Chúng tôi họp lúc 9 giờ."
-            }
-        ]
-    },
-    {
-        "id": "cn_off_003",
-        "char": "报",
-        "pinyin": "bào",
-        "hanViet": "Báo",
-        "meaning": "Báo cáo, thông báo",
-        "level": "Work",
-        "category": "Nơi Công Sở",
-        "categoryId": "office",
-        "radical": "扌 (Thủ - bộ 64)",
-        "strokeCount": 7,
-        "examples": [
-            {
-                "sentence": "这是月度工作报告。",
-                "pinyin": "Zhè shì yuèdù gōngzuò bàoɡào.",
-                "meaning": "Đây là báo cáo công việc hàng tháng."
-            }
-        ]
-    },
-    {
-        "id": "cn_off_004",
-        "char": "办",
-        "pinyin": "bàn",
-        "hanViet": "Biện",
-        "meaning": "Làm, xử lý, giải quyết công việc",
-        "level": "Work",
-        "category": "Nơi Công Sở",
-        "categoryId": "office",
-        "radical": "力 (Lực - bộ 19)",
-        "strokeCount": 4,
-        "examples": [
-            {
-                "sentence": "马上办理。",
-                "pinyin": "Mǎshàng bànlǐ.",
-                "meaning": "Xử lý ngay lập tức."
-            },
-            {
-                "sentence": "怎么办？",
-                "pinyin": "Zěnme bàn?",
-                "meaning": "Giải quyết thế nào đây?"
-            }
-        ]
-    },
-    {
-        "id": "cn_hm_001",
-        "char": "家",
-        "pinyin": "jiā",
-        "hanViet": "Gia",
-        "meaning": "Nhà, gia đình",
-        "level": "Home",
-        "category": "Giao Tiếp Tại Nhà",
-        "categoryId": "home",
-        "radical": "宀 (Miên - bộ 40)",
-        "strokeCount": 10,
-        "examples": [
-            {
-                "sentence": "我下班回家了。",
-                "pinyin": "Wǒ xiàbān huí jiā le.",
-                "meaning": "Tôi tan làm về nhà rồi."
-            },
-            {
-                "sentence": "家人都很健康。",
-                "pinyin": "Jiārén dōu hěn jiànkāng.",
-                "meaning": "Người nhà đều khỏe mạnh."
-            }
-        ]
-    },
-    {
-        "id": "cn_hm_002",
-        "char": "饭",
-        "pinyin": "fàn",
-        "hanViet": "Phạn",
-        "meaning": "Cơm, bữa ăn",
-        "level": "Home",
-        "category": "Giao Tiếp Tại Nhà",
-        "categoryId": "home",
-        "radical": "饣 (Thực - bộ 184)",
-        "strokeCount": 7,
-        "examples": [
-            {
-                "sentence": "吃晚饭。",
-                "pinyin": "Chī wǎnfàn.",
-                "meaning": "Ăn cơm tối."
-            }
-        ]
-    },
-    {
-        "id": "cn_hm_003",
-        "char": "睡",
-        "pinyin": "shuì",
-        "hanViet": "Thụy",
-        "meaning": "Ngủ",
-        "level": "Home",
-        "category": "Giao Tiếp Tại Nhà",
-        "categoryId": "home",
-        "radical": "目 (Mục - bộ 109)",
-        "strokeCount": 13,
-        "examples": [
-            {
-                "sentence": "早点睡觉。",
-                "pinyin": "Zǎodiǎn shuìjiào.",
-                "meaning": "Đi ngủ sớm nhé."
-            }
-        ]
-    },
-    {
-        "id": "cn_hm_004",
-        "char": "亲",
-        "pinyin": "qīn",
-        "hanViet": "Thân",
-        "meaning": "Thân thiết, bố mẹ, người thân",
-        "level": "Home",
-        "category": "Giao Tiếp Tại Nhà",
-        "categoryId": "home",
-        "radical": "立 (Lập - bộ 117)",
-        "strokeCount": 9,
-        "examples": [
-            {
-                "sentence": "父亲和母亲。",
-                "pinyin": "Fùqīn hé mǔqīn.",
-                "meaning": "Bố và mẹ."
-            }
-        ]
-    },
-    {
-        "id": "cn_bs_001",
-        "char": "爱",
-        "pinyin": "ài",
-        "hanViet": "Ái",
-        "meaning": "Yêu, thương, yêu thích",
-        "level": "HSK1",
-        "category": "Căn Bản HSK",
-        "categoryId": "basic",
-        "radical": "爪 (Trảo - bộ 87)",
-        "strokeCount": 10,
-        "examples": [
-            {
-                "sentence": "我爱你。",
-                "pinyin": "Wǒ ài nǐ.",
-                "meaning": "Tôi yêu bạn."
-            }
-        ]
-    },
-    {
-        "id": "cn_bs_002",
-        "char": "学",
-        "pinyin": "xué",
-        "hanViet": "Học",
-        "meaning": "Học tập, nghiên cứu",
-        "level": "HSK1",
-        "category": "Căn Bản HSK",
-        "categoryId": "basic",
-        "radical": "子 (Tử - bộ 39)",
-        "strokeCount": 8,
-        "examples": [
-            {
-                "sentence": "我喜欢学汉语。",
-                "pinyin": "Wǒ xǐhuān xué Hànyǔ.",
-                "meaning": "Tôi thích học tiếng Trung."
-            }
-        ]
-    },
-    {
-        "id": "cn_bs_003",
-        "char": "好",
-        "pinyin": "hǎo",
-        "hanViet": "Hảo",
-        "meaning": "Tốt, đẹp, hay, khỏe",
-        "level": "HSK1",
-        "category": "Căn Bản HSK",
-        "categoryId": "basic",
-        "radical": "女 (Nữ - bộ 38)",
-        "strokeCount": 6,
-        "examples": [
-            {
-                "sentence": "你好！",
-                "pinyin": "Nǐ hǎo!",
-                "meaning": "Xin chào!"
-            }
-        ]
-    },
-    {
-        "id": "cn_bs_004",
-        "char": "水",
-        "pinyin": "shuǐ",
-        "hanViet": "Thủy",
-        "meaning": "Nước",
-        "level": "HSK1",
-        "category": "Căn Bản HSK",
-        "categoryId": "basic",
-        "radical": "水 (Thủy - bộ 85)",
-        "strokeCount": 4,
-        "examples": [
-            {
-                "sentence": "喝水。",
-                "pinyin": "Hē shuǐ.",
-                "meaning": "Uống nước."
-            }
-        ]
-    },
-    {
-        "id": "cn_bs_005",
-        "char": "书",
-        "pinyin": "shū",
-        "hanViet": "Thư",
-        "meaning": "Sách, văn bản",
-        "level": "HSK1",
-        "category": "Căn Bản HSK",
-        "categoryId": "basic",
-        "radical": "乙 (Ất - bộ 5)",
-        "strokeCount": 4,
-        "examples": [
-            {
-                "sentence": "看书。",
-                "pinyin": "Kàn shū.",
-                "meaning": "Đọc sách."
-            }
-        ]
-    },
-    {
-        "id": "cn_bs_006",
-        "char": "心",
-        "pinyin": "xīn",
-        "hanViet": "Tâm",
-        "meaning": "Tim, lòng, tâm trí",
-        "level": "HSK1",
-        "category": "Căn Bản HSK",
-        "categoryId": "basic",
-        "radical": "心 (Tâm - bộ 61)",
-        "strokeCount": 4,
-        "examples": [
-            {
-                "sentence": "开心。",
-                "pinyin": "Kāixīn.",
-                "meaning": "Vui vẻ."
-            }
-        ]
-    }
-];
+interface CategoryFile {
+  name: string;
+  nameEn: string;
+  icon: string;
+  chars: string[];
+}
 
-  async getChineseCharacters(category?: string, level?: string, limit: number = 20): Promise<ChineseCharacterItem[]> {
+@Injectable()
+export class LearnService implements OnModuleInit {
+  private readonly logger = new Logger(LearnService.name);
+  private characterCache = new Map<string, ChineseCharacterItem>();
+  private categoryMeta: Record<string, CategoryFile> = {};
+  /** Cache toàn bộ single-char từ dict (built lazily). Dùng cho filter "Tất Cả". */
+  private allDictCharsCache: ChineseCharacterItem[] | null = null;
+
+  constructor(private readonly dictService: DictionaryService) {}
+
+  onModuleInit() {
+    this.loadCategoryFiles();
+    this.loadCharactersFromDict();
+  }
+
+  private loadCategoryFiles() {
+    try {
+      const dir = resolve(process.cwd(), 'data', 'categories');
+      const files = readdirSync(dir).filter((f) => extname(f) === '.json');
+      for (const file of files) {
+        const id = basename(file, '.json');
+        const raw = readFileSync(resolve(dir, file), 'utf-8');
+        this.categoryMeta[id] = JSON.parse(raw);
+      }
+      this.logger.log(`Loaded ${files.length} category files: ${files.join(', ')}`);
+    } catch (e: any) {
+      this.logger.warn(`Failed to load category files: ${e?.message || e}`);
+    }
+  }
+
+  private loadCharactersFromDict() {
+    let loaded = 0;
+    for (const [categoryId, meta] of Object.entries(this.categoryMeta)) {
+      for (const char of meta.chars) {
+        const lookup = this.dictService.lookup(char);
+        if (!lookup) continue;
+        loaded++;
+        const id = `cn_${categoryId}_${String(loaded).padStart(3, '0')}`;
+        const item: ChineseCharacterItem = {
+          id,
+          char,
+          pinyin: lookup.pinyin,
+          hanViet: lookup.hanViet,
+          meaning: lookup.meaning,
+          meaningEn: lookup.meaningEn,
+          level: categoryId.toUpperCase(),
+          category: meta.name,
+          categoryEn: meta.nameEn,
+          categoryId,
+          radical: '',
+          strokeCount: 0,
+          examples: lookup.examples || [],
+        };
+        this.characterCache.set(id, item);
+      }
+    }
+    this.logger.log(`Loaded ${loaded} curated characters from dictionary`);
+  }
+
+  /** Build lazily toàn bộ single-char items từ dict (chỉ 1 lần, cache lại). */
+  private ensureAllDictChars(): ChineseCharacterItem[] {
+    if (this.allDictCharsCache) return this.allDictCharsCache;
+    const lookups = this.dictService.getAllSingleChars();
+    const items: ChineseCharacterItem[] = lookups.map((lk, i) => ({
+      id: `cn_dict_${String(i).padStart(5, '0')}`,
+      char: lk.char,
+      pinyin: lk.pinyin,
+      hanViet: lk.hanViet,
+      meaning: lk.meaning,
+      meaningEn: lk.meaningEn,
+      level: 'DICT',
+      category: 'Tất Cả',
+      categoryEn: 'Everything',
+      categoryId: 'everything',
+      radical: '',
+      strokeCount: 0,
+      examples: lk.examples || [],
+    }));
+    this.allDictCharsCache = items;
+    this.logger.log(`Built all-dict-chars cache: ${items.length} entries`);
+    return items;
+  }
+
+  async getChineseCharacters(
+    category?: string,
+    level?: string,
+    cursor?: string,
+    pageSize: number = CHINESE_PAGE_SIZE,
+  ): Promise<ChineseCharacterPage> {
+    const decoded = decodeCursor(cursor);
+
+    // Filter "Tất Cả" — lấy toàn bộ dict chars không phân biệt category
+    if (category === 'everything') {
+      const allItems = this.ensureAllDictChars();
+      const offset = decoded && (decoded as CacheCursor).o ? (decoded as CacheCursor).o : 0;
+      const page = allItems.slice(offset, offset + pageSize);
+      const hasMore = offset + pageSize < allItems.length;
+      const nextCursor = hasMore ? encodeCursor({ o: offset + pageSize } as CacheCursor) : null;
+      return { items: page, nextCursor, hasMore };
+    }
+
+    // Ưu tiên Firestore nếu có dữ liệu
     try {
       const db = getFirestore();
       let query: any = db.collection('chinese_characters');
@@ -457,43 +200,71 @@ export class LearnService {
       if (level) {
         query = query.where('level', '==', level);
       }
-      const snapshot = await query.limit(limit).get();
-
-      if (!snapshot.empty) {
-        return snapshot.docs.map((doc: any) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+      if (decoded && (decoded as FirestoreCursor).d) {
+        const lastDocSnap = await db.collection('chinese_characters').doc((decoded as FirestoreCursor).d).get();
+        if (lastDocSnap.exists) {
+          query = query.startAfter(lastDocSnap);
+        }
       }
-    } catch {
-      // Fallback to in-memory curated data
-    }
+      // Fetch pageSize + 1 để phát hiện hasMore mà không cần query count
+      const snapshot = await query.limit(pageSize + 1).get();
+      if (!snapshot.empty) {
+        const docs = snapshot.docs;
+        const hasMore = docs.length > pageSize;
+        const items = docs.slice(0, pageSize).map((doc: any) => ({ id: doc.id, ...doc.data() }));
+        const nextCursor = hasMore && items.length > 0
+          ? encodeCursor({ d: items[items.length - 1].id } as FirestoreCursor)
+          : null;
+        return { items, nextCursor, hasMore };
+      }
+    } catch {}
 
-    let items = this.defaultCharacters;
+    // Fallback: cache in-memory (curated words từ dict)
+    let items = Array.from(this.characterCache.values());
     if (category && category !== 'all') {
-      items = items.filter(
-        (item) => item.categoryId.toLowerCase() === category.toLowerCase() || item.category.toLowerCase() === category.toLowerCase()
-      );
+      items = items.filter((item) => item.categoryId.toLowerCase() === category.toLowerCase());
     }
     if (level) {
       items = items.filter((item) => item.level.toLowerCase() === level.toLowerCase());
     }
-    return items.slice(0, limit);
+
+    const offset = decoded && (decoded as CacheCursor).o ? (decoded as CacheCursor).o : 0;
+    const page = items.slice(offset, offset + pageSize);
+    const hasMore = offset + pageSize < items.length;
+    const nextCursor = hasMore ? encodeCursor({ o: offset + pageSize } as CacheCursor) : null;
+    return { items: page, nextCursor, hasMore };
   }
 
   async getCharacterById(id: string): Promise<ChineseCharacterItem | null> {
-    const item = this.defaultCharacters.find((c) => c.id === id);
-    return item ?? null;
+    try {
+      const db = getFirestore();
+      const doc = await db.collection('chinese_characters').doc(id).get();
+      if (doc.exists) {
+        return { id: doc.id, ...doc.data() } as ChineseCharacterItem;
+      }
+    } catch {}
+    return this.characterCache.get(id) ?? null;
   }
 
   getCategories(): CategoryItem[] {
-    return [
-      { id: 'all', name: 'Tất cả chủ đề', icon: 'faLayerGroup', count: this.defaultCharacters.length },
-      { id: 'office', name: 'Nơi Công Sở', icon: 'faBriefcase', count: 4 },
-      { id: 'home', name: 'Giao Tiếp Tại Nhà', icon: 'faHouseChimney', count: 4 },
-      { id: 'it', name: 'Lĩnh Vực IT', icon: 'faLaptopCode', count: 4 },
-      { id: 'basic', name: 'Căn Bản HSK', icon: 'faBookOpen', count: 2 },
+    const counts: Record<string, number> = {};
+    for (const item of this.characterCache.values()) {
+      counts[item.categoryId] = (counts[item.categoryId] || 0) + 1;
+    }
+    const categories: CategoryItem[] = [
+      { id: 'all', name: 'Tất cả chủ đề', nameEn: 'All Topics', icon: 'faLayerGroup', count: this.characterCache.size },
+      { id: 'everything', name: 'Tất Cả', nameEn: 'Everything', icon: 'faDatabase', count: this.ensureAllDictChars().length },
     ];
+    for (const [id, meta] of Object.entries(this.categoryMeta)) {
+      categories.push({
+        id,
+        name: meta.name,
+        nameEn: meta.nameEn,
+        icon: meta.icon,
+        count: counts[id] || 0,
+      });
+    }
+    return categories;
   }
 
   private readonly defaultLessons: LessonItem[] = [
@@ -508,7 +279,7 @@ export class LearnService {
       topicName: 'Giao Tiếp Cơ Bản',
       topicNameEn: 'Basic Greetings',
       category: 'greetings',
-      icon: '👋',
+      icon: 'faHand',
       level: 'HSK 1 • A1',
       durationMinutes: 15,
       totalCards: 12,
@@ -525,7 +296,7 @@ export class LearnService {
       topicName: 'Con Số & Thời Gian',
       topicNameEn: 'Numbers & Time',
       category: 'numbers',
-      icon: '🔢',
+      icon: 'faHashtag',
       level: 'HSK 1 • A1',
       durationMinutes: 20,
       totalCards: 15,
@@ -537,46 +308,46 @@ export class LearnService {
       lessonNumber: 3,
       title: 'Bài 3: Gọi Món & Ẩm Thực Nhà Hàng',
       titleEn: 'Lesson 3: Restaurant Dining & Food Ordering',
-      description: 'Học từ vựng về món ăn nổi tiếng, cách gọi món tại quán ăn và thanh toán tiền mặt/mã QR.',
-      descriptionEn: 'Learn vocabulary for famous dishes, ordering food at restaurants, and making payments.',
-      topicName: 'Ẩm Thực & Nhà Hàng',
-      topicNameEn: 'Dining & Food',
+      description: 'Học từ vựng và mẫu câu giao tiếp khi đi ăn nhà hàng, gọi món, thanh toán.',
+      descriptionEn: 'Learn vocabulary and phrases for dining out, ordering food, and paying the bill.',
+      topicName: 'Ẩm Thực & Gọi Món',
+      topicNameEn: 'Food & Dining',
       category: 'food',
-      icon: '🍜',
-      level: 'HSK 2 • A2',
+      icon: 'faUtensils',
+      level: 'HSK 1 • A1',
       durationMinutes: 25,
       totalCards: 18,
       active: true,
     },
     {
-      id: 'lesson_4_office',
+      id: 'lesson_4_directions',
       courseId: 'chinese_hub',
       lessonNumber: 4,
-      title: 'Bài 4: Giao Tiếp Văn Phòng & IT',
-      titleEn: 'Lesson 4: Office & Workplace IT Chinese',
-      description: 'Từ vựng chuyên ngành IT, viết email công việc, họp online và trao đổi công việc hàng ngày.',
-      descriptionEn: 'IT technical vocabulary, writing work emails, online meetings, and daily office tasks.',
-      topicName: 'Công Việc & IT',
-      topicNameEn: 'Workplace & IT',
-      category: 'it',
-      icon: '💻',
+      title: 'Bài 4: Hỏi Đường & Phương Tiện Di Chuyển',
+      titleEn: 'Lesson 4: Asking Directions & Transportation',
+      description: 'Học cách hỏi đường, chỉ hướng, và thảo luận về các phương tiện di chuyển phổ biến.',
+      descriptionEn: 'Learn to ask for and give directions, and discuss common transportation options.',
+      topicName: 'Địa Điểm & Di Chuyển',
+      topicNameEn: 'Locations & Transport',
+      category: 'directions',
+      icon: 'faMapLocationDot',
       level: 'HSK 2 • A2',
       durationMinutes: 30,
       totalCards: 20,
       active: true,
     },
     {
-      id: 'lesson_5_home',
+      id: 'lesson_5_shopping',
       courseId: 'chinese_hub',
       lessonNumber: 5,
-      title: 'Bài 5: Gia Đình & Đời Sống Thường Ngày',
-      titleEn: 'Lesson 5: Family & Daily Household Life',
-      description: 'Hỏi thăm sức khỏe người thân, mô tả hoạt động gia đình và giao tiếp đời thường thân mật.',
-      descriptionEn: 'Asking about family health, describing household activities, and friendly chats.',
-      topicName: 'Gia Đình & Đời Sống',
-      topicNameEn: 'Family & Daily Life',
-      category: 'home',
-      icon: '🏠',
+      title: 'Bài 5: Mua Sắm & Trả Giá',
+      titleEn: 'Lesson 5: Shopping & Bargaining',
+      description: 'Học từ vựng mua sắm, cách hỏi giá, trả giá và thảo luận về sản phẩm.',
+      descriptionEn: 'Learn shopping vocabulary, how to ask prices, bargain, and discuss products.',
+      topicName: 'Mua Sắm & Giá Cả',
+      topicNameEn: 'Shopping & Prices',
+      category: 'shopping',
+      icon: 'faCartShopping',
       level: 'HSK 2 • A2',
       durationMinutes: 25,
       totalCards: 16,
@@ -588,12 +359,12 @@ export class LearnService {
       lessonNumber: 6,
       title: 'Bài 6: Du Lịch, Hỏi Đường & Đặt Phòng',
       titleEn: 'Lesson 6: Travel, Directions & Hotel Booking',
-      description: 'Giao tiếp tại sân bay, hỏi đường đi, bắt xe taxi và đặt phòng khách sạn thuận tiện khi đi du lịch.',
+      description: 'Giao tiếp tại sân bay, hỏi đường đi, bắt xe taxi và đặt phòng khách sạn.',
       descriptionEn: 'Airport conversations, asking for directions, catching taxis, and booking hotel rooms.',
       topicName: 'Du Lịch & Di Chuyển',
       topicNameEn: 'Travel & Transport',
       category: 'travel',
-      icon: '✈️',
+      icon: 'faPlane',
       level: 'HSK 3 • B1',
       durationMinutes: 35,
       totalCards: 25,

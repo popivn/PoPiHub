@@ -64,3 +64,14 @@ export function getAuth(): admin.auth.Auth {
 export function getFirestore(): admin.firestore.Firestore {
   return getFirebaseAdmin().firestore();
 }
+
+/**
+ * Cloud Storage bucket — dùng cho upload file (image banner, ...).
+ * Bucket name lấy từ env FIREBASE_STORAGE_BUCKET (vd: slistudy.appspot.com).
+ * Nếu không cấu hình, trả về undefined → caller fallback xử lý khác.
+ */
+export function getStorage(): admin.storage.Storage | undefined {
+  const bucketName = process.env.FIREBASE_STORAGE_BUCKET;
+  if (!bucketName) return undefined;
+  return getFirebaseAdmin().storage();
+}

@@ -59,3 +59,9 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Dictionary data files (downloaded at deploy time, not committed)
+/data/*.txt
+/data/*.u8
+/data/*.gz
+!/data/categories/

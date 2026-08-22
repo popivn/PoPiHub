@@ -15,7 +15,7 @@ interface Props {
 export default function MainLayout({ player, children }: Props) {
   return (
     <div className="main-layout flex flex-col min-h-screen bg-slate-950 text-slate-200">
-      <Navbar tagline="Social Slime" currentPlayer={player} />
+      <Navbar currentPlayer={player} />
       <div className="flex-1 relative w-full">
         {children}
       </div>

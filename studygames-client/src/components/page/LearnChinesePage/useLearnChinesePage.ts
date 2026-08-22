@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useI18n } from '../../../i18n';
 import { API_BASE_URL } from '../../../auth/authClient';
 
@@ -38,10 +38,17 @@ export function useLearnChinesePage() {
   const { lang } = useI18n();
   const [characters, setCharacters] = useState<ChineseCharacter[]>([]);
   const [charactersLoading, setCharactersLoading] = useState<boolean>(true);
+  const [loadingMore, setLoadingMore] = useState<boolean>(false);
+  const [hasMore, setHasMore] = useState<boolean>(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [mode, setMode] = useState<'flashcard' | 'quiz'>('flashcard');
+
+  // Cursor cho pagination — lưu ref để tránh stale closure khi load more
+  const cursorRef = useRef<string | null>(null);
+  // Lock để tránh fetch trùng khi sentinel trigger liên tục
+  const fetchingMoreRef = useRef<boolean>(false);
 
   const [score, setScore] = useState<number>(0);
   const [quizAnswered, setQuizAnswered] = useState<boolean>(false);
@@ -114,6 +121,7 @@ export function useLearnChinesePage() {
 
   const fetchCharacters = async (catId: string) => {
     setCharactersLoading(true);
+    cursorRef.current = null;
     try {
       const url = catId === 'all'
         ? `${API_BASE_URL}/learn/chinese`
@@ -121,8 +129,10 @@ export function useLearnChinesePage() {
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data)) {
-          setCharacters(data);
+        if (data && Array.isArray(data.items)) {
+          setCharacters(data.items);
+          cursorRef.current = data.nextCursor;
+          setHasMore(!!data.hasMore);
           setCurrentIndex(0);
           setFlippedCards({});
           setCharactersLoading(false);
@@ -133,10 +143,47 @@ export function useLearnChinesePage() {
       // Lỗi mạng/API — để trống, UI sẽ hiển thị empty state
     }
     setCharacters([]);
+    cursorRef.current = null;
+    setHasMore(false);
     setCurrentIndex(0);
     setFlippedCards({});
     setCharactersLoading(false);
   };
+
+  const fetchMoreCharacters = useCallback(async (catId: string) => {
+    if (fetchingMoreRef.current) return;
+    if (!hasMore || !cursorRef.current) return;
+    fetchingMoreRef.current = true;
+    setLoadingMore(true);
+    try {
+      const base = `${API_BASE_URL}/learn/chinese`;
+      const params = new URLSearchParams();
+      if (catId !== 'all') params.set('category', catId);
+      params.set('cursor', cursorRef.current);
+      const res = await fetch(`${base}?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.items) && data.items.length > 0) {
+          // Dedupe theo id phòng trường hợp cursor lệch
+          setCharacters((prev) => {
+            const existing = new Set(prev.map((c) => c.id));
+            const fresh = data.items.filter((c: ChineseCharacter) => !existing.has(c.id));
+            return [...prev, ...fresh];
+          });
+          cursorRef.current = data.nextCursor;
+          setHasMore(!!data.hasMore);
+        } else {
+          cursorRef.current = null;
+          setHasMore(false);
+        }
+      }
+    } catch {
+      // Lỗi load more — im lặng, user có thể scroll thử lại
+    } finally {
+      fetchingMoreRef.current = false;
+      setLoadingMore(false);
+    }
+  }, [hasMore]);
 
   const currentChar = characters[currentIndex];
 
@@ -187,6 +234,9 @@ export function useLearnChinesePage() {
     lang,
     characters,
     charactersLoading,
+    loadingMore,
+    hasMore,
+    fetchMoreCharacters,
     categories,
     selectedCategory,
     setSelectedCategory,

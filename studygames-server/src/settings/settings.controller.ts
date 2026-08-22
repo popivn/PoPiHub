@@ -1,5 +1,7 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
-import { SettingsService, TopicItem } from './settings.service';
+import { Controller, Get, Post, Body, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { SettingsService, TopicItem, MinigameSettings } from './settings.service';
+import { getStorage } from '../app/firebase-admin';
 
 @Controller('bo')
 export class SettingsController {
@@ -62,6 +64,10 @@ export class SettingsController {
             <button onclick="showTopicList()" class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gradient-to-r from-teal-400/15 to-cyan-500/15 text-teal-300 border border-teal-500/30 font-bold text-xs shadow-sm cursor-pointer hover:bg-teal-500/20 transition-all">
               <svg class="w-4 h-4 fill-teal-400" viewBox="0 0 24 24"><path d="M18 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2zM6 4h5v8l-2.5-1.5L6 12V4z"/></svg>
               <span>Quản Lý Chủ Đề Học</span>
+            </button>
+            <button onclick="showMinigameView()" id="sidebar-minigame-btn" class="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-300 hover:text-teal-300 hover:bg-slate-800/50 font-semibold text-xs transition-colors cursor-pointer">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+              <span>Mini Game Banners</span>
             </button>
             <a href="#" class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 font-semibold text-xs transition-colors opacity-60 cursor-not-allowed">
               <svg class="w-4 h-4 fill-slate-400" viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
@@ -278,6 +284,56 @@ export class SettingsController {
               </button>
             </div>
           </form>
+        </div>
+      </div>
+
+      <!-- MINIGAME BANNERS VIEW -->
+      <div id="minigame-view" class="hidden space-y-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+          <div>
+            <div class="flex items-center gap-2 text-xs text-slate-400 mb-1">
+              <span>BackOffice</span>
+              <span>/</span>
+              <span class="text-teal-400 font-bold">Mini Game Banners</span>
+            </div>
+            <h2 class="text-2xl font-extrabold text-slate-100 tracking-tight flex items-center gap-3">
+              <svg class="w-6 h-6 fill-teal-400" viewBox="0 0 24 24"><path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4-3c-.83 0-1.5-.67-1.5-1.5S18.67 9 19.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+              <span>Quản Lý Mini Game Banners</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Cấu hình section Mini Game trên LandingPage. Upload image banner cho từng card.</p>
+          </div>
+          <button onclick="saveMinigameSettings()" type="button" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 font-extrabold text-xs shadow-lg shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-2 cursor-pointer self-start sm:self-auto">
+            <svg class="w-4 h-4 fill-slate-950" viewBox="0 0 24 24"><path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/></svg>
+            <span>Lưu Cấu Hình</span>
+          </button>
+        </div>
+
+        <!-- Section title/subtitle editors -->
+        <div class="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-5 space-y-4">
+          <h3 class="text-sm font-bold text-teal-300 uppercase tracking-wider">Tiêu đề Section</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="text-[11px] text-slate-400 font-semibold block mb-1">Tiêu đề (VI)</label>
+              <input id="minigame-title-vi" type="text" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-teal-500 outline-none" placeholder="MINI GAME" />
+            </div>
+            <div>
+              <label class="text-[11px] text-slate-400 font-semibold block mb-1">Tiêu đề (EN)</label>
+              <input id="minigame-title-en" type="text" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-teal-500 outline-none" placeholder="MINI GAME" />
+            </div>
+            <div>
+              <label class="text-[11px] text-slate-400 font-semibold block mb-1">Mô tả (VI)</label>
+              <input id="minigame-subtitle-vi" type="text" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-teal-500 outline-none" />
+            </div>
+            <div>
+              <label class="text-[11px] text-slate-400 font-semibold block mb-1">Mô tả (EN)</label>
+              <input id="minigame-subtitle-en" type="text" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:border-teal-500 outline-none" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Cards container -->
+        <div id="minigame-cards-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Dynamic cards rendered via JS -->
         </div>
       </div>
 
@@ -754,5 +810,52 @@ export class SettingsController {
   async updateTopics(@Body() body: any): Promise<TopicItem[]> {
     const topics = Array.isArray(body) ? body : body?.topics ?? [];
     return this.settingsService.updateTopics(topics);
+  }
+
+  // ===== MINIGAME SETTINGS =====
+
+  @Get('minigame')
+  async getMinigameSettings(): Promise<MinigameSettings> {
+    return this.settingsService.getMinigameSettings();
+  }
+
+  @Post('minigame')
+  async updateMinigameSettings(@Body() body: MinigameSettings): Promise<MinigameSettings> {
+    return this.settingsService.updateMinigameSettings(body);
+  }
+
+  /**
+   * Upload image banner cho minigame card.
+   * Trả về public URL (Firebase Storage) để BO lưu vào card.image.
+   * Body: multipart/form-data với field "file" + "cardId" (vd: slime_quiz).
+   */
+  @Post('minigame/upload')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))
+  async uploadMinigameImage(@UploadedFile() file: Express.Multer.File, @Body('cardId') cardId: string): Promise<{ url: string }> {
+    if (!file) return { url: '' };
+    if (!cardId) cardId = 'generic';
+
+    const storage = getStorage();
+    // Fallback: không có Firebase Storage → trả về data URL (base64) để BO vẫn preview được
+    if (!storage) {
+      const dataUrl = `data:${file.mimetype};base64,${file.buffer.toString('base64')}`;
+      return { url: dataUrl };
+    }
+
+    const bucket = storage.bucket();
+    const ext = file.originalname.split('.').pop() || 'png';
+    const safeCardId = cardId.replace(/[^a-zA-Z0-9_-]/g, '_');
+    const fileName = `minigame/${safeCardId}_${Date.now()}.${ext}`;
+    const fileRef = bucket.file(fileName);
+
+    await fileRef.save(file.buffer, {
+      metadata: { contentType: file.mimetype },
+      public: true,
+    });
+
+    // Public URL format: https://storage.googleapis.com/<bucket>/<fileName>
+    const bucketName = bucket.name;
+    const url = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+    return { url };
   }
 }

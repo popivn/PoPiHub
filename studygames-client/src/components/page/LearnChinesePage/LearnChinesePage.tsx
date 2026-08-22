@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faRotate,
@@ -16,6 +18,7 @@ import {
   faBriefcase,
   faHouseChimney,
   faLaptopCode,
+  faDatabase,
 } from '@fortawesome/free-solid-svg-icons';
 import { MainLayout } from '../../layout';
 import { useLearnChinesePage } from './useLearnChinesePage';
@@ -26,6 +29,7 @@ const CATEGORY_ICONS: Record<string, any> = {
   faBriefcase,
   faHouseChimney,
   faLaptopCode,
+  faDatabase,
   faBookOpen,
 };
 
@@ -34,6 +38,9 @@ export default function LearnChinesePage() {
     lang,
     characters,
     charactersLoading,
+    loadingMore,
+    hasMore,
+    fetchMoreCharacters,
     categories,
     selectedCategory,
     setSelectedCategory,
@@ -57,6 +64,24 @@ export default function LearnChinesePage() {
     handleQuizAnswer,
   } = useLearnChinesePage();
 
+  // Infinite scroll: sentinel trigger khi lướt gần đáy (chỉ flashcard mode)
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (mode !== 'flashcard') return;
+    const node = sentinelRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          fetchMoreCharacters(selectedCategory);
+        }
+      },
+      { rootMargin: '600px 0px 0px 0px' }, // preload trước 600px để mượt
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [mode, hasMore, selectedCategory, fetchMoreCharacters]);
+
   return (
     <MainLayout>
       <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-200">
@@ -73,65 +98,105 @@ export default function LearnChinesePage() {
         </div>
 
       {/* Topic Category Filter & Mode Switcher Sticky Bar */}
-      <div className={`${isSticky ? 'sticky top-[64px] sm:top-[72px] z-40' : ''} w-full bg-slate-950/90 backdrop-blur-md py-2.5 px-4 sm:px-8 border-b border-slate-800/60 mt-4 sm:mt-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-3 shadow-lg transition-all duration-300`}>
-        {/* MOBILE VIEW: Custom Sleek Category Dropdown Popover (< sm) */}
-        <div className="w-full block sm:hidden relative">
-          <button
-            type="button"
-            onClick={() => setIsCatDropdownOpen(!isCatDropdownOpen)}
-            className="w-full bg-slate-900/90 border border-teal-500/50 text-teal-300 font-bold text-xs rounded-xl px-3.5 py-2.5 flex items-center justify-between shadow-lg shadow-teal-500/10 cursor-pointer active:scale-98 transition-all"
-          >
-            <div className="flex items-center gap-2.5 truncate">
-              <FontAwesomeIcon icon={CATEGORY_ICONS[activeCategoryObj.icon] || faBookOpen} className="text-teal-400 text-xs" />
-              <span className="truncate">
-                {lang === 'en' ? activeCategoryObj.nameEn : activeCategoryObj.name}
-              </span>
-            </div>
-            <FontAwesomeIcon
-              icon={faChevronDown}
-              className={`text-teal-400 text-xs transition-transform duration-200 ${
-                isCatDropdownOpen ? 'rotate-180' : ''
+      <div className={`${isSticky ? 'sticky top-[64px] sm:top-[72px] z-[9990]' : 'relative z-[9990]'} w-full bg-slate-950/90 backdrop-blur-md py-2.5 px-4 sm:px-8 border-b border-slate-800/60 mt-4 sm:mt-6 mb-6 flex flex-col md:flex-row items-center justify-between gap-3 shadow-lg transition-all duration-300`}>
+        {/* MOBILE VIEW: Toggle luôn hiện + Dropdown chọn category (< sm) */}
+        <div className="w-full block sm:hidden relative space-y-2">
+          {/* Toggle 2 trạng thái: Tất Cả ↔ Theo Chủ Đề — luôn hiện */}
+          <div className="flex gap-1 p-1 bg-slate-950/80 rounded-xl border border-slate-800/80">
+            <button
+              type="button"
+              onClick={() => setSelectedCategory('everything')}
+              className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                selectedCategory === 'everything'
+                  ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 shadow-md shadow-teal-500/30'
+                  : 'text-slate-400 hover:text-teal-300'
               }`}
-            />
-          </button>
+            >
+              <FontAwesomeIcon icon={faDatabase} className="text-xs leading-none" />
+              <span>{lang === 'en' ? 'Everything' : 'Tất Cả'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { if (selectedCategory === 'everything') setSelectedCategory('all'); }}
+              className={`flex-1 px-3 py-2 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                selectedCategory !== 'everything'
+                  ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 shadow-md shadow-teal-500/30'
+                  : 'text-slate-400 hover:text-teal-300'
+              }`}
+            >
+              <FontAwesomeIcon icon={faLayerGroup} className="text-xs leading-none" />
+              <span>{lang === 'en' ? 'By Topic' : 'Theo Chủ Đề'}</span>
+            </button>
+          </div>
+
+          {/* Dropdown chọn category cụ thể — chỉ hiện khi "Theo Chủ Đề" active */}
+          {selectedCategory !== 'everything' && (
+            <button
+              type="button"
+              onClick={() => setIsCatDropdownOpen(!isCatDropdownOpen)}
+              className="w-full bg-slate-900/90 border border-teal-500/50 text-teal-300 font-bold text-xs rounded-xl px-3.5 py-2.5 flex items-center justify-between shadow-lg shadow-teal-500/10 cursor-pointer active:scale-98 transition-all"
+            >
+              <div className="flex items-center gap-2.5 truncate">
+                <FontAwesomeIcon icon={CATEGORY_ICONS[activeCategoryObj.icon] || faBookOpen} className="text-teal-400 text-xs" />
+                <span className="truncate">
+                  {lang === 'en' ? activeCategoryObj.nameEn : activeCategoryObj.name}
+                </span>
+              </div>
+              <FontAwesomeIcon
+                icon={faChevronDown}
+                className={`text-teal-400 text-xs transition-transform duration-200 ${
+                  isCatDropdownOpen ? 'rotate-180' : ''
+                }`}
+              />
+            </button>
+          )}
 
           {/* Popover Menu Items */}
-          {isCatDropdownOpen && (
+          {isCatDropdownOpen && selectedCategory !== 'everything' && (
             <>
-              {/* Backdrop listener to close when clicking outside */}
-              <div
-                className="fixed inset-0 z-40"
-                onClick={() => setIsCatDropdownOpen(false)}
-              />
+              {/* Backdrop listener to close when clicking outside — portaled to body to escape backdrop-blur containing block */}
+              {createPortal(
+                <div
+                  className="fixed inset-0 z-[9980] bg-slate-950/60 backdrop-blur-sm transition-opacity duration-200"
+                  onClick={() => setIsCatDropdownOpen(false)}
+                  aria-hidden="true"
+                />,
+                document.body
+              )}
 
-              <div className="absolute top-full left-0 right-0 mt-2 z-50 bg-slate-900/95 backdrop-blur-xl border border-teal-500/40 rounded-2xl shadow-2xl overflow-hidden p-1.5 space-y-1">
-                {categories.map((cat) => {
-                  const isSelected = selectedCategory === cat.id;
-                  const catTitle = lang === 'en' ? (cat.nameEn || cat.name) : cat.name;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategory(cat.id);
-                        setIsCatDropdownOpen(false);
-                      }}
-                      className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
-                        isSelected
-                          ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 shadow-md shadow-teal-500/30'
-                          : 'text-slate-300 hover:bg-slate-800/80 hover:text-teal-300'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <FontAwesomeIcon icon={CATEGORY_ICONS[cat.icon] || faBookOpen} className="text-sm leading-none" />
-                        <span>{catTitle}</span>
-                      </div>
-                      {isSelected && (
-                        <FontAwesomeIcon icon={faCheck} className="text-slate-950 text-xs" />
-                      )}
-                    </button>
-                  );
-                })}
+              <div className="absolute top-full left-0 right-0 mt-2 z-[9995] bg-slate-900/95 backdrop-blur-xl border border-teal-500/40 rounded-2xl shadow-2xl overflow-hidden p-1.5 space-y-1">
+                {/* List curated categories (đã ở mode "Theo Chủ Đề") */}
+                {categories.filter((c) => c.id !== 'everything').length > 0 && (
+                  <div className="space-y-1">
+                    {categories.filter((c) => c.id !== 'everything').map((cat) => {
+                      const isSelected = selectedCategory === cat.id;
+                      const catTitle = lang === 'en' ? (cat.nameEn || cat.name) : cat.name;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedCategory(cat.id);
+                            setIsCatDropdownOpen(false);
+                          }}
+                          className={`w-full px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${
+                            isSelected
+                              ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 shadow-md shadow-teal-500/30'
+                              : 'text-slate-300 hover:bg-slate-800/80 hover:text-teal-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <FontAwesomeIcon icon={CATEGORY_ICONS[cat.icon] || faBookOpen} className="text-sm leading-none" />
+                            <span>{catTitle}</span>
+                          </div>
+                          {isSelected && (
+                            <FontAwesomeIcon icon={faCheck} className="text-slate-950 text-xs" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Border ngăn cách & Mode Switcher Items trong Dropdown trên Mobile */}
                 <div className="border-t border-slate-800/90 pt-1.5 mt-1.5 space-y-1">
@@ -170,7 +235,7 @@ export default function LearnChinesePage() {
                   >
                     <div className="flex items-center gap-2.5">
                       <FontAwesomeIcon icon={faGamepad} className={mode === 'quiz' ? 'text-slate-950' : 'text-teal-400'} />
-                      <span>{lang === 'en' ? `Slime Quiz (${score})` : `Slime Quiz (${score}đ)`}</span>
+                      <span>{lang === 'en' ? (score > 0 ? `Slime Quiz (${score})` : 'Slime Quiz') : (score > 0 ? `Slime Quiz (${score}đ)` : 'Slime Quiz')}</span>
                     </div>
                     {mode === 'quiz' && (
                       <FontAwesomeIcon icon={faCheck} className="text-slate-950 text-xs" />
@@ -182,25 +247,59 @@ export default function LearnChinesePage() {
           )}
         </div>
 
-        {/* DESKTOP VIEW: Horizontal Category Pills List (>= sm) */}
+        {/* DESKTOP VIEW: Toggle + Horizontal Category Pills List (>= sm) */}
         <div className="hidden sm:flex items-center gap-2.5 overflow-x-auto scrollbar-none justify-start flex-1 py-1">
-          {categories.map((cat) => {
-            const catTitle = lang === 'en' ? (cat.nameEn || cat.name) : cat.name;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-4 py-2 rounded-full text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 border shrink-0 ${
-                  selectedCategory === cat.id
-                    ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 border-teal-300 shadow-lg shadow-teal-500/30 ring-1 ring-teal-300/50'
-                    : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
-                }`}
-              >
-                <FontAwesomeIcon icon={CATEGORY_ICONS[cat.icon] || faBookOpen} className="text-xs leading-none" />
-                <span>{catTitle}</span>
-              </button>
-            );
-          })}
+          {/* Toggle 2 trạng thái: Tất Cả ↔ Theo Chủ Đề */}
+          <div className="flex gap-1 p-1 bg-slate-950/80 rounded-full border border-slate-800/80 shrink-0">
+            <button
+              type="button"
+              onClick={() => setSelectedCategory('everything')}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory === 'everything'
+                  ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 shadow-md shadow-teal-500/30'
+                  : 'text-slate-400 hover:text-teal-300'
+              }`}
+            >
+              <FontAwesomeIcon icon={faDatabase} className="text-xs leading-none" />
+              <span>{lang === 'en' ? 'Everything' : 'Tất Cả'}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => { if (selectedCategory === 'everything') setSelectedCategory('all'); }}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                selectedCategory !== 'everything'
+                  ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 shadow-md shadow-teal-500/30'
+                  : 'text-slate-400 hover:text-teal-300'
+              }`}
+            >
+              <FontAwesomeIcon icon={faLayerGroup} className="text-xs leading-none" />
+              <span>{lang === 'en' ? 'By Topic' : 'Theo Chủ Đề'}</span>
+            </button>
+          </div>
+
+          {/* Divider dọc + curated categories — chỉ hiện khi ở mode "Theo Chủ Đề" */}
+          {selectedCategory !== 'everything' && (
+            <>
+              <span className="h-6 w-px bg-slate-700/80 shrink-0" aria-hidden="true" />
+              {categories.filter((c) => c.id !== 'everything').map((cat) => {
+                const catTitle = lang === 'en' ? (cat.nameEn || cat.name) : cat.name;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedCategory(cat.id)}
+                    className={`px-4 py-2 rounded-full text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 border shrink-0 ${
+                      selectedCategory === cat.id
+                        ? 'bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 border-teal-300 shadow-lg shadow-teal-500/30 ring-1 ring-teal-300/50'
+                        : 'bg-slate-900/80 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={CATEGORY_ICONS[cat.icon] || faBookOpen} className="text-xs leading-none" />
+                    <span>{catTitle}</span>
+                  </button>
+                );
+              })}
+            </>
+          )}
         </div>
 
         {/* Desktop Mode Switcher Buttons */}
@@ -225,7 +324,7 @@ export default function LearnChinesePage() {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <span>{lang === 'en' ? `Slime Quiz (${score})` : `Slime Quiz (${score}đ)`}</span>
+            <span>{lang === 'en' ? (score > 0 ? `Slime Quiz (${score})` : 'Slime Quiz') : (score > 0 ? `Slime Quiz (${score}đ)` : 'Slime Quiz')}</span>
           </button>
         </div>
       </div>
@@ -254,9 +353,6 @@ export default function LearnChinesePage() {
               const flipped = !!flippedCards[char.id];
               const categoryTitle = lang === 'en' ? (char.categoryEn || char.category) : char.category;
               const displayMeaning = lang === 'en' ? (char.meaningEn || char.meaning) : char.meaning;
-              const displayRadical = lang === 'en' ? (char.radicalEn || char.radical) : char.radical;
-              const strokeText = lang === 'en' ? 'strokes' : 'nét';
-
               return (
                 <div key={char.id} className="w-full flex flex-col gap-2">
                   <div className="flex items-center justify-between text-xs text-slate-400 px-0 font-semibold">
@@ -322,22 +418,6 @@ export default function LearnChinesePage() {
                           </div>
                         </div>
 
-                        {/* Slime Mascot Hint Banner */}
-                        <div className="w-full bg-slate-800/80 border border-slate-700/60 rounded-2xl p-3 flex items-center gap-3">
-                          <img
-                            src="/slime/logo.png"
-                            alt="Slime Mascot"
-                            draggable={false}
-                            className="w-10 h-10 object-contain shrink-0 select-none"
-                          />
-                          <p className="text-xs text-slate-300 leading-snug">
-                            <strong className="text-teal-400">
-                              {lang === 'en' ? 'Slime Hint:' : 'Gợi ý Slime:'}
-                            </strong>{' '}
-                            {lang === 'en' ? 'Radical:' : 'Bộ thủ:'}{' '}
-                            <span className="text-teal-300 font-semibold">{displayRadical}</span> ({char.strokeCount} {strokeText}).
-                          </p>
-                        </div>
                       </div>
 
                       {/* BACK SIDE */}
@@ -368,15 +448,6 @@ export default function LearnChinesePage() {
                             <p className="text-xl font-bold text-slate-100">{displayMeaning}</p>
                           </div>
 
-                          <div>
-                            <span className="text-xs text-slate-400 uppercase tracking-wider block font-semibold mb-1">
-                              {lang === 'en' ? 'Radical & Structure:' : 'Bộ thủ & Cấu tạo:'}
-                            </span>
-                            <p className="text-sm text-teal-300 font-medium">
-                              {displayRadical} • {char.strokeCount} {strokeText}
-                            </p>
-                          </div>
-
                           {char.examples && char.examples.length > 0 && (
                             <div className="bg-slate-950/60 p-3 rounded-xl border border-slate-800">
                               <span className="text-xs text-slate-400 font-semibold block mb-1">
@@ -396,6 +467,24 @@ export default function LearnChinesePage() {
                 </div>
               );
             }))}
+            {/* Infinite scroll sentinel + load-more spinner */}
+            {hasMore && (
+              <div ref={sentinelRef} className="col-span-full flex flex-col items-center justify-center py-10 gap-3">
+                {loadingMore && (
+                  <div className="inline-block w-8 h-8 border-2 border-teal-400/30 border-t-teal-400 rounded-full animate-spin" />
+                )}
+                <p className="text-slate-500 text-xs font-semibold">
+                  {lang === 'en' ? 'Loading more vocabulary...' : 'Đang tải thêm từ vựng...'}
+                </p>
+              </div>
+            )}
+            {!hasMore && characters.length > 0 && (
+              <div className="col-span-full text-center py-10">
+                <p className="text-slate-500 text-xs font-semibold">
+                  {lang === 'en' ? 'You have reached the end.' : 'Bạn đã xem hết từ vựng.'}
+                </p>
+              </div>
+            )}
           </div>
         )}
 

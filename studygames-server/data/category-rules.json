@@ -1,0 +1,20 @@
+{
+  "it": {
+    "name": "Lĩnh Vực IT",
+    "nameEn": "IT",
+    "icon": "faLaptopCode",
+    "keywords": ["mã", "mạng", "máy tính", "điện", "phần mềm", "dữ liệu", "internet", "code", "lập trình", "màn hình", "bàn phím", "chuột", "tệp", "thư mục", "hệ điều hành", "phần cứng", "bộ nhớ", "server", "trang web", "ứng dụng"]
+  },
+  "office": {
+    "name": "Nơi Công Sở",
+    "nameEn": "Office",
+    "icon": "faBriefcase",
+    "keywords": ["công ty", "hội", "họp", "văn phòng", "công việc", "lương", "sếp", "đồng nghiệp", "khách hàng", "hợp đồng", "ký", "con dấu", "thư", "tài liệu", "báo cáo", "kế toán", "ngân sách"]
+  },
+  "home": {
+    "name": "Giao Tiếp Tại Nhà",
+    "nameEn": "Home",
+    "icon": "faHouseChimney",
+    "keywords": ["nhà", "ăn", "uống", "ngủ", "gia đình", "bếp", "phòng", "cửa", "bàn", "ghế", "giường", "sách", "nước", "cơm", "trà", "rửa", "dọn", "quần áo"]
+  }
+}

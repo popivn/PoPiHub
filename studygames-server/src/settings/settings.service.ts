@@ -20,6 +20,25 @@ export interface TopicItem {
   courses: CourseItem[];
 }
 
+export interface MinigameCard {
+  id: string;
+  title: string;
+  titleEn?: string;
+  description: string;
+  descriptionEn?: string;
+  image: string;
+  link: string;
+  active: boolean;
+}
+
+export interface MinigameSettings {
+  title: string;
+  titleEn?: string;
+  subtitle: string;
+  subtitleEn?: string;
+  cards: MinigameCard[];
+}
+
 @Injectable()
 export class SettingsService {
   private defaultTopics: TopicItem[] = [
@@ -83,5 +102,56 @@ export class SettingsService {
     } catch {}
     this.defaultTopics = topics;
     return topics;
+  }
+
+  // ===== MINIGAME SETTINGS =====
+
+  private defaultMinigame: MinigameSettings = {
+    title: 'MINI GAME',
+    titleEn: 'MINI GAME',
+    subtitle: 'Thư giãn và luyện não với các trò chơi nhỏ từ SliStudy.',
+    subtitleEn: 'Relax and train your brain with small games from SliStudy.',
+    cards: [
+      {
+        id: 'slime_quiz',
+        title: 'Slime Quiz',
+        titleEn: 'Slime Quiz',
+        description: 'Đoán nghĩa chữ Hán nhanh chóng. Vui nhộn và gây nghiện.',
+        descriptionEn: 'Guess the meaning of Chinese characters. Fast, fun, and addictive.',
+        image: '/slime/quiz_thumb.svg',
+        link: '/learn/chinese',
+        active: true,
+      },
+      {
+        id: 'xianria_world',
+        title: 'Thế Giới Xianria',
+        titleEn: 'Xianria World',
+        description: 'Nhảy vào thế giới slime, khám phá và kết bạn.',
+        descriptionEn: 'Jump into the slime world, explore and collect friends.',
+        image: '/slime/quiz_thumb.svg',
+        link: '',
+        active: true,
+      },
+    ],
+  };
+
+  async getMinigameSettings(): Promise<MinigameSettings> {
+    try {
+      const db = getFirestore();
+      const doc = await db.collection('settings').doc('minigame').get();
+      if (doc.exists && doc.data()?.settings) {
+        return doc.data()?.settings as MinigameSettings;
+      }
+    } catch {}
+    return this.defaultMinigame;
+  }
+
+  async updateMinigameSettings(settings: MinigameSettings): Promise<MinigameSettings> {
+    try {
+      const db = getFirestore();
+      await db.collection('settings').doc('minigame').set({ settings, updatedAt: new Date().toISOString() });
+    } catch {}
+    this.defaultMinigame = settings;
+    return settings;
   }
 }
