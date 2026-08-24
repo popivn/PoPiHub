@@ -12,34 +12,6 @@
   <body>
     <div id="root"></div>
 
-    <!-- Firebase Script Tags (CDN) -->
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
-      import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, query, where, getDocs } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-
-      // Firebase Configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyCJFysssBsW66LoPnbUj0mvbHl3BXkjbtQ",
-        authDomain: "tasktracking-1a364.firebaseapp.com",
-        projectId: "tasktracking-1a364",
-        storageBucket: "tasktracking-1a364.firebasestorage.app",
-        messagingSenderId: "851683335551",
-        appId: "1:851683335551:web:f8821fc2468ae5d9e70e4a",
-        measurementId: "G-LNQXG02XD7"
-      };
-
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const db = getFirestore(app);
-
-      // Expose to window for global access
-      window.firebaseApp = app;
-      window.firebaseDb = db;
-      window.FirestoreUtils = { collection, doc, setDoc, deleteDoc, onSnapshot, query, where, getDocs };
-    </script>
-
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "tsx dev-server.ts",
+    "dev:watch": "tsx watch dev-server.ts",
     "build": "vite build",
     "start": "serve dist -s -l $PORT",
     "lint": "oxlint",
@@ -16,6 +17,7 @@
     "@fortawesome/free-solid-svg-icons": "^7.3.1",
     "@fortawesome/react-fontawesome": "^3.5.0",
     "@tinymce/tinymce-react": "^6.3.0",
+    "firebase-admin": "^13.0.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "recharts": "^3.10.1",
@@ -25,12 +27,16 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "@types/express": "^4.17.21",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
     "oxlint": "^1.71.0",
     "tailwindcss": "^4.3.3",
+    "tsx": "^4.19.0",
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }

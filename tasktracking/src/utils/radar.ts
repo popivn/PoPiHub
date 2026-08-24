@@ -1,7 +1,5 @@
-import { CONFIG } from '../config';
 import type { TaskItem, SkillCategoryId } from '../types';
 
-const OPENROUTER_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
 const OPENROUTER_MODEL = 'nvidia/nemotron-3-super-120b-a12b:free';
 
 /** Định nghĩa category kỹ năng */
@@ -143,22 +141,23 @@ export const evaluateRadarScores = async (
 
   const prompt = buildRadarPrompt(tasks, category);
 
-  const res = await fetch(OPENROUTER_ENDPOINT, {
+  const payload = {
+    model: OPENROUTER_MODEL,
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0,
+    top_p: 1,
+    max_tokens: 2048,
+    seed: 42,
+  };
+
+  const key = sessionStorage.getItem('popi_access_key') || '';
+  const res = await fetch('/api/ai', {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${CONFIG.OPENROUTER_API_KEY}`,
-      'HTTP-Referer': CONFIG.OPENROUTER_REFERER,
-      'X-Title': CONFIG.OPENROUTER_TITLE,
       'Content-Type': 'application/json',
+      ...(key ? { 'Authorization': `Bearer ${key}` } : {}),
     },
-    body: JSON.stringify({
-      model: OPENROUTER_MODEL,
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0,
-      top_p: 1,
-      max_tokens: 2048,
-      seed: 42,
-    }),
+    body: JSON.stringify({ provider: 'openrouter', payload }),
   });
 
   if (!res.ok) {

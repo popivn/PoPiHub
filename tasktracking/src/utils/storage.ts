@@ -1,45 +1,61 @@
 import type { TaskItem, Zone, User } from '../types';
 import { CONFIG } from '../config';
 
-// Get db instance initialized in index.html via script CDN
-const getDb = () => (window as any).firebaseDb;
+// Pub-Sub Event Emitter for Local State Management
+let currentTasks: TaskItem[] = [];
+let currentZones: Zone[] = [];
 
-// Helper to access Firebase Firestore SDK functions from window.firebaseDb or global script modules
-const getFirestoreUtils = () => {
-  const win = window as any;
-  if (win.FirestoreUtils) return win.FirestoreUtils;
-  return null;
+const taskListeners = new Set<(tasks: TaskItem[]) => void>();
+const zoneListeners = new Set<(zones: Zone[]) => void>();
+
+// Helper to get access key from sessionStorage
+const getAccessKey = (): string => {
+  return sessionStorage.getItem('popi_access_key') || '';
+};
+
+// Generic authenticated API fetch helper
+const apiFetch = async (url: string, options: RequestInit = {}) => {
+  const key = getAccessKey();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(key ? { 'Authorization': `Bearer ${key}` } : {}),
+    ...options.headers,
+  };
+  return fetch(url, { ...options, headers });
+};
+
+// Helper to sort tasks descending by createdAt
+const sortTasks = (list: TaskItem[]) => {
+  return [...list].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
 // ================= USERS =================
 
 /**
- * Lấy user theo key từ Firestore.
+ * Lấy user theo key từ Serverless API.
  * Trả về User nếu tìm thấy, null nếu không.
  */
 export const getUserByKey = async (key: string): Promise<User | null> => {
-  const utils = getFirestoreUtils();
-  const db = getDb();
-  if (!utils || !db) {
-    // Fallback localStorage
+  try {
+    const res = await fetch('/api/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key }),
+    });
+
+    if (!res.ok) {
+      if (res.status === 401) return null;
+      throw new Error(`Auth API returned status ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.user || null;
+  } catch (err) {
+    console.error('getUserByKey error:', err);
+    // Fallback to localStorage if API fails or when dev server is starting
     const raw = localStorage.getItem('task_tracking_users');
     const users: User[] = raw ? JSON.parse(raw) : [];
     return users.find((u) => u.key === key) || null;
-  }
-
-  try {
-    const usersCol = utils.collection(db, 'users');
-    const q = utils.query(usersCol, utils.where('key', '==', key));
-    const snapshot = await utils.getDocs(q);
-    if (snapshot.empty) return null;
-    let user: User | null = null;
-    snapshot.forEach((docSnap: any) => {
-      user = { id: docSnap.id, ...docSnap.data() } as User;
-    });
-    return user;
-  } catch (err) {
-    console.error('getUserByKey error:', err);
-    return null;
   }
 };
 
@@ -47,166 +63,177 @@ export const getUserByKey = async (key: string): Promise<User | null> => {
  * Seed user đầu tiên (id=1, key=ROOT_KEY) nếu chưa tồn tại.
  */
 export const seedDefaultUser = async (): Promise<User | null> => {
-  const existing = await getUserByKey(CONFIG.ROOT_KEY);
-  if (existing) return existing;
-
-  const utils = getFirestoreUtils();
-  const db = getDb();
-  const defaultUser: User = {
-    id: '1',
-    key: CONFIG.ROOT_KEY,
-    name: 'Root User',
-    createdAt: new Date().toISOString(),
-  };
-
-  if (!utils || !db) {
-    const raw = localStorage.getItem('task_tracking_users');
-    const users: User[] = raw ? JSON.parse(raw) : [];
-    users.push(defaultUser);
-    localStorage.setItem('task_tracking_users', JSON.stringify(users));
-    return defaultUser;
-  }
-
-  await utils.setDoc(utils.doc(db, 'users', '1'), defaultUser);
-  return defaultUser;
+  // we just make an auth request with ROOT_KEY to seed it on the server side
+  return getUserByKey(CONFIG.ROOT_KEY);
 };
 
 // ================= ZONES =================
 
+const fetchZones = async (userId: string) => {
+  try {
+    const res = await apiFetch(`/api/zones?userId=${encodeURIComponent(userId)}`);
+    if (!res.ok) throw new Error(`Fetch zones failed: ${res.status}`);
+    const data = await res.json();
+    currentZones = data.zones || [];
+  } catch (err) {
+    console.error('fetchZones error:', err);
+  }
+};
+
 /**
  * Subscribe zones theo userId (chỉ lấy zone của user hiện tại).
- * Nếu user chưa có zone nào → seed DEFAULT_ZONES với userId.
  */
 export const subscribeZones = (userId: string, onUpdate: (zones: Zone[]) => void) => {
-  const checkAndSubscribe = () => {
-    const utils = getFirestoreUtils();
-    const db = getDb();
+  zoneListeners.add(onUpdate);
 
-    if (!utils || !db) {
-      const raw = localStorage.getItem('task_tracking_zones');
-      const all: Zone[] = raw ? JSON.parse(raw) : [];
-      const userZones = all.filter((z) => z.userId === userId);
-      if (userZones.length === 0) {
-        const seeded = CONFIG.DEFAULT_ZONES.map((z) => ({ ...z, userId }));
-        onUpdate(seeded);
-      } else {
-        onUpdate(userZones);
-      }
-      return () => {};
-    }
-
-    const zonesCol = utils.collection(db, 'zones');
-    let queryRef = zonesCol;
-    if (utils.query && utils.where) {
-      queryRef = utils.query(zonesCol, utils.where('userId', '==', userId));
-    }
-
-    return utils.onSnapshot(queryRef, (snapshot: any) => {
-      if (snapshot.empty) {
-        // Seed default zones cho user mới
-        CONFIG.DEFAULT_ZONES.forEach((z) => {
-          utils.setDoc(utils.doc(db, 'zones', `${userId}-${z.id}`), { ...z, userId });
-        });
-        onUpdate(CONFIG.DEFAULT_ZONES.map((z) => ({ ...z, userId })));
-      } else {
-        const zonesData: Zone[] = [];
-        snapshot.forEach((docSnap: any) => {
-          zonesData.push({ id: docSnap.id, ...docSnap.data() } as Zone);
-        });
-        onUpdate(zonesData);
-      }
-    }, (err: any) => {
-      console.error('Firestore zones snapshot error:', err);
+  // Initial fetch and trigger
+  fetchZones(userId).then(() => {
+    onUpdate([...currentZones]);
+    // Notify all other listeners just in case
+    zoneListeners.forEach((listener) => {
+      if (listener !== onUpdate) listener([...currentZones]);
     });
-  };
+  });
 
-  return checkAndSubscribe();
+  // Return unsubscribe function
+  return () => {
+    zoneListeners.delete(onUpdate);
+  };
 };
 
 export const saveZoneToFirestore = async (zone: Zone) => {
-  const utils = getFirestoreUtils();
-  const db = getDb();
-  if (!utils || !db) {
-    const raw = localStorage.getItem('task_tracking_zones');
-    const list: Zone[] = raw ? JSON.parse(raw) : [];
-    const updated = [...list.filter((z) => z.id !== zone.id), zone];
-    localStorage.setItem('task_tracking_zones', JSON.stringify(updated));
-    return;
+  // Update local state first (Optimistic update)
+  const index = currentZones.findIndex((z) => z.id === zone.id);
+  if (index > -1) {
+    currentZones[index] = zone;
+  } else {
+    currentZones = [...currentZones, zone];
   }
-  // Dùng zone.id làm document id (zone.id đã include userId prefix khi seed)
-  await utils.setDoc(utils.doc(db, 'zones', zone.id), zone);
+  // Notify listeners immediately
+  zoneListeners.forEach((listener) => listener([...currentZones]));
+
+  // Send request to serverless API
+  try {
+    const res = await apiFetch('/api/zones', {
+      method: 'POST',
+      body: JSON.stringify(zone),
+    });
+    if (!res.ok) throw new Error(`Save zone failed: ${res.status}`);
+  } catch (err) {
+    console.error('saveZoneToFirestore error:', err);
+    // Re-fetch zones to sync with server state in case of failure
+    fetchZones(zone.userId).then(() => {
+      zoneListeners.forEach((listener) => listener([...currentZones]));
+    });
+  }
 };
 
 export const deleteZoneFromFirestore = async (id: string) => {
-  const utils = getFirestoreUtils();
-  const db = getDb();
-  if (!utils || !db) {
-    const raw = localStorage.getItem('task_tracking_zones');
-    const list: Zone[] = raw ? JSON.parse(raw) : [];
-    const updated = list.filter((z) => z.id !== id);
-    localStorage.setItem('task_tracking_zones', JSON.stringify(updated));
-    return;
+  // Find userId to re-fetch if needed
+  const zoneToDelete = currentZones.find((z) => z.id === id);
+  const userId = zoneToDelete?.userId;
+
+  // Update local state first
+  currentZones = currentZones.filter((z) => z.id !== id);
+  zoneListeners.forEach((listener) => listener([...currentZones]));
+
+  // Send request to serverless API
+  try {
+    const res = await apiFetch(`/api/zones?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error(`Delete zone failed: ${res.status}`);
+  } catch (err) {
+    console.error('deleteZoneFromFirestore error:', err);
+    if (userId) {
+      fetchZones(userId).then(() => {
+        zoneListeners.forEach((listener) => listener([...currentZones]));
+      });
+    }
   }
-  await utils.deleteDoc(utils.doc(db, 'zones', id));
 };
 
 // ================= TASKS =================
+
+const fetchTasks = async (userId: string) => {
+  try {
+    const res = await apiFetch(`/api/tasks?userId=${encodeURIComponent(userId)}`);
+    if (!res.ok) throw new Error(`Fetch tasks failed: ${res.status}`);
+    const data = await res.json();
+    currentTasks = data.tasks || [];
+  } catch (err) {
+    console.error('fetchTasks error:', err);
+  }
+};
 
 /**
  * Subscribe tasks theo userId (chỉ lấy task của user hiện tại).
  */
 export const subscribeTasks = (userId: string, onUpdate: (tasks: TaskItem[]) => void) => {
-  const utils = getFirestoreUtils();
-  const db = getDb();
+  taskListeners.add(onUpdate);
 
-  if (!utils || !db) {
-    const raw = localStorage.getItem('task_tracking_items');
-    const all: TaskItem[] = raw ? JSON.parse(raw) : [];
-    onUpdate(all.filter((t) => t.userId === userId));
-    return () => {};
-  }
-
-  const tasksCol = utils.collection(db, 'tasks');
-  // Query theo userId
-  let queryRef = tasksCol;
-  if (utils.query && utils.where) {
-    queryRef = utils.query(tasksCol, utils.where('userId', '==', userId));
-  }
-
-  return utils.onSnapshot(queryRef, (snapshot: any) => {
-    const tasksData: TaskItem[] = [];
-    snapshot.forEach((docSnap: any) => {
-      tasksData.push({ id: docSnap.id, ...docSnap.data() } as TaskItem);
+  // Initial fetch and trigger
+  fetchTasks(userId).then(() => {
+    onUpdate(sortTasks(currentTasks));
+    // Notify all other listeners just in case
+    taskListeners.forEach((listener) => {
+      if (listener !== onUpdate) listener(sortTasks(currentTasks));
     });
-    tasksData.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    onUpdate(tasksData);
-  }, (err: any) => {
-    console.error('Firestore tasks snapshot error:', err);
   });
+
+  // Return unsubscribe function
+  return () => {
+    taskListeners.delete(onUpdate);
+  };
 };
 
 export const saveTaskToFirestore = async (task: TaskItem) => {
-  const utils = getFirestoreUtils();
-  const db = getDb();
-  if (!utils || !db) {
-    const raw = localStorage.getItem('task_tracking_items');
-    const list: TaskItem[] = raw ? JSON.parse(raw) : [];
-    const updated = [task, ...list.filter((t) => t.id !== task.id)];
-    localStorage.setItem('task_tracking_items', JSON.stringify(updated));
-    return;
+  // Update local state first
+  const index = currentTasks.findIndex((t) => t.id === task.id);
+  if (index > -1) {
+    currentTasks[index] = task;
+  } else {
+    currentTasks = [task, ...currentTasks];
   }
-  await utils.setDoc(utils.doc(db, 'tasks', task.id), task);
+  // Notify listeners immediately
+  taskListeners.forEach((listener) => listener(sortTasks(currentTasks)));
+
+  // Send request to serverless API
+  try {
+    const res = await apiFetch('/api/tasks', {
+      method: 'POST',
+      body: JSON.stringify(task),
+    });
+    if (!res.ok) throw new Error(`Save task failed: ${res.status}`);
+  } catch (err) {
+    console.error('saveTaskToFirestore error:', err);
+    // Re-fetch tasks to sync with server state in case of failure
+    fetchTasks(task.userId).then(() => {
+      taskListeners.forEach((listener) => listener(sortTasks(currentTasks)));
+    });
+  }
 };
 
 export const deleteTaskFromFirestore = async (id: string) => {
-  const utils = getFirestoreUtils();
-  const db = getDb();
-  if (!utils || !db) {
-    const raw = localStorage.getItem('task_tracking_items');
-    const list: TaskItem[] = raw ? JSON.parse(raw) : [];
-    const updated = list.filter((t) => t.id !== id);
-    localStorage.setItem('task_tracking_items', JSON.stringify(updated));
-    return;
+  const taskToDelete = currentTasks.find((t) => t.id === id);
+  const userId = taskToDelete?.userId;
+
+  // Update local state first
+  currentTasks = currentTasks.filter((t) => t.id !== id);
+  taskListeners.forEach((listener) => listener(sortTasks(currentTasks)));
+
+  // Send request to serverless API
+  try {
+    const res = await apiFetch(`/api/tasks?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) throw new Error(`Delete task failed: ${res.status}`);
+  } catch (err) {
+    console.error('deleteTaskFromFirestore error:', err);
+    if (userId) {
+      fetchTasks(userId).then(() => {
+        taskListeners.forEach((listener) => listener(sortTasks(currentTasks)));
+      });
+    }
   }
-  await utils.deleteDoc(utils.doc(db, 'tasks', id));
 };

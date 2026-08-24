@@ -1,4 +1,3 @@
-import { CONFIG } from '../config';
 import { EXP_RULE, buildExpPrompt } from './expRule';
 
 export interface ChatMessage {
@@ -39,8 +38,18 @@ export interface ParsedAction {
   };
 }
 
-const GEMINI_MODEL = 'gemini-3.5-flash';
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+const aiProxyFetch = async (provider: string, payload: any) => {
+  const key = sessionStorage.getItem('popi_access_key') || '';
+  const res = await fetch('/api/ai', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(key ? { 'Authorization': `Bearer ${key}` } : {}),
+    },
+    body: JSON.stringify({ provider, payload }),
+  });
+  return res;
+};
 
 /**
  * Xây system instruction cho chat agent.
@@ -96,21 +105,19 @@ export const askGemini = async (
     },
   ];
 
-  const res = await fetch(`${ENDPOINT}?key=${CONFIG.GEMINI_API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents,
-      generationConfig: {
-        temperature: 0.7,
-        topP: 0.95,
-        maxOutputTokens: 4096,
-      },
-      systemInstruction: {
-        parts: [{ text: buildChatSystemInstruction(availableZones) }],
-      },
-    }),
-  });
+  const payload = {
+    contents,
+    generationConfig: {
+      temperature: 0.7,
+      topP: 0.95,
+      maxOutputTokens: 4096,
+    },
+    systemInstruction: {
+      parts: [{ text: buildChatSystemInstruction(availableZones) }],
+    },
+  };
+
+  const res = await aiProxyFetch('gemini', payload);
 
   if (!res.ok) {
     const errText = await res.text();
@@ -119,106 +126,6 @@ export const askGemini = async (
 
   const data = await res.json();
   const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  return reply?.trim() || 'Xin lỗi, tôi không tạo được câu trả lời lúc này.';
-};
-
-/**
- * Gọi Free.ai API (OpenAI-compatible) để sinh câu trả lời.
- * @param history Tin nhắn trước đó
- * @param userMessage Tin nhắn mới
- * @param availableZones Danh sách zone
- * @param model Model ID (vd: qwen7b, openai/gpt-4o)
- */
-export const askFreeAI = async (
-  history: ChatMessage[],
-  userMessage: string,
-  availableZones: string[] = [],
-  model: string = 'qwen7b'
-): Promise<string> => {
-  const systemPrompt = buildChatSystemInstruction(availableZones);
-
-  // Convert history sang OpenAI format (role: user/assistant)
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    ...history.map((m) => ({
-      role: m.role === 'user' ? 'user' : 'assistant',
-      content: m.text,
-    })),
-    { role: 'user', content: userMessage },
-  ];
-
-  const res = await fetch(CONFIG.FREE_AI_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${CONFIG.FREE_AI_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.7,
-      top_p: 0.95,
-      max_tokens: 4096,
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Free AI lỗi (${res.status}): ${errText}`);
-  }
-
-  const data = await res.json();
-  const reply = data?.choices?.[0]?.message?.content;
-  return reply?.trim() || 'Xin lỗi, tôi không tạo được câu trả lời lúc này.';
-};
-
-/**
- * Gọi Blaze API (OpenAI-compatible).
- * Free plan: 150 requests/day, curated models.
- * @param history Tin nhắn trước đó
- * @param userMessage Tin nhắn mới
- * @param availableZones Danh sách zone
- * @param model Model ID (vd: gpt-4o-mini)
- */
-export const askBlaze = async (
-  history: ChatMessage[],
-  userMessage: string,
-  availableZones: string[] = [],
-  model: string = 'gpt-4o-mini'
-): Promise<string> => {
-  const systemPrompt = buildChatSystemInstruction(availableZones);
-
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    ...history.map((m) => ({
-      role: m.role === 'user' ? 'user' : 'assistant',
-      content: m.text,
-    })),
-    { role: 'user', content: userMessage },
-  ];
-
-  const res = await fetch(CONFIG.BLAZE_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${CONFIG.BLAZE_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.7,
-      top_p: 0.95,
-      max_tokens: 4096,
-    }),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Blaze API lỗi (${res.status}): ${errText}`);
-  }
-
-  const data = await res.json();
-  const reply = data?.choices?.[0]?.message?.content;
   return reply?.trim() || 'Xin lỗi, tôi không tạo được câu trả lời lúc này.';
 };
 
@@ -246,23 +153,16 @@ export const askOpenRouter = async (
     { role: 'user', content: userMessage },
   ];
 
-  const res = await fetch(CONFIG.OPENROUTER_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${CONFIG.OPENROUTER_API_KEY}`,
-      'HTTP-Referer': CONFIG.OPENROUTER_REFERER,
-      'X-Title': CONFIG.OPENROUTER_TITLE,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.7,
-      top_p: 0.95,
-      max_tokens: 4096,
-      reasoning: { exclude: true },
-    }),
-  });
+  const payload = {
+    model,
+    messages,
+    temperature: 0.7,
+    top_p: 0.95,
+    max_tokens: 4096,
+    reasoning: { exclude: true },
+  };
+
+  const res = await aiProxyFetch('openrouter', payload);
 
   if (!res.ok) {
     const errText = await res.text();
@@ -334,18 +234,16 @@ export const evaluateExp = async (title: string, description: string): Promise<n
 
   const prompt = buildExpPrompt(title, plainDesc);
 
-  const res = await fetch(`${ENDPOINT}?key=${CONFIG.GEMINI_API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.2,
-        topP: 0.9,
-        maxOutputTokens: 64,
-      },
-    }),
-  });
+  const payload = {
+    contents: [{ role: 'user', parts: [{ text: prompt }] }],
+    generationConfig: {
+      temperature: 0.2,
+      topP: 0.9,
+      maxOutputTokens: 64,
+    },
+  };
+
+  const res = await aiProxyFetch('gemini', payload);
 
   if (!res.ok) {
     const errText = await res.text();

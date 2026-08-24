@@ -21,7 +21,8 @@ import {
   faBars,
   faXmark,
   faList,
-  faHourglassHalf
+  faHourglassHalf,
+  faRightFromBracket
 } from '@fortawesome/free-solid-svg-icons';
 
 import { CONFIG } from '../config';
@@ -38,7 +39,7 @@ import { toast, confirmDelete, showAlert } from '../utils/alert';
 import { evaluateExp } from '../utils/gemini';
 import { evaluateRadarScores } from '../utils/radar';
 import type { SkillCategoryId } from '../types';
-import { getStoredUserId } from '../utils/auth';
+import { getStoredUserId, clearAccessKey } from '../utils/auth';
 import { ZoneModal } from '../components/ZoneModal';
 import { TaskDetailModal } from '../components/TaskDetailModal';
 import { ChatPanel, type CreatedTaskInfo } from '../components/ChatPanel';
@@ -75,6 +76,11 @@ export const HomePage: React.FC = () => {
 
   // User ID từ sessionStorage (set khi auth thành công)
   const userId = getStoredUserId() || '1';
+
+  const handleLogout = () => {
+    clearAccessKey();
+    window.location.href = '/';
+  };
 
   // Subscribe to Firestore Real-time Updates
   useEffect(() => {
@@ -565,6 +571,13 @@ export const HomePage: React.FC = () => {
                     <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400 w-5" />
                     <span className="text-sm font-bold text-slate-200">Zone Manager</span>
                   </button>
+                  <button
+                    onClick={handleLogout}
+                    className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/10 transition-colors text-left border-t border-slate-800/50"
+                  >
+                    <FontAwesomeIcon icon={faRightFromBracket} className="text-red-400 w-5" />
+                    <span className="text-sm font-bold text-slate-200">Đăng xuất</span>
+                  </button>
                 </div>
               </>
             )}
@@ -592,6 +605,13 @@ export const HomePage: React.FC = () => {
             >
               <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400" />
               <span>Zone Manager</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-red-500/30 hover:bg-red-500/5 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
+            >
+              <FontAwesomeIcon icon={faRightFromBracket} className="text-red-400" />
+              <span>Đăng xuất</span>
             </button>
           </div>
         </div>
