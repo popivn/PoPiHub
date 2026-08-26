@@ -58,7 +58,7 @@ const aiProxyFetch = async (provider: string, payload: any) => {
 const buildChatSystemInstruction = (availableZones: string[]) => {
   const zoneList = availableZones.length > 0 ? availableZones.join(', ') : '(chưa có zone nào)';
   const multipleZones = availableZones.length > 1;
-  return `Bạn là trợ lý AI của app "Task Tracker", ứng dụng quản lý công việc.
+  return `Bạn là trợ lý AI của pháp bảo "Tiên Lộ Lịch Kiếp", ứng dụng quản lý tu hành và nhiệm vụ thiên đạo.
 
 Vai trò: GIÚP USER TẠO TASK qua hội thoại.
 

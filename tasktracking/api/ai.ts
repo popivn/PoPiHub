@@ -60,7 +60,7 @@ export default async function handler(req: any, res: any) {
       const openRouterUrl = 'https://openrouter.ai/api/v1/chat/completions'
 
       const referer = process.env.OPENROUTER_REFERER || 'https://tasktracking-jade.vercel.app'
-      const title = process.env.OPENROUTER_TITLE || 'Task Tracker'
+      const title = process.env.OPENROUTER_TITLE || 'Tiên Lộ Lịch Kiếp'
 
       const openRouterRes = await fetch(openRouterUrl, {
         method: 'POST',

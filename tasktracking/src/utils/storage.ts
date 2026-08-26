@@ -67,6 +67,42 @@ export const seedDefaultUser = async (): Promise<User | null> => {
   return getUserByKey(CONFIG.ROOT_KEY);
 };
 
+// ================= CURRENT USER (profile) =================
+
+/**
+ * Lấy thông tin user hiện tại theo userId (từ /api/user GET).
+ */
+export const getUserById = async (userId: string): Promise<User | null> => {
+  try {
+    const res = await apiFetch(`/api/user?userId=${encodeURIComponent(userId)}`);
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.user || null;
+  } catch (err) {
+    console.error('getUserById error:', err);
+    return null;
+  }
+};
+
+/**
+ * Cập nhật name/email cho user hiện tại (PUT /api/user).
+ * userId được server xác định từ Bearer token, không cần truyền.
+ */
+export const saveUserToFirestore = async (patch: { name?: string; email?: string }): Promise<User | null> => {
+  try {
+    const res = await apiFetch('/api/user', {
+      method: 'PUT',
+      body: JSON.stringify(patch),
+    });
+    if (!res.ok) throw new Error(`Save user failed: ${res.status}`);
+    const data = await res.json();
+    return data.user || null;
+  } catch (err) {
+    console.error('saveUserToFirestore error:', err);
+    return null;
+  }
+};
+
 // ================= ZONES =================
 
 const fetchZones = async (userId: string) => {

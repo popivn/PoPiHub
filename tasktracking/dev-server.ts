@@ -65,11 +65,20 @@ async function createDevServer() {
     }
   })
 
+  app.all('/api/user', async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const mod = await import('./api/user.ts')
+      await mod.default(req, res)
+    } catch (err) {
+      next(err)
+    }
+  })
+
   app.use(vite.middlewares)
 
   app.listen(5173, '0.0.0.0', () => {
     console.log('Dev server running at http://localhost:5173')
-    console.log('API endpoints: /api/auth, /api/zones, /api/tasks, /api/ai')
+    console.log('API endpoints: /api/auth, /api/zones, /api/tasks, /api/ai, /api/user')
   })
 }
 

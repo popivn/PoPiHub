@@ -13,6 +13,7 @@ export interface User {
   id: string;
   key: string;
   name?: string;
+  email?: string;
   createdAt: string;
 }
 
@@ -56,11 +57,18 @@ export interface TaskItem {
   userId: string; // ID của user sở hữu task
   zoneId: string;
   title: string;
-  description: string; // Rich HTML text from TinyMCE
+  description: string; // Rich HTML text from RichTextEditor
   status: TaskStatus;
   exp: number; // EXP points awarded by AI based on description
   /** ISO timestamp khi task bắt đầu làm (chuyển sang ongoing). Null khi pending. */
   startedAt?: string | null;
+  /**
+   * ISO datetime (kèm HH:MM:SS) dự kiến làm task, vd: "2026-08-26T14:30:00".
+   * Mặc định `<ngày tạo>T00:00:00` nếu không truyền.
+   */
+  scheduledAt?: string | null;
+  /** Giờ dự kiến (0-23) tách riêng từ scheduledAt để dễ lọc theo khung giờ. */
+  scheduledHour?: number;
   /** Tổng thời gian thực hiện (ms) khi task completed. Reset về 0 khi về pending. */
   durationMs?: number;
   /** Điểm radar do AI đánh giá, lưu theo category (vd: { it: {...}, language: {...} }) */

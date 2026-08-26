@@ -31,6 +31,14 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
     return `${s}s`;
   };
 
+  const formatScheduledDisplay = (iso?: string | null): string => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  };
+
   const renderStatusBadge = () => {
     switch (task.status) {
       case 'pending':
@@ -145,6 +153,15 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
             <span className="text-slate-500 font-medium text-[11px]">
               Ngày tạo: {new Date(task.createdAt).toLocaleString('vi-VN')}
             </span>
+            {task.scheduledAt && (
+              <span
+                className="inline-flex items-center gap-1 text-amber-400 font-bold text-[11px]"
+                title={`Giờ dự kiến: ${task.scheduledHour ?? 0}h`}
+              >
+                <FontAwesomeIcon icon={faClock} />
+                Làm lúc: {formatScheduledDisplay(task.scheduledAt)}
+              </span>
+            )}
             {task.status === 'ongoing' && task.startedAt && (
               <span className="inline-flex items-center gap-1 text-blue-400 font-bold text-[11px]">
                 <FontAwesomeIcon icon={faClock} />

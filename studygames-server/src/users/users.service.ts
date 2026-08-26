@@ -6,14 +6,17 @@ import { getFirestore } from '../app/firebase-admin';
 export interface StoredUser {
   uid: string;
   username: string;
+  usernameLower: string;
   passwordHash: string; // scrypt: salt:hash (hex)
   createdAt: number;
+  role?: number;
 }
 
 export interface AuthResult {
   accessToken: string;
   uid: string;
   username: string;
+  role?: number;
   isNewUser: boolean;
 }
 
@@ -49,14 +52,16 @@ export class UsersService {
     const user: StoredUser = {
       uid,
       username,
+      usernameLower: key,
       passwordHash: `${salt}:${hash}`,
       createdAt: Date.now(),
+      role: 0,
     };
 
     await db
       .collection(USERS_COLLECTION)
       .doc(uid)
-      .set({ ...user, usernameLower: key });
+      .set(user);
 
     this.logger.log(`Registered: ${username} (uid=${uid})`);
 
@@ -64,9 +69,10 @@ export class UsersService {
       sub: uid,
       provider: 'password',
       username,
+      role: 0,
     });
 
-    return { accessToken, uid, username, isNewUser: true };
+    return { accessToken, uid, username, role: 0, isNewUser: true };
   }
 
   async login(username: string, password: string): Promise<AuthResult> {
@@ -98,9 +104,10 @@ export class UsersService {
       sub: user.uid,
       provider: 'password',
       username: user.username,
+      role: user.role,
     });
 
-    return { accessToken, uid: user.uid, username: user.username, isNewUser: false };
+    return { accessToken, uid: user.uid, username: user.username, role: user.role, isNewUser: false };
   }
 
   private validate(username: string, password: string) {

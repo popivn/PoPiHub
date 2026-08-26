@@ -1,0 +1,14 @@
+Rename app to Tiên Lộ Lịch Kiếp, add premium Vietnamese-compatible fonts and cultivation-themed navigation labels
+
+- Renamed the application from "Task Tracker" to "Tiên Lộ Lịch Kiếp" across all client pages, AI instructions, fallback endpoints, and index.html title.
+- Replaced the Orbitron font (which had broken Vietnamese diacritic fallbacks) with premium Google Fonts: Chakra Petch (sci-fi square, perfect for headings/titles) and Be Vietnam Pro (clean, professional, perfect for readability of body text).
+- Translated navigation labels into immersion-matched cultivation terminology (Tiên ngôn):
+  * Hồ Sơ -> Hồ Sơ Tu Hành
+  * Dashboard -> Thiên Cơ Các
+  * Zone Manager -> Linh Vực Không Gian
+  * Đăng xuất -> Thoát Ly Thần Thức
+- Redeployed to Vercel and compiled successfully.
+
+Generated with [Devin](https://devin.ai)
+
+Co-Authored-By: Devin <158243242+devin-ai-integration[bot]@users.noreply.github.com>

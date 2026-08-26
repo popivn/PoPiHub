@@ -3,9 +3,11 @@ import type { Request, Response, NextFunction } from 'express';
 import * as express from 'express';
 import { join } from 'path';
 import { AppModule } from './app.module';
+import { AuthService } from './auth/auth.service';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const auth = app.get(AuthService);
 
   // Phục vụ các tệp tĩnh (hình ảnh, favicon...) từ thư mục public
   const publicPath = join(__dirname, '..', 'public');
@@ -21,7 +23,45 @@ async function bootstrap() {
     credentials: !allowAll,
   });
 
-  app.setGlobalPrefix('api', { exclude: ['public'] });
+  // Auth middleware cho BO dashboard: chỉ cho phép user có role 11 truy cập UI
+  const boPath = join(__dirname, '..', 'bo-dist');
+  const boAuthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    const header = req.headers.authorization as string | undefined;
+    const queryToken = req.query.token as string | undefined;
+    const raw = header && header.startsWith('Bearer ') ? header.slice(7).trim() : queryToken;
+
+    if (!raw) {
+      res.status(401).send('Missing access token');
+      return;
+    }
+
+    try {
+      const payload = await auth.verifyAccessToken(raw);
+      if (payload.role !== 11) {
+        res.status(403).send('Admin access required');
+        return;
+      }
+      (req as any).user = payload;
+      next();
+    } catch {
+      res.status(401).send('Invalid or expired access token');
+    }
+  };
+
+  // BO React Dashboard static + SPA fallback
+  app.use('/bo', (req, res, next) => {
+    if (req.method !== 'GET' || req.path.match(/\.[a-zA-Z0-9]+$/)) {
+      return next();
+    }
+    return boAuthMiddleware(req, res, next);
+  });
+  app.use('/bo', express.static(boPath, { index: 'index.html' }));
+  app.use('/bo', (req: Request, res: Response, next: NextFunction) => {
+    if (req.method !== 'GET') return next();
+    res.sendFile(join(boPath, 'index.html'));
+  });
+
+  app.setGlobalPrefix('api', { exclude: ['public', 'bo'] });
 
   // Log mọi request đến (method, url, status, response time)
   app.use((req: Request, res: Response, next: NextFunction) => {

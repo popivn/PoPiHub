@@ -8,6 +8,13 @@ export interface AuthResult {
   isNewUser: boolean;
 }
 
+export interface TokenPayload {
+  sub: string;
+  provider: string;
+  role?: number;
+  username?: string;
+}
+
 @Injectable()
 export class AuthService {
   constructor(private readonly jwt: JwtService) {}
@@ -48,6 +55,7 @@ export class AuthService {
     const accessToken = await this.jwt.signAsync({
       sub: uid,
       provider: 'anonymous',
+      role: 0,
     });
 
     return { accessToken, uid, isNewUser };
@@ -56,7 +64,7 @@ export class AuthService {
   /**
    * Verify JWT do server ký (dùng cho JwtAuthGuard).
    */
-  async verifyAccessToken(token: string): Promise<{ sub: string; provider: string }> {
+  async verifyAccessToken(token: string): Promise<TokenPayload> {
     try {
       const payload = await this.jwt.verifyAsync(token);
       return payload;

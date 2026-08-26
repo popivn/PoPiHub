@@ -18,6 +18,20 @@ export const getKeyFromUrl = (): string => {
 export const saveAccessKey = (key: string, userId: string) => {
   sessionStorage.setItem(STORAGE_KEY, key);
   sessionStorage.setItem(STORAGE_USER_ID, userId);
+
+  // Lưu vào danh sách key đã dùng gần đây ở localStorage (tối đa 5 keys)
+  try {
+    const raw = localStorage.getItem('popi_recent_keys');
+    let keys: string[] = raw ? JSON.parse(raw) : [];
+    keys = keys.filter((k) => k !== key);
+    keys.push(key);
+    if (keys.length > 5) {
+      keys.shift();
+    }
+    localStorage.setItem('popi_recent_keys', JSON.stringify(keys));
+  } catch (err) {
+    console.error('Error saving recent keys:', err);
+  }
 };
 
 /**

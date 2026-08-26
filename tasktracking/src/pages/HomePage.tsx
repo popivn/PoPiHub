@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Editor } from '@tinymce/tinymce-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faClock,
@@ -26,6 +25,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 
 import { CONFIG } from '../config';
+import { RichTextEditor } from '../components/RichTextEditor';
 import type { TaskItem, TaskStatus, Zone } from '../types';
 import {
   subscribeTasks,
@@ -43,12 +43,14 @@ import { getStoredUserId, clearAccessKey } from '../utils/auth';
 import { ZoneModal } from '../components/ZoneModal';
 import { TaskDetailModal } from '../components/TaskDetailModal';
 import { ChatPanel, type CreatedTaskInfo } from '../components/ChatPanel';
+import { Loading } from '../components/Loading';
 import { Dashboard } from './Dashboard';
 import { Profile } from './Profile';
 
 export const HomePage: React.FC = () => {
   const [zones, setZones] = useState<Zone[]>([]);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [selectedZoneId, setSelectedZoneId] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -56,6 +58,7 @@ export const HomePage: React.FC = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [taskZoneId, setTaskZoneId] = useState('');
+  const [scheduledAt, setScheduledAt] = useState<string>(''); // datetime-local value (YYYY-MM-DDTHH:MM:SS)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
 
   // UI state
@@ -84,15 +87,26 @@ export const HomePage: React.FC = () => {
 
   // Subscribe to Firestore Real-time Updates
   useEffect(() => {
+    let zonesLoaded = false;
+    let tasksLoaded = false;
+
     const unsubscribeZones = subscribeZones(userId, (loadedZones) => {
       setZones(loadedZones);
       if (loadedZones.length > 0 && !taskZoneId) {
         setTaskZoneId(loadedZones[0].id);
       }
+      zonesLoaded = true;
+      if (zonesLoaded && tasksLoaded) {
+        setInitialLoading(false);
+      }
     });
 
     const unsubscribeTasks = subscribeTasks(userId, (loadedTasks) => {
       setTasks(loadedTasks);
+      tasksLoaded = true;
+      if (zonesLoaded && tasksLoaded) {
+        setInitialLoading(false);
+      }
     });
 
     return () => {
@@ -119,6 +133,14 @@ export const HomePage: React.FC = () => {
     e.preventDefault();
     if (!title.trim()) return;
 
+    // Tính scheduledAt: nếu user không nhập → mặc định 00:00:00 của ngày tạo (hôm nay)
+    const now = new Date();
+    const defaultScheduled = new Date(now);
+    defaultScheduled.setHours(0, 0, 0, 0);
+    const scheduledIso =
+      parseScheduledInput(scheduledAt) ?? defaultScheduled.toISOString();
+    const scheduledHour = hourFromIso(scheduledIso);
+
     setEvaluatingExp(true);
     try {
       if (editingTaskId) {
@@ -139,6 +161,8 @@ export const HomePage: React.FC = () => {
             description,
             zoneId: taskZoneId,
             exp,
+            scheduledAt: scheduledIso,
+            scheduledHour,
             startedAt: existing.startedAt ?? null,
             durationMs: existing.durationMs ?? 0,
             updatedAt: new Date().toISOString(),
@@ -165,6 +189,8 @@ export const HomePage: React.FC = () => {
           zoneId: taskZoneId || (zones[0]?.id ?? 'zone-1'),
           status: 'pending',
           exp,
+          scheduledAt: scheduledIso,
+          scheduledHour,
           startedAt: null,
           durationMs: 0,
           createdAt: new Date().toISOString(),
@@ -179,6 +205,7 @@ export const HomePage: React.FC = () => {
 
       setTitle('');
       setDescription('');
+      setScheduledAt('');
       setIsFormOpen(false);
     } finally {
       setEvaluatingExp(false);
@@ -190,6 +217,7 @@ export const HomePage: React.FC = () => {
     setTitle(task.title);
     setDescription(task.description);
     setTaskZoneId(task.zoneId);
+    setScheduledAt(toScheduledInputValue(task.scheduledAt));
     setIsFormOpen(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -311,6 +339,11 @@ export const HomePage: React.FC = () => {
       /* giữ mặc định */
     }
 
+    // Mặc định scheduledAt = 00:00:00 của ngày tạo (hôm nay) khi tạo từ chat
+    const chatDefaultScheduled = new Date();
+    chatDefaultScheduled.setHours(0, 0, 0, 0);
+    const chatScheduledIso = chatDefaultScheduled.toISOString();
+
     const newTask: TaskItem = {
       id: 'task-' + Date.now(),
       userId,
@@ -319,6 +352,8 @@ export const HomePage: React.FC = () => {
       zoneId,
       status: 'pending',
       exp,
+      scheduledAt: chatScheduledIso,
+      scheduledHour: 0,
       startedAt: null,
       durationMs: 0,
       createdAt: new Date().toISOString(),
@@ -417,6 +452,58 @@ export const HomePage: React.FC = () => {
 
   const getZoneById = (id: string) => zones.find((z) => z.id === id);
 
+  /**
+   * Chuyển giá trị datetime-local (YYYY-MM-DDTHH:MM:SS) sang ISO string.
+   * Trả về null nếu rỗng.
+   */
+  const parseScheduledInput = (value: string): string | null => {
+    const v = value.trim();
+    if (!v) return null;
+    // datetime-local không có timezone → xem như local time
+    const d = new Date(v);
+    return isNaN(d.getTime()) ? null : d.toISOString();
+  };
+
+  /**
+   * Chuyển ISO datetime sang giá trị cho input datetime-local (local time, có seconds).
+   * Trả về '' nếu null/invalid.
+   */
+  const toScheduledInputValue = (iso?: string | null): string => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+
+  /**
+   * Lấy giờ (0-23) từ ISO datetime. Trả về 0 nếu null/invalid.
+   */
+  const hourFromIso = (iso?: string | null): number => {
+    if (!iso) return 0;
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? 0 : d.getHours();
+  };
+
+  /** Format ISO datetime → chỉ "HH:MM:SS" */
+  const formatScheduledTime = (iso?: string | null): string => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return '';
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  };
+
+  /**
+   * Format một Date theo offset UTC (giờ) bất kỳ → "HH:MM:SS".
+   * Vd offset=7 → giờ Hà Nội, offset=0 → giờ UTC.
+   */
+  const formatInOffset = (date: Date, offsetHours: number): string => {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const shifted = new Date(date.getTime() + offsetHours * 3600 * 1000);
+    return `${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}`;
+  };
+
   // Format milliseconds → "Xh Ym" / "Xm Ys" / "Xs"
   const formatDuration = (ms: number): string => {
     if (!ms || ms < 0) return '0s';
@@ -429,7 +516,7 @@ export const HomePage: React.FC = () => {
     return `${s}s`;
   };
 
-  // Group tasks theo ngày (dựa trên createdAt), trả về mảng {dateKey, dateLabel, tasks}
+  // Group tasks theo ngày: ưu tiên scheduledAt, fallback về createdAt nếu null
   const groupTasksByDate = (taskList: TaskItem[]) => {
     const groups: { dateKey: string; dateLabel: string; tasks: TaskItem[] }[] = [];
     const today = new Date();
@@ -439,7 +526,9 @@ export const HomePage: React.FC = () => {
 
     const map = new Map<string, TaskItem[]>();
     for (const t of taskList) {
-      const d = new Date(t.createdAt);
+      // Ưu tiên scheduledAt; nếu null thì fallback về createdAt
+      const refIso = t.scheduledAt ?? t.createdAt;
+      const d = new Date(refIso);
       d.setHours(0, 0, 0, 0);
       // Dùng local date (không toISOString để tránh lệch timezone UTC)
       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -498,6 +587,10 @@ export const HomePage: React.FC = () => {
     }
   };
 
+  if (initialLoading) {
+    return <Loading message="Đang gom tụ linh khí..." />;
+  }
+
   if (view === 'dashboard') {
     return (
       <div className="fixed inset-0 z-50 bg-slate-950 overflow-y-auto">
@@ -509,7 +602,7 @@ export const HomePage: React.FC = () => {
   if (view === 'profile') {
     return (
       <div className="fixed inset-0 z-50 bg-slate-950 overflow-y-auto">
-        <Profile tasks={tasks} onBack={() => setView('home')} onReevaluateRadar={handleReevaluateRadar} />
+        <Profile tasks={tasks} userId={userId} onBack={() => setView('home')} onReevaluateRadar={handleReevaluateRadar} />
       </div>
     );
   }
@@ -521,12 +614,18 @@ export const HomePage: React.FC = () => {
         <div className="flex items-center gap-3">
           <img src="/logo.jpg" alt="Logo" className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow-md" />
           <div>
-            <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-wider uppercase" style={{ fontFamily: "'Orbitron', sans-serif", letterSpacing: '0.08em' }}>
+            <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-wider uppercase" style={{ fontFamily: "'Chakra Petch', sans-serif", letterSpacing: '0.08em' }}>
               {CONFIG.APP_NAME}
             </h1>
-            <p className="text-xs sm:text-sm font-bold text-slate-400 tracking-widest tabular-nums" style={{ fontFamily: "'Orbitron', sans-serif" }}>
-              {clockTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-            </p>
+            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-400 tracking-widest tabular-nums" style={{ fontFamily: "'Chakra Petch', sans-serif" }}>
+              <span title="Giờ app (UTC+7 Hà Nội)">
+                {formatInOffset(clockTime, CONFIG.APP_UTC_OFFSET)}
+              </span>
+              <span className="text-slate-600">·</span>
+              <span className="text-slate-500" title="Giờ UTC">
+                UTC {formatInOffset(clockTime, 0)}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -555,28 +654,28 @@ export const HomePage: React.FC = () => {
                     className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800 transition-colors text-left"
                   >
                     <FontAwesomeIcon icon={faUserAstronaut} className="text-purple-400 w-5" />
-                    <span className="text-sm font-bold text-slate-200">Hồ Sơ</span>
+                    <span className="text-sm font-bold text-slate-200">Hồ Sơ Tu Hành</span>
                   </button>
                   <button
                     onClick={() => { setView('dashboard'); setMenuOpen(false); }}
                     className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800 transition-colors text-left border-t border-slate-800/50"
                   >
                     <FontAwesomeIcon icon={faChartLine} className="text-emerald-400 w-5" />
-                    <span className="text-sm font-bold text-slate-200">Dashboard</span>
+                    <span className="text-sm font-bold text-slate-200">Thiên Cơ Các</span>
                   </button>
                   <button
                     onClick={() => { setIsZoneModalOpen(true); setMenuOpen(false); }}
                     className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800 transition-colors text-left border-t border-slate-800/50"
                   >
                     <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400 w-5" />
-                    <span className="text-sm font-bold text-slate-200">Zone Manager</span>
+                    <span className="text-sm font-bold text-slate-200">Linh Vực Không Gian</span>
                   </button>
                   <button
                     onClick={handleLogout}
                     className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/10 transition-colors text-left border-t border-slate-800/50"
                   >
                     <FontAwesomeIcon icon={faRightFromBracket} className="text-red-400 w-5" />
-                    <span className="text-sm font-bold text-slate-200">Đăng xuất</span>
+                    <span className="text-sm font-bold text-slate-200">Thoát Ly Thần Thức</span>
                   </button>
                 </div>
               </>
@@ -590,28 +689,28 @@ export const HomePage: React.FC = () => {
               className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
             >
               <FontAwesomeIcon icon={faUserAstronaut} className="text-purple-400" />
-              <span>Hồ Sơ</span>
+              <span>Hồ Sơ Tu Hành</span>
             </button>
             <button
               onClick={() => setView('dashboard')}
               className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
             >
               <FontAwesomeIcon icon={faChartLine} className="text-emerald-400" />
-              <span>Dashboard</span>
+              <span>Thiên Cơ Các</span>
             </button>
             <button
               onClick={() => setIsZoneModalOpen(true)}
               className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
             >
               <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400" />
-              <span>Zone Manager</span>
+              <span>Linh Vực Không Gian</span>
             </button>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-red-500/30 hover:bg-red-500/5 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
             >
               <FontAwesomeIcon icon={faRightFromBracket} className="text-red-400" />
-              <span>Đăng xuất</span>
+              <span>Thoát Ly Thần Thức</span>
             </button>
           </div>
         </div>
@@ -718,6 +817,7 @@ export const HomePage: React.FC = () => {
               setEditingTaskId(null);
               setTitle('');
               setDescription('');
+              setScheduledAt('');
             }
             setIsFormOpen(!isFormOpen);
           }}
@@ -817,31 +917,30 @@ export const HomePage: React.FC = () => {
 
           <div>
             <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              Mô tả chi tiết & Hình ảnh (TinyMCE Rich Editor)
+              Ngày &amp; giờ dự kiến làm (HH:MM:SS)
             </label>
-            <div className="rounded-xl overflow-hidden border border-slate-800">
-              <Editor
-                apiKey={CONFIG.TINYMCE_API_KEY}
-                value={description}
-                onEditorChange={(content) => setDescription(content)}
-                init={{
-                  height: 260,
-                  menubar: false,
-                  plugins: [
-                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap',
-                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                    'insertdatetime', 'media', 'table', 'preview', 'help', 'wordcount'
-                  ],
-                  toolbar:
-                    'undo redo | bold italic underline | alignleft aligncenter alignright | image link | bullist numlist removeformat',
-                  content_style: 'body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif; font-size:14px; background-color: #ffffff; color: #0f172a; }',
-                  mobile: {
-                    theme: 'mobile',
-                    toolbar: 'undo bold italic image bullist'
-                  }
-                }}
-              />
-            </div>
+            <input
+              type="datetime-local"
+              step={1}
+              value={scheduledAt}
+              onChange={(e) => setScheduledAt(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 [color-scheme:dark]"
+            />
+            <p className="mt-1 text-[10px] text-slate-500">
+              Để trống sẽ mặc định <span className="text-slate-400 font-semibold">00:00:00</span> của ngày tạo task.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              Mô tả chi tiết & Hình ảnh (Rich Editor)
+            </label>
+            <RichTextEditor
+              value={description}
+              onChange={(content) => setDescription(content)}
+              height={260}
+              placeholder="Nhập mô tả chi tiết cho công việc..."
+            />
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -867,6 +966,7 @@ export const HomePage: React.FC = () => {
                 setEditingTaskId(null);
                 setTitle('');
                 setDescription('');
+                setScheduledAt('');
               }}
             >
               Hủy
@@ -926,7 +1026,7 @@ export const HomePage: React.FC = () => {
                     return (
                       <div
                         key={task.id}
-                        className={`group relative bg-slate-900 border border-slate-800/80 rounded-xl p-3 space-y-2 shadow-sm hover:border-slate-700 transition-all ${
+                        className={`group relative bg-slate-900 border border-slate-800/80 rounded-xl p-3 pt-5 space-y-2 shadow-sm hover:border-slate-700 transition-all ${
                           task.status === 'completed' ? 'opacity-80' : ''
                         }`}
                       >
@@ -940,6 +1040,16 @@ export const HomePage: React.FC = () => {
                               : 'bg-emerald-500'
                           }`}
                         />
+
+                        {/* Scheduled time chip — nằm trên đường border top của card */}
+                        {task.scheduledAt && (
+                          <span
+                            className="absolute -top-2.5 left-3 z-10 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold text-amber-300 bg-slate-900 bg-amber-500/10 border border-amber-500/40 whitespace-nowrap shadow-sm"
+                            title={`Giờ dự kiến: ${task.scheduledHour ?? 0}h`}
+                          >
+                            {formatScheduledTime(task.scheduledAt)}
+                          </span>
+                        )}
 
                         {/* Card Header: Zone tag, EXP & Status badge */}
                         <div className="flex items-center justify-between gap-2 pl-1">
@@ -1000,8 +1110,8 @@ export const HomePage: React.FC = () => {
                         {/* Inline Action Bar: Time, Expand Toggle & Action Buttons */}
                         <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/60 pl-1 text-xs">
                           <div className="flex items-center gap-3">
-                            <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap">
-                              {new Date(task.createdAt).toLocaleTimeString('vi-VN', {
+                            <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap" title="Thời điểm tạo task">
+                              Tạo: {new Date(task.createdAt).toLocaleTimeString('vi-VN', {
                                 hour: '2-digit',
                                 minute: '2-digit',
                               })}

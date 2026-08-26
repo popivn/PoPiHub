@@ -60,6 +60,7 @@ import {
   hasRadarDataForCategory,
 } from '../utils/radar';
 import { getStoredAccessKey } from '../utils/auth';
+import { UserInfoPanel } from '../components/UserInfoPanel';
 
 /** Map FA icon name string → IconDefinition */
 const ICON_MAP: Record<string, IconDefinition> = {
@@ -72,12 +73,13 @@ const ICON_MAP: Record<string, IconDefinition> = {
 
 interface ProfileProps {
   tasks: TaskItem[];
+  userId: string;
   onBack: () => void;
   /** Handler đánh giá lại radar scores bằng AI, lưu vào DB theo category */
   onReevaluateRadar: (categoryId: SkillCategoryId) => Promise<void>;
 }
 
-export const Profile: React.FC<ProfileProps> = ({ tasks, onBack, onReevaluateRadar }) => {
+export const Profile: React.FC<ProfileProps> = ({ tasks, userId, onBack, onReevaluateRadar }) => {
   const [showAllLevels, setShowAllLevels] = useState(false);
   const [evaluatingRadar, setEvaluatingRadar] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<SkillCategoryId>('it');
@@ -174,6 +176,9 @@ export const Profile: React.FC<ProfileProps> = ({ tasks, onBack, onReevaluateRad
           </div>
         </div>
       </header>
+
+      {/* User Info Panel — hiển thị tên/email, có form nhập nếu chưa có */}
+      <UserInfoPanel userId={userId} />
 
       {/* Profile Card - Main */}
       <div

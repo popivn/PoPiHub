@@ -10,6 +10,14 @@ interface AccessDeniedProps {
 
 export const AccessDenied: React.FC<AccessDeniedProps> = ({ wrongKey = false }) => {
   const [keyInput, setKeyInput] = useState('');
+  const [recentKeys] = useState<string[]>(() => {
+    try {
+      const raw = localStorage.getItem('popi_recent_keys');
+      return raw ? JSON.parse(raw).reverse() : [];
+    } catch {
+      return [];
+    }
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,6 +87,33 @@ export const AccessDenied: React.FC<AccessDeniedProps> = ({ wrongKey = false }) 
             Xác thực truy cập
           </button>
         </form>
+
+        {/* Recently used keys */}
+        {recentKeys.length > 0 && (
+          <div className="mt-5 text-left bg-slate-900/40 border border-slate-800/40 rounded-2xl p-4">
+            <p className="text-slate-400 text-xs font-bold mb-2.5 flex items-center gap-2">
+              <FontAwesomeIcon icon={faKey} className="text-red-500/80 text-[10px]" />
+              <span>Khóa đã dùng gần đây:</span>
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {recentKeys.map((key) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => {
+                    setKeyInput(key);
+                    setTimeout(() => {
+                      window.location.href = `/${key}`;
+                    }, 50);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-red-950/30 hover:bg-red-950/60 border border-red-900/30 hover:border-red-500/50 rounded-lg text-xs font-mono font-bold text-red-400 transition-all cursor-pointer active:scale-95"
+                >
+                  <span>{key}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Footer hint */}
         <p className="text-red-500/30 text-xs mt-6 font-mono">
