@@ -23,16 +23,14 @@ async function bootstrap() {
     credentials: !allowAll,
   });
 
-  // Auth middleware cho BO dashboard: chỉ cho phép user có role 11 truy cập UI
-  const boPath = join(__dirname, '..', 'bo-dist');
+  // Auth middleware cho BO dashboard: xác thực nếu có token, nếu chưa có thì vẫn cho load UI để login
   const boAuthMiddleware = async (req: Request, res: Response, next: NextFunction) => {
     const header = req.headers.authorization as string | undefined;
     const queryToken = req.query.token as string | undefined;
     const raw = header && header.startsWith('Bearer ') ? header.slice(7).trim() : queryToken;
 
     if (!raw) {
-      res.status(401).send('Missing access token');
-      return;
+      return next();
     }
 
     try {
@@ -47,6 +45,8 @@ async function bootstrap() {
       res.status(401).send('Invalid or expired access token');
     }
   };
+
+  const boPath = join(__dirname, '..', 'bo-dist');
 
   // BO React Dashboard static + SPA fallback
   app.use('/bo', (req, res, next) => {
