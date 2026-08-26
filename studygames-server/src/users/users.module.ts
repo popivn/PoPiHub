@@ -1,16 +1,12 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { AuthModule } from '../auth/auth.module';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
+import { UsersAdminController } from './users.admin.controller';
 
 @Module({
-  imports: [
-    JwtModule.register({
-      secret: process.env.JWT_SECRET ?? 'dev-secret-change-me',
-      signOptions: { expiresIn: '7d' },
-    }),
-  ],
-  controllers: [UsersController],
+  imports: [AuthModule],
+  controllers: [UsersController, UsersAdminController],
   providers: [UsersService],
   exports: [UsersService],
 })

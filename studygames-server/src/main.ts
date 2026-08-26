@@ -16,7 +16,7 @@ async function bootstrap() {
   app.use(express.static(clientPublicPath));
 
   // CORS: hỗ trợ nhiều origins hoặc '*' cho phép mọi nguồn
-  const rawOrigins = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
+  const rawOrigins = process.env.CORS_ORIGIN ?? 'http://localhost:5000';
   const allowAll = rawOrigins.trim() === '*';
   app.enableCors({
     origin: allowAll ? true : rawOrigins.split(',').map((o) => o.trim()),

@@ -110,6 +110,25 @@ export class UsersService {
     return { accessToken, uid: user.uid, username: user.username, role: user.role, isNewUser: false };
   }
 
+  async findAll(limit = 100): Promise<Partial<StoredUser>[]> {
+    const db = getFirestore();
+    const snap = await db
+      .collection(USERS_COLLECTION)
+      .orderBy('createdAt', 'desc')
+      .limit(limit)
+      .get();
+
+    return snap.docs.map((doc) => {
+      const u = doc.data() as StoredUser;
+      return {
+        uid: u.uid,
+        username: u.username,
+        createdAt: u.createdAt,
+        role: u.role,
+      };
+    });
+  }
+
   private validate(username: string, password: string) {
     if (!username || username.trim().length < MIN_USERNAME) {
       throw new UnauthorizedException(`Username must be at least ${MIN_USERNAME} characters`);
