@@ -6,6 +6,12 @@ export default defineConfig({
   base: '/bo/',
   server: {
     port: 5000,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
   },
   build: {
     outDir: '../bo-dist',
