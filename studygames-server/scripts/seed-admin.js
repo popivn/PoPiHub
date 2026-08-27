@@ -15,6 +15,7 @@ async function main() {
   const username = process.env.ADMIN_USERNAME || 'admin';
   const password = process.env.ADMIN_PASSWORD;
   const role = parseInt(process.env.ADMIN_ROLE || '11', 10);
+  const permissions = process.env.ADMIN_PERMISSIONS || '';
 
   if (!password) {
     throw new Error('ADMIN_PASSWORD is required');
@@ -32,8 +33,8 @@ async function main() {
 
   if (!existing.empty) {
     const ref = existing.docs[0].ref;
-    await ref.update({ passwordHash, role });
-    console.log(`Updated admin: ${username} (role=${role})`);
+    await ref.update({ passwordHash, role, permissions });
+    console.log(`Updated admin: ${username} (role=${role}, permissions=${permissions})`);
   } else {
     const uid = `usr_${randomBytes(12).toString('hex')}`;
     await db.collection(USERS_COLLECTION).doc(uid).set({
@@ -43,6 +44,7 @@ async function main() {
       passwordHash,
       createdAt: Date.now(),
       role,
+      permissions,
     });
     console.log(`Created admin: ${username} (role=${role}, uid=${uid})`);
   }

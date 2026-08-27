@@ -1,60 +1,58 @@
 import { BrowserRouter, Routes, Route, NavLink, useSearchParams } from 'react-router-dom';
 import { useEffect, useState, type FormEvent } from 'react';
-import Dashboard from './pages/Dashboard';
-import Users from './pages/Users';
-import Logs from './pages/Logs';
+import Dashboard from './pages/dashboard';
+import Users from './pages/users';
+import Logs from './pages/logs';
+import Topics from './pages/topics';
+import Loading from './components/Loading';
+
+const NAV = [
+  { to: '/', label: 'Dashboard', end: true },
+  { to: '/users', label: 'Users', end: false },
+  { to: '/topics', label: 'Chủ đề', end: false },
+  { to: '/logs', label: 'Logs', end: false },
+];
 
 function Layout({ token, onLogout }: { token: string; onLogout: () => void }) {
   return (
     <div className="min-h-screen flex bg-slate-950 text-slate-200">
-      <aside className="w-64 bg-slate-900 border-r border-slate-800 p-5 flex flex-col gap-6">
-        <div className="text-teal-400 font-extrabold text-lg tracking-wide">SliStudy BO</div>
-        <nav className="flex flex-col gap-2">
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              `px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                isActive ? 'bg-teal-400/15 text-teal-300 border border-teal-500/30' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-              }`
-            }
-          >
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/users"
-            className={({ isActive }) =>
-              `px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                isActive ? 'bg-teal-400/15 text-teal-300 border border-teal-500/30' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-              }`
-            }
-          >
-            Users
-          </NavLink>
-          <NavLink
-            to="/logs"
-            className={({ isActive }) =>
-              `px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                isActive ? 'bg-teal-400/15 text-teal-300 border border-teal-500/30' : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200'
-              }`
-            }
-          >
-            Logs
-          </NavLink>
+      <aside className="w-56 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col">
+        <div className="h-14 px-4 flex items-center border-b border-slate-800">
+          <span className="text-sm font-semibold text-slate-100">SliStudy BO</span>
+        </div>
+        <nav className="flex flex-col p-2 gap-0.5">
+          {NAV.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.end}
+              className={({ isActive }) =>
+                `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-teal-500/10 text-teal-300 border border-teal-500/30'
+                    : 'text-slate-400 hover:bg-slate-800 hover:text-slate-200 border border-transparent'
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
       </aside>
-      <main className="flex-1 flex flex-col">
-        <header className="h-16 bg-slate-900/80 backdrop-blur border-b border-slate-800 px-6 flex items-center justify-between">
-          <span className="text-sm font-bold text-slate-100">BackOffice</span>
-          <div className="flex items-center gap-4">
-            <a href="/" className="text-xs font-bold text-teal-400 hover:text-teal-300">Mở Client →</a>
-            <button onClick={onLogout} className="text-xs font-bold text-red-400 hover:text-red-300">Đăng xuất</button>
+      <main className="flex-1 flex flex-col min-w-0">
+        <header className="h-14 bg-slate-900 border-b border-slate-800 px-4 flex items-center justify-between shrink-0">
+          <span className="text-sm text-slate-400">BackOffice</span>
+          <div className="flex items-center gap-3">
+            <a href="/" className="text-xs font-medium text-teal-400 hover:text-teal-300">Mở Client →</a>
+            <span className="text-slate-700">|</span>
+            <button onClick={onLogout} className="text-xs font-medium text-rose-400 hover:text-rose-300">Đăng xuất</button>
           </div>
         </header>
-        <div className="p-6">
+        <div className="flex-1 p-4 overflow-auto">
           <Routes>
             <Route path="/" element={<Dashboard token={token} />} />
             <Route path="/users" element={<Users token={token} />} />
+            <Route path="/topics" element={<Topics token={token} />} />
             <Route path="/logs" element={<Logs token={token} />} />
           </Routes>
         </div>
@@ -63,7 +61,7 @@ function Layout({ token, onLogout }: { token: string; onLogout: () => void }) {
   );
 }
 
-function Login({ onLogin }: { onLogin: (token: string) => void }) {
+function Login({ onLogin }: { onLogin: (token: string, role: number, permissions: string) => void }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -77,7 +75,7 @@ function Login({ onLogin }: { onLogin: (token: string) => void }) {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -85,7 +83,9 @@ function Login({ onLogin }: { onLogin: (token: string) => void }) {
         return;
       }
       localStorage.setItem('sg_access_token', data.accessToken);
-      onLogin(data.accessToken);
+      localStorage.setItem('sg_role', String(data.role ?? 0));
+      localStorage.setItem('sg_permissions', data.permissions ?? '');
+      onLogin(data.accessToken, data.role ?? 0, data.permissions ?? '');
     } catch {
       setError('Đăng nhập thất bại');
     } finally {
@@ -94,33 +94,49 @@ function Login({ onLogin }: { onLogin: (token: string) => void }) {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-slate-950 text-slate-200">
-      <div className="hidden md:flex w-1/2 flex-col items-center justify-center p-10 bg-gradient-to-br from-slate-900 to-slate-800">
-        <img src="EyeContact.webp" alt="SliStudy" className="w-40 h-40 object-contain mb-4 rounded-2xl" />
-        <h1 className="text-5xl font-black text-teal-400 tracking-tight">SliStudy</h1>
-        <p className="mt-3 text-slate-400 text-lg">Hệ thống quản trị</p>
-      </div>
-      <div className="w-full md:w-1/2 flex items-center justify-center p-6 md:p-12">
-        <form onSubmit={submit} className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-8 space-y-5">
-          <div className="md:hidden flex flex-col items-center mb-4">
-            <img src="EyeContact.webp" alt="SliStudy" className="w-24 h-24 object-contain mb-2 rounded-2xl" />
-            <h1 className="text-3xl font-black text-teal-400">SliStudy</h1>
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-200 p-4">
+      <form onSubmit={submit} className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-md p-5 space-y-4 relative">
+        {loading && (
+          <Loading variant="overlay" size="md" label="Đang đăng nhập…" />
+        )}
+        <div className="flex items-center gap-3 pb-3 border-b border-slate-800">
+          <img src="EyeContact.webp" alt="SliStudy" className="w-9 h-9 object-contain rounded-md" />
+          <div>
+            <h1 className="text-base font-semibold text-slate-100">SliStudy BO</h1>
+            <p className="text-xs text-slate-500">Hệ thống quản trị</p>
           </div>
-          <h2 className="text-2xl font-black text-teal-400 hidden md:block">Đăng nhập BO</h2>
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-300">Username</label>
-            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 outline-none focus:border-teal-500" required />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-semibold text-slate-300">Password</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded-lg bg-slate-950 border border-slate-700 px-3 py-2 outline-none focus:border-teal-500" required />
-          </div>
-          <button type="submit" disabled={loading} className="w-full rounded-lg bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-slate-950 font-bold py-2.5">
-            {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
-          </button>
-        </form>
-      </div>
+        </div>
+        {error && <p className="text-xs text-rose-400">{error}</p>}
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-slate-400">Username</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full h-9 rounded-md bg-slate-950 border border-slate-700 px-3 text-sm outline-none focus:border-teal-500"
+            required
+            disabled={loading}
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label className="text-xs font-medium text-slate-400">Password</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full h-9 rounded-md bg-slate-950 border border-slate-700 px-3 text-sm outline-none focus:border-teal-500"
+            required
+            disabled={loading}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className="w-full h-9 rounded-md bg-teal-500 hover:bg-teal-400 disabled:opacity-50 text-slate-950 text-sm font-semibold"
+        >
+          {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+        </button>
+      </form>
     </div>
   );
 }
@@ -146,7 +162,15 @@ function AppContent() {
     return <Login onLogin={setToken} />;
   }
 
-  return <Layout token={token} onLogout={() => { localStorage.removeItem('sg_access_token'); setToken(''); }} />;
+  return (
+    <Layout
+      token={token}
+      onLogout={() => {
+        localStorage.removeItem('sg_access_token');
+        setToken('');
+      }}
+    />
+  );
 }
 
 export default function App() {

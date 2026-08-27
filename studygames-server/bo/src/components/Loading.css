@@ -1,0 +1,88 @@
+/* Loading — BO dashboard (dark slate + teal accent, học hỏi từ FE Loading ring) */
+
+.ld-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Logo + 12 dots ring — container căn giữa, kích thước = logo + 2*radius */
+.ld-logo-ring {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ld-logo {
+  position: relative;
+  z-index: 1;
+  object-fit: contain;
+  user-select: none;
+  /* Logo đứng yên, chỉ vòng chấm xoay */
+}
+
+/* Vòng xoay chứa 12 chấm — xoay toàn bộ ring */
+.ld-dots {
+  position: absolute;
+  inset: 0;
+  animation: ld-spin 1.2s linear infinite;
+}
+
+/* Mỗi chấm được định vị bằng rotate + translate theo bán kính --ld-radius */
+.ld-dot {
+  --ld-angle: calc(360deg / var(--ld-n) * var(--ld-i));
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: #2dd4bf;
+  /* Độ mờ giảm dần tạo hiệu ứng "chase" */
+  opacity: calc(0.25 + 0.75 * (var(--ld-i) / var(--ld-n)));
+  transform: rotate(var(--ld-angle)) translate(var(--ld-radius));
+  filter: drop-shadow(0 0 4px rgba(45, 212, 191, 0.5));
+}
+
+@keyframes ld-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ld-label {
+  color: #94a3b8;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+/* Inline variant — nằm trong flow, không phủ màn hình */
+.ld-inline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px;
+}
+
+/* Overlay variant — phủ toàn màn hình, backdrop blur */
+.ld-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 6, 23, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: ld-fade 0.18s ease;
+}
+
+@keyframes ld-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

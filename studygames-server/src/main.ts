@@ -69,6 +69,11 @@ async function bootstrap() {
     res.on('finish', () => {
       const ms = Date.now() - start;
       console.log(`[HTTP] ${req.method} ${req.url} - ${res.statusCode} - ${ms}ms`);
+      // Log chi tiết khi 404 — giúp debug route không match
+      if (res.statusCode === 404) {
+        console.warn(`[HTTP 404] No route matched: ${req.method} ${req.originalUrl}`);
+        console.warn(`[HTTP 404] Available routes: /api/topics, /api/auth/*, /api/users, /api/players, /api/learn/*`);
+      }
     });
     next();
   });

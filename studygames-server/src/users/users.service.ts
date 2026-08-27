@@ -10,6 +10,7 @@ export interface StoredUser {
   passwordHash: string; // scrypt: salt:hash (hex)
   createdAt: number;
   role?: number;
+  permissions?: string;
 }
 
 export interface AuthResult {
@@ -17,6 +18,7 @@ export interface AuthResult {
   uid: string;
   username: string;
   role?: number;
+  permissions?: string;
   isNewUser: boolean;
 }
 
@@ -56,6 +58,7 @@ export class UsersService {
       passwordHash: `${salt}:${hash}`,
       createdAt: Date.now(),
       role: 0,
+      permissions: '',
     };
 
     await db
@@ -70,9 +73,10 @@ export class UsersService {
       provider: 'password',
       username,
       role: 0,
+      permissions: '',
     });
 
-    return { accessToken, uid, username, role: 0, isNewUser: true };
+    return { accessToken, uid, username, role: 0, permissions: '', isNewUser: true };
   }
 
   async login(username: string, password: string): Promise<AuthResult> {
@@ -107,7 +111,7 @@ export class UsersService {
       role: user.role,
     });
 
-    return { accessToken, uid: user.uid, username: user.username, role: user.role, isNewUser: false };
+    return { accessToken, uid: user.uid, username: user.username, role: user.role, permissions: user.permissions ?? '', isNewUser: false };
   }
 
   async findAll(limit = 100): Promise<Partial<StoredUser>[]> {
@@ -125,6 +129,7 @@ export class UsersService {
         username: u.username,
         createdAt: u.createdAt,
         role: u.role,
+        permissions: u.permissions,
       };
     });
   }
