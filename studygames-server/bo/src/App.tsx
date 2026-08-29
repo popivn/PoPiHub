@@ -4,12 +4,14 @@ import Dashboard from './pages/dashboard';
 import Users from './pages/users';
 import Logs from './pages/logs';
 import Topics from './pages/topics';
+import Features from './pages/features';
 import Loading from './components/Loading';
 
 const NAV = [
   { to: '/', label: 'Dashboard', end: true },
   { to: '/users', label: 'Users', end: false },
   { to: '/topics', label: 'Chủ đề', end: false },
+  { to: '/features', label: 'Tính năng', end: false },
   { to: '/logs', label: 'Logs', end: false },
 ];
 
@@ -53,6 +55,7 @@ function Layout({ token, onLogout }: { token: string; onLogout: () => void }) {
             <Route path="/" element={<Dashboard token={token} />} />
             <Route path="/users" element={<Users token={token} />} />
             <Route path="/topics" element={<Topics token={token} />} />
+            <Route path="/features" element={<Features token={token} />} />
             <Route path="/logs" element={<Logs token={token} />} />
           </Routes>
         </div>
