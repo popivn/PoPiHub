@@ -1,8 +1,9 @@
 /**
- * Course Service & Settings API — giao tiếp với studygames-server /bo/courses endpoint.
+ * Course Service & Settings API — giao tiếp với studygames-server.
+ * Routes được định nghĩa tập trung tại ./routes.ts (single source of truth).
  */
 
-import { API_BASE_URL } from '../auth/authClient';
+import { apiUrl, routes } from './routes';
 
 export interface CourseItem {
   id: string;
@@ -48,23 +49,36 @@ export async function fetchTopicSettings(): Promise<TopicItem[]> {
     if (cached) {
       const parsed = JSON.parse(cached) as TopicsCache;
       if (Date.now() - parsed.ts < TOPICS_CACHE_TTL) {
+        console.log('[courseService] Cache hit, returning cached topics');
         return parsed.data;
       }
+      console.log('[courseService] Cache expired, fetching fresh data');
+    } else {
+      console.log('[courseService] No cache, fetching fresh data');
     }
   } catch {
     // Cache hỏng → bỏ qua, fetch mới
+    console.warn('[courseService] Cache parse error, fetching fresh data');
   }
 
   // Clear legacy cache
   localStorage.removeItem('sg_topic_settings');
 
   // 2. Fetch mới từ server
+  const url = apiUrl(routes.topics.list);
+  console.log(`[courseService] GET ${url}`);
+  console.log(`[courseService] route = topics.list`);
+
   try {
-    const res = await fetch(`${API_BASE_URL}/bo/courses`, {
+    const res = await fetch(url, {
       cache: 'no-store',
     });
+    console.log(`[courseService] Response: ${res.status} ${res.statusText}`);
+
     if (res.ok) {
       const data = await res.json();
+      console.log('[courseService] Response data:', data);
+
       if (Array.isArray(data)) {
         // Auto-migration if backend returned legacy array of courses
         let topics: TopicItem[];
@@ -87,9 +101,17 @@ export async function fetchTopicSettings(): Promise<TopicItem[]> {
         }
         return topics;
       }
+      console.warn('[courseService] Response is not an array:', typeof data);
+    } else {
+      // Log response body khi không ok — giúp debug 404/500
+      const body = await res.text().catch(() => '<unreadable>');
+      console.error(`[courseService] Fetch failed: ${res.status} ${res.statusText}`);
+      console.error(`[courseService] Response body:`, body);
+      console.error(`[courseService] Requested URL was: ${url}`);
     }
   } catch (error) {
-    console.error('Failed to fetch topic settings strictly from BO backend:', error);
+    console.error('[courseService] Network error:', error);
+    console.error(`[courseService] Requested URL was: ${url}`);
   }
 
   return [];
@@ -97,14 +119,22 @@ export async function fetchTopicSettings(): Promise<TopicItem[]> {
 
 export async function updateTopicSettings(topics: TopicItem[]): Promise<boolean> {
   clearTopicSettingsCache();
+  const url = apiUrl(routes.topics.create);
+  console.log(`[courseService] POST ${url}`, topics);
   try {
-    const res = await fetch(`${API_BASE_URL}/bo/courses`, {
+    const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(topics),
     });
+    console.log(`[courseService] POST Response: ${res.status} ${res.statusText}`);
+    if (!res.ok) {
+      const body = await res.text().catch(() => '<unreadable>');
+      console.error(`[courseService] POST failed: ${res.status}`, body);
+    }
     return res.ok;
-  } catch {
+  } catch (error) {
+    console.error('[courseService] POST network error:', error);
     return false;
   }
 }

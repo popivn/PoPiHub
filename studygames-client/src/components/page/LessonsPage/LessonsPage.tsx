@@ -11,7 +11,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useI18n } from '../../../i18n';
 import { MainLayout } from '../../layout';
-import { API_BASE_URL } from '../../../auth/authClient';
+import { apiUrl, routes } from '../../../services/routes';
 
 export interface LessonItem {
   id: string;
@@ -39,7 +39,7 @@ export default function LessonsPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/learn/lessons`, { cache: 'no-store' })
+    fetch(apiUrl(routes.learn.lessons), { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {

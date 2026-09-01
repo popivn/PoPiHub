@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useI18n } from '../../../i18n';
-import { API_BASE_URL } from '../../../auth/authClient';
+import { apiUrl, routes } from '../../../services/routes';
 
 export interface ExampleSentence {
   sentence: string;
@@ -105,7 +105,7 @@ export function useLearnChinesePage() {
   }, []);
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/learn/chinese/categories`, { cache: 'no-store' })
+    fetch(apiUrl(routes.learn.chineseCategories), { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (Array.isArray(data) && data.length > 0) {
@@ -123,9 +123,11 @@ export function useLearnChinesePage() {
     setCharactersLoading(true);
     cursorRef.current = null;
     try {
-      const url = catId === 'all'
-        ? `${API_BASE_URL}/learn/chinese`
-        : `${API_BASE_URL}/learn/chinese?category=${catId}`;
+      const url = apiUrl(
+        routes.learn.chinese,
+        undefined,
+        catId === 'all' ? undefined : { category: catId },
+      );
       const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
@@ -156,11 +158,15 @@ export function useLearnChinesePage() {
     fetchingMoreRef.current = true;
     setLoadingMore(true);
     try {
-      const base = `${API_BASE_URL}/learn/chinese`;
-      const params = new URLSearchParams();
-      if (catId !== 'all') params.set('category', catId);
-      params.set('cursor', cursorRef.current);
-      const res = await fetch(`${base}?${params.toString()}`);
+      const url = apiUrl(
+        routes.learn.chinese,
+        undefined,
+        {
+          category: catId !== 'all' ? catId : undefined,
+          cursor: cursorRef.current ?? undefined,
+        },
+      );
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         if (data && Array.isArray(data.items) && data.items.length > 0) {

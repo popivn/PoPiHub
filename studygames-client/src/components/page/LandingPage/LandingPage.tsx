@@ -4,12 +4,49 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowRight,
   faGamepad,
+  faBook,
+  faLayerGroup,
+  faMicrophone,
+  faRepeat,
+  faChartLine,
+  faGlobe,
+  faBolt,
+  faGraduationCap,
+  faPuzzlePiece,
+  faHeart,
+  faStar,
+  faFire,
+  faTrophy,
+  type IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 import { useI18n } from '../../../i18n';
 import { Navbar } from '../../layout';
 import { Loading } from '../../helpers';
 import { fetchTopicSettings, type TopicItem } from '../../../services/courseService';
+import { fetchFeatures, type FeatureItem } from '../../../services/featuresService';
 import './LandingPage.css';
+
+/** Map icon name (string từ DB) → FontAwesome IconDefinition */
+const ICON_MAP: Record<string, IconDefinition> = {
+  faBook,
+  faLayerGroup,
+  faMicrophone,
+  faRepeat,
+  faChartLine,
+  faGlobe,
+  faBolt,
+  faGamepad,
+  faGraduationCap,
+  faPuzzlePiece,
+  faHeart,
+  faStar,
+  faFire,
+  faTrophy,
+};
+
+function getIcon(name: string): IconDefinition {
+  return ICON_MAP[name] ?? faBolt;
+}
 
 const renderHighlightedText = (text: string) => {
   const parts = text.split(/(SliStudy|Xianria|xianria)/g);
@@ -31,9 +68,11 @@ export default function LandingPage() {
   const [topics, setTopics] = useState<TopicItem[]>([]);
   const [topicsLoading, setTopicsLoading] = useState(true);
   const [topicsError, setTopicsError] = useState<string | null>(null);
+  const [features, setFeatures] = useState<FeatureItem[]>([]);
+  const [featuresLoading, setFeaturesLoading] = useState(true);
 
   useEffect(() => {
-    // Page render ngay lập tức với loading ring, fetch chạy ngầm sau khi mount.
+    // Fetch topics
     let cancelled = false;
     fetchTopicSettings()
       .then((data) => {
@@ -45,6 +84,19 @@ export default function LandingPage() {
       .finally(() => {
         if (!cancelled) setTopicsLoading(false);
       });
+
+    // Fetch features
+    fetchFeatures()
+      .then((data) => {
+        if (!cancelled) setFeatures(data || []);
+      })
+      .catch(() => {
+        // Silent fail — features không critical
+      })
+      .finally(() => {
+        if (!cancelled) setFeaturesLoading(false);
+      });
+
     return () => {
       cancelled = true;
     };
@@ -89,6 +141,88 @@ export default function LandingPage() {
                 className="h-36 sm:h-40 md:h-48 w-auto object-contain drop-shadow-[0_12px_28px_rgba(45,212,191,0.45)] group-hover:drop-shadow-[0_16px_36px_rgba(45,212,191,0.65)] transition-all select-none"
               />
             </a>
+          </div>
+        </section>
+
+        {/* SECTION: TÍNH NĂNG */}
+        <section id="features-overview" className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-16 bg-teal-400/5 border-t border-b border-teal-400/20">
+          <div className="w-full space-y-8">
+            <div className="mb-8 text-center md:text-left">
+              <h2
+                className="text-left text-3xl sm:text-4xl font-extrabold mb-4 uppercase tracking-wider flex items-center gap-3 text-teal-400"
+                style={{ color: '#2dd4bf', forcedColorAdjust: 'none', WebkitTextFillColor: '#2dd4bf' }}
+              >
+                <span>{lang === 'en' ? 'Features' : 'Tính Năng'}</span>
+              </h2>
+              <div className="w-full h-0.5 bg-gradient-to-r from-teal-400 via-teal-500/40 to-slate-800/20 rounded-full shadow-[0_0_8px_rgba(45,212,191,0.4)]" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuresLoading ? (
+                <div className="col-span-full flex justify-center py-12">
+                  <Loading visual="ring" size="md" label="Đang tải tính năng…" />
+                </div>
+              ) : features.filter((f) => f.active !== false).length === 0 ? (
+                <div className="col-span-full text-center py-12 text-slate-500 text-sm">
+                  Chưa có tính năng nào.
+                </div>
+              ) : (
+                features.filter((f) => f.active !== false).map((f) => (
+                  <Link
+                    key={f.id}
+                    to={f.url}
+                    className="group bg-slate-950/60 border border-teal-400/20 hover:border-teal-400/60 rounded-xl overflow-hidden flex flex-col transition-all duration-300 shadow-xl hover:shadow-teal-400/15"
+                  >
+                    {/* Banner ảnh nằm ngang — fallback icon nếu không có image */}
+                    <div
+                      className="w-full h-32 sm:h-36 relative overflow-hidden shrink-0"
+                      style={{
+                        background: `linear-gradient(135deg, ${f.colorFrom}30, ${f.colorTo}30)`,
+                      }}
+                    >
+                      {f.image ? (
+                        <img
+                          src={f.image}
+                          alt={lang === 'en' ? (f.titleEn || f.title) : f.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          onError={(e) => {
+                            const img = e.currentTarget;
+                            if (img.dataset.fallback) return;
+                            img.dataset.fallback = '1';
+                            img.src = '/slime/fallback/banner.png';
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <FontAwesomeIcon
+                            icon={getIcon(f.icon)}
+                            className="text-4xl"
+                            style={{ color: f.colorFrom }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="p-5 flex-1 flex flex-col gap-3">
+                      <div className="flex-1">
+                        <h3 className="text-lg font-bold text-slate-100 group-hover:text-teal-400 transition-colors">
+                          {lang === 'en' ? (f.titleEn || f.title) : f.title}
+                        </h3>
+                        <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                          {lang === 'en' ? (f.descriptionEn || f.description) : f.description}
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-end pt-2 border-t border-slate-800/80">
+                        <span className="inline-flex items-center gap-2 text-xs font-bold text-teal-400 group-hover:text-teal-300 transition-colors">
+                          <span>{lang === 'en' ? 'Explore' : 'Khám phá'}</span>
+                          <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))
+              )}
+            </div>
           </div>
         </section>
 
@@ -162,7 +296,7 @@ export default function LandingPage() {
         </section>
 
         {/* SECTION: BẠN MUỐN HỌC GÌ? */}
-        <section id="features" className="w-full px-4 sm:px-8 lg:px-12 xl:px-16 py-16 bg-slate-900/40 border-t border-b border-teal-500/10">
+        <section id="features" className="w-full px-1 sm:px-4 lg:px-8 xl:px-16 py-16 bg-slate-900/40 border-t border-b border-teal-500/10">
           <div className="w-full space-y-8">
             <div className="mb-8 text-center md:text-left">
               <h2
@@ -187,7 +321,7 @@ export default function LandingPage() {
               </div>
             ) : (
               topics.filter((t) => t.active !== false).map((topic) => (
-              <fieldset key={topic.id} className="border border-teal-500/40 rounded-3xl p-6 sm:p-8 bg-slate-900/80 backdrop-blur-xl shadow-2xl relative overflow-hidden group hover:border-teal-400/70 transition-all duration-300 w-full mb-8">
+              <fieldset key={topic.id} className="border-y sm:border border-teal-500/40 rounded-xl p-2 sm:p-6 lg:p-8 bg-slate-900/80 backdrop-blur-xl shadow-2xl relative overflow-hidden group hover:border-teal-400/70 transition-all duration-300 w-full mb-8">
                 <legend className="ml-4 sm:ml-8 px-3.5 py-1 rounded-full bg-slate-950 border border-teal-400/80 text-teal-300 font-bold text-xs sm:text-sm flex items-center gap-1.5 shadow-md shadow-teal-500/20">
                   <span className="text-xs">🇨🇳</span>
                   <span className="bg-gradient-to-r from-teal-300 to-cyan-400 bg-clip-text text-transparent font-extrabold">
@@ -198,9 +332,9 @@ export default function LandingPage() {
                 {/* COURSES INSIDE THIS TOPIC */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-1">
                   {Array.isArray(topic.courses) && topic.courses.filter((c) => c.active !== false).map((course) => (
-                    <div key={course.id} className="bg-slate-950/60 border border-slate-800/80 hover:border-teal-500/40 rounded-3xl p-5 flex flex-col sm:flex-row items-stretch sm:items-center gap-5 transition-all duration-300 shadow-xl group">
+                    <div key={course.id} className="bg-slate-950/60 border border-slate-800/80 hover:border-teal-500/40 rounded-xl p-2 sm:p-5 flex flex-row items-start sm:items-center gap-3 sm:gap-5 transition-all duration-300 shadow-xl group">
                       {/* Course Image */}
-                      <div className="w-full sm:w-44 h-36 rounded-2xl overflow-hidden border border-teal-500/30 shadow-md shrink-0 group/img bg-slate-900">
+                      <div className="w-20 h-20 sm:w-44 sm:h-36 rounded-lg sm:rounded-2xl overflow-hidden border border-teal-500/30 shadow-md shrink-0 group/img bg-slate-900">
                         <img
                           src={course.image || '/chinese_course_thumb.jpg'}
                           alt={course.title}
@@ -209,23 +343,23 @@ export default function LandingPage() {
                       </div>
 
                       {/* Course Details */}
-                      <div className="flex-1 flex flex-col justify-between gap-3 w-full">
-                        <div>
-                          <h3 className="text-lg font-bold text-slate-100 group-hover:text-teal-300 transition-colors">
+                      <div className="flex-1 flex flex-col justify-between gap-2 sm:gap-3 min-w-0">
+                        <div className="min-w-0">
+                          <h3 className="text-sm sm:text-lg font-bold text-slate-100 group-hover:text-teal-300 transition-colors truncate sm:whitespace-normal">
                             {lang === 'en' ? (course.titleEn || course.title) : course.title}
                           </h3>
-                          <p className="text-xs text-slate-400 mt-1.5 leading-relaxed line-clamp-2">
+                          <p className="text-[11px] sm:text-xs text-slate-400 mt-1 sm:mt-1.5 leading-relaxed line-clamp-2 sm:line-clamp-2">
                             {lang === 'en' ? (course.descriptionEn || course.description) : course.description}
                           </p>
                         </div>
 
-                        <div className="flex items-center justify-end pt-2 border-t border-slate-800/80">
+                        <div className="flex items-center justify-end pt-1.5 sm:pt-2 border-t border-slate-800/80">
                           <Link
                             to={course.link || '/learn/chinese'}
-                            className="inline-flex items-center gap-2 rounded-full px-5 py-2 bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 font-bold text-xs hover:shadow-lg hover:shadow-teal-400/30 hover:scale-105 active:scale-95 transition-all shadow-md"
+                            className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full px-3 sm:px-5 py-1.5 sm:py-2 bg-gradient-to-r from-teal-400 to-cyan-500 text-slate-950 font-bold text-[10px] sm:text-xs hover:shadow-lg hover:shadow-teal-400/30 hover:scale-105 active:scale-95 transition-all shadow-md"
                           >
-                            <span>{lang === 'en' ? 'Start Learning' : 'Học Ngay'}</span>
-                            <FontAwesomeIcon icon={faArrowRight} className="text-xs" />
+                            <span>{lang === 'en' ? 'Start' : 'Học Ngay'}</span>
+                            <FontAwesomeIcon icon={faArrowRight} className="text-[10px] sm:text-xs" />
                           </Link>
                         </div>
                       </div>
