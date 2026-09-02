@@ -7,7 +7,6 @@ import {
   faMagnifyingGlass,
   faVolumeHigh,
   faXmark,
-  faBookOpen,
   faCircleInfo,
   faArrowLeft,
   faPlay,
@@ -101,23 +100,31 @@ export default function DictionaryPage() {
     setActiveCharMeaning('');
     setAnimateStrokes(true);
 
-    const hanziUrl = apiUrl(routes.learn.hanziDetails, { char });
-    const hanziRes = await fetch(hanziUrl);
-    if (hanziRes.ok) {
-      const data = await hanziRes.json();
-      if (!data?.error) setHanzi(data);
-      else setHanzi(null);
-    } else {
+    try {
+      const hanziUrl = apiUrl(routes.learn.hanziDetails, { char });
+      const hanziRes = await fetch(hanziUrl);
+      if (hanziRes.ok) {
+        const data = await hanziRes.json();
+        if (!data?.error) setHanzi(data);
+        else setHanzi(null);
+      } else {
+        setHanzi(null);
+      }
+    } catch {
       setHanzi(null);
     }
 
-    const lookupUrl = apiUrl(routes.learn.dictLookup, { word: char });
-    const lookupRes = await fetch(lookupUrl);
-    if (lookupRes.ok) {
-      const data = await lookupRes.json();
-      if (!data?.error) setActiveCharMeaning(data.meaning || '');
-      else setActiveCharMeaning('');
-    } else {
+    try {
+      const lookupUrl = apiUrl(routes.learn.dictLookup, { word: char });
+      const lookupRes = await fetch(lookupUrl);
+      if (lookupRes.ok) {
+        const data = await lookupRes.json();
+        if (!data?.error) setActiveCharMeaning(data.meaning || '');
+        else setActiveCharMeaning('');
+      } else {
+        setActiveCharMeaning('');
+      }
+    } catch {
       setActiveCharMeaning('');
     }
   }, []);
@@ -242,7 +249,7 @@ export default function DictionaryPage() {
   }, [hanzi, lang]);
 
   useEffect(() => {
-    if (!selected?.char) {
+    if (!selected?.char || selected.char.length !== 1) {
       setAiExamples(null);
       setAiExamplesLoading(false);
       return;
