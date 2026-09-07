@@ -141,8 +141,14 @@ export const routes = {
     hanziDetails: { path: 'learn/dict/hanzi/:char', method: 'GET' } as RouteDescriptor,
     /** GET /api/learn/dict/hanzi/:char/etymology-vi — Dịch lục thư sang tiếng Việt */
     hanziEtymologyVi: { path: 'learn/dict/hanzi/:char/etymology-vi', method: 'GET' } as RouteDescriptor,
-    /** GET /api/learn/dict/examples/:word — 3 câu ví dụ do AI tạo */
+    /** GET /api/learn/dict/examples/:word — 3 câu ví dụ */
     dictExamples: { path: 'learn/dict/examples/:word', method: 'GET' } as RouteDescriptor,
+    /** POST /api/learn/dict/translate-examples — AI dịch câu ví dụ sang tiếng Việt */
+    dictTranslateExamples: { path: 'learn/dict/translate-examples', method: 'POST' } as RouteDescriptor,
+    /** GET /api/learn/vocabulary/topics — List vocabulary topics (HSK levels) */
+    vocabularyTopics: { path: 'learn/vocabulary/topics', method: 'GET' } as RouteDescriptor,
+    /** GET /api/learn/vocabulary/topics/:topicId — Get vocabulary by topic */
+    vocabularyByTopic: { path: 'learn/vocabulary/topics/:topicId', method: 'GET' } as RouteDescriptor,
   },
 } as const;
 

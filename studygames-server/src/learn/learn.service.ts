@@ -1,7 +1,7 @@
-﻿import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { getFirestore } from '../app/firebase-admin';
 import { DictionaryService } from './dictionary.service';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { resolve, basename, extname } from 'node:path';
 
 export interface ChineseCharacterExample {
@@ -89,6 +89,75 @@ interface CategoryFile {
   chars: string[];
 }
 
+interface HSKVocabularyRow {
+  ID: string;
+  Simplified: string;
+  Traditional: string;
+  Pinyin: string;
+  POS: string;
+  Level: string;
+  WebNo: string;
+  WebPinyin: string;
+  OCR: string;
+  Variants: string;
+  CEDICT: string;
+}
+
+// Simple CSV parser (handles quoted fields)
+function parseCSV(text: string): string[][] {
+  const rows: string[][] = [];
+  let currentRow: string[] = [];
+  let currentField = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    const nextChar = text[i + 1];
+    
+    if (inQuotes) {
+      if (char === '"' && nextChar === '"') {
+        currentField += '"';
+        i++;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        currentField += char;
+      }
+    } else {
+      if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        currentRow.push(currentField);
+        currentField = '';
+      } else if (char === '\n' || (char === '\r' && nextChar === '\n')) {
+        currentRow.push(currentField);
+        if (currentRow.length > 0) {
+          rows.push(currentRow);
+        }
+        currentRow = [];
+        currentField = '';
+        if (char === '\r') i++;
+      } else if (char === '\r') {
+        currentRow.push(currentField);
+        if (currentRow.length > 0) {
+          rows.push(currentRow);
+        }
+        currentRow = [];
+        currentField = '';
+      } else {
+        currentField += char;
+      }
+    }
+  }
+  
+  if (currentField || currentRow.length > 0) {
+    currentRow.push(currentField);
+    rows.push(currentRow);
+  }
+  
+  return rows;
+}
+
 @Injectable()
 export class LearnService implements OnModuleInit {
   private readonly logger = new Logger(LearnService.name);
@@ -96,12 +165,17 @@ export class LearnService implements OnModuleInit {
   private categoryMeta: Record<string, CategoryFile> = {};
   /** Cache toàn bộ single-char từ dict (built lazily). Dùng cho filter "Tất Cả". */
   private allDictCharsCache: ChineseCharacterItem[] | null = null;
+  /** HSK vocabulary cache from CSV */
+  private hskVocabulary: ChineseCharacterItem[] = [];
+  /** HSK level counts */
+  private hskLevelCounts: Record<string, number> = {};
 
   constructor(private readonly dictService: DictionaryService) {}
 
   onModuleInit() {
     this.loadCategoryFiles();
     this.loadCharactersFromDict();
+    this.loadHSKData();
   }
 
   private loadCategoryFiles() {
@@ -122,11 +196,13 @@ export class LearnService implements OnModuleInit {
   private loadCharactersFromDict() {
     let loaded = 0;
     for (const [categoryId, meta] of Object.entries(this.categoryMeta)) {
+      let catIndex = 0;
       for (const char of meta.chars) {
-        const lookup = this.dictService.lookup(char);
+        const lookup = this.dictService.lookup(char, { includeExtras: false });
         if (!lookup) continue;
         loaded++;
-        const id = `cn_${categoryId}_${String(loaded).padStart(3, '0')}`;
+        catIndex++;
+        const id = `cn_${categoryId}_${String(catIndex).padStart(4, '0')}`;
         const item: ChineseCharacterItem = {
           id,
           char,
@@ -145,7 +221,64 @@ export class LearnService implements OnModuleInit {
         this.characterCache.set(id, item);
       }
     }
-    this.logger.log(`Loaded ${loaded} curated characters from dictionary`);
+    this.logger.log(`Loaded ${loaded} curated characters from dictionary across ${Object.keys(this.categoryMeta).length} topics`);
+  }
+
+  private loadHSKData() {
+    const hskCsvPath = resolve(process.cwd(), 'data', 'hsk', 'hsk30.csv');
+    if (!existsSync(hskCsvPath)) {
+      this.logger.warn('HSK CSV file not found, skipping HSK data load');
+      return;
+    }
+
+    try {
+      const csvContent = readFileSync(hskCsvPath, 'utf-8');
+      const rows = parseCSV(csvContent);
+      
+      // Skip header row
+      const header = rows[0];
+      const dataRows = rows.slice(1);
+
+      this.hskVocabulary = [];
+      this.hskLevelCounts = {};
+
+      for (const row of dataRows) {
+        if (row.length < 6) continue;
+        
+        const level = row[5]; // Level column
+        const simplified = row[1]; // Simplified column
+        const pinyin = row[3]; // Pinyin column
+        
+        // Count by level
+        this.hskLevelCounts[level] = (this.hskLevelCounts[level] || 0) + 1;
+
+        // Lookup in dictionary for additional info
+        const lookup = this.dictService.lookup(simplified, { includeExtras: false });
+        
+        const item: ChineseCharacterItem = {
+          id: `hsk_${row[0]}`, // Use ID from CSV
+          char: simplified,
+          pinyin: pinyin,
+          hanViet: lookup?.hanViet || '',
+          meaning: lookup?.meaning || '',
+          meaningEn: lookup?.meaningEn || '',
+          level: `HSK ${level}`,
+          category: `HSK ${level}`,
+          categoryEn: `HSK ${level}`,
+          categoryId: `hsk${level}`,
+          radical: '',
+          strokeCount: 0,
+          examples: lookup?.examples || [],
+        };
+        
+        this.hskVocabulary.push(item);
+      }
+
+      this.logger.log(`Loaded ${this.hskVocabulary.length} HSK vocabulary items from CSV`);
+      this.logger.log(`HSK level counts: ${JSON.stringify(this.hskLevelCounts)}`);
+    } catch (e: any) {
+      this.logger.error(`Failed to load HSK CSV: ${e?.message || e}`);
+    }
   }
 
   /** Build lazily toàn bộ single-char items từ dict (chỉ 1 lần, cache lại). */
@@ -180,12 +313,39 @@ export class LearnService implements OnModuleInit {
   ): Promise<ChineseCharacterPage> {
     const decoded = decodeCursor(cursor);
 
+    // Filter HSK levels from CSV data
+    if (category && category.startsWith('hsk')) {
+      const hskLevel = category.replace('hsk', '');
+      let items = this.hskVocabulary.filter((item) => item.categoryId === category);
+      
+      const offset = decoded && (decoded as CacheCursor).o ? (decoded as CacheCursor).o : 0;
+      const page = items.slice(offset, offset + pageSize);
+      const hasMore = offset + pageSize < items.length;
+      const nextCursor = hasMore ? encodeCursor({ o: offset + pageSize } as CacheCursor) : null;
+      return { items: page, nextCursor, hasMore };
+    }
+
     // Filter "Tất Cả" — lấy toàn bộ dict chars không phân biệt category
     if (category === 'everything') {
       const allItems = this.ensureAllDictChars();
       const offset = decoded && (decoded as CacheCursor).o ? (decoded as CacheCursor).o : 0;
       const page = allItems.slice(offset, offset + pageSize);
       const hasMore = offset + pageSize < allItems.length;
+      const nextCursor = hasMore ? encodeCursor({ o: offset + pageSize } as CacheCursor) : null;
+      return { items: page, nextCursor, hasMore };
+    }
+
+    // Filter by curated topic (từ data/categories)
+    if (category && this.categoryMeta[category]) {
+      let items = Array.from(this.characterCache.values()).filter(
+        (item) => item.categoryId.toLowerCase() === category.toLowerCase(),
+      );
+      if (level) {
+        items = items.filter((item) => item.level.toLowerCase() === level.toLowerCase());
+      }
+      const offset = decoded && (decoded as CacheCursor).o ? (decoded as CacheCursor).o : 0;
+      const page = items.slice(offset, offset + pageSize);
+      const hasMore = offset + pageSize < items.length;
       const nextCursor = hasMore ? encodeCursor({ o: offset + pageSize } as CacheCursor) : null;
       return { items: page, nextCursor, hasMore };
     }
@@ -253,8 +413,9 @@ export class LearnService implements OnModuleInit {
     }
     const categories: CategoryItem[] = [
       { id: 'all', name: 'Tất cả chủ đề', nameEn: 'All Topics', icon: 'faLayerGroup', count: this.characterCache.size },
-      { id: 'everything', name: 'Tất Cả', nameEn: 'Everything', icon: 'faDatabase', count: this.ensureAllDictChars().length },
     ];
+    
+    // 1. Danh sách 18 chủ đề thực tế (Thematic Topics)
     for (const [id, meta] of Object.entries(this.categoryMeta)) {
       categories.push({
         id,
@@ -264,6 +425,40 @@ export class LearnService implements OnModuleInit {
         count: counts[id] || 0,
       });
     }
+
+    // 2. Danh sách Cấp độ HSK (HSK Levels)
+    const hskLevels = ['1', '2', '3', '4', '5', '6', '7-9'];
+    const hskIcons: Record<string, string> = {
+      '1': 'faGraduationCap',
+      '2': 'faBook',
+      '3': 'faFeather',
+      '4': 'faScroll',
+      '5': 'faAward',
+      '6': 'faTrophy',
+      '7-9': 'faCrown',
+    };
+    for (const level of hskLevels) {
+      const count = this.hskLevelCounts[level] || 0;
+      if (count > 0) {
+        categories.push({
+          id: `hsk${level}`,
+          name: `HSK ${level}`,
+          nameEn: `HSK ${level}`,
+          icon: hskIcons[level] || 'faGraduationCap',
+          count,
+        });
+      }
+    }
+
+    // 3. Toàn bộ từ điển tra cứu
+    categories.push({
+      id: 'everything',
+      name: 'Toàn Bộ Từ Điển',
+      nameEn: 'Complete Dictionary',
+      icon: 'faDatabase',
+      count: this.ensureAllDictChars().length,
+    });
+
     return categories;
   }
 
