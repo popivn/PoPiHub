@@ -2,31 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faClock,
-  faSpinner,
   faCircleCheck,
   faPlus,
-  faFolderPlus,
-  faTrashCan,
-  faPenToSquare,
   faChevronDown,
   faChevronUp,
   faFilter,
   faLayerGroup,
-  faMaximize,
-  faBolt,
-  faWandMagicSparkles,
-  faChartLine,
-  faUserAstronaut,
-  faBars,
-  faXmark,
   faList,
   faHourglassHalf,
-  faRightFromBracket
+  faBan,
+  faCalendarDays,
 } from '@fortawesome/free-solid-svg-icons';
 
-import { CONFIG } from '../config';
-import { RichTextEditor } from '../components/RichTextEditor';
-import type { TaskItem, TaskStatus, Zone } from '../types';
+import { Layout } from '../components/Layout';
+import { TaskList } from '../components/TaskList';
+import { TaskFormModal } from '../components/TaskFormModal';
+import type { TaskItem, Zone } from '../types';
 import {
   subscribeTasks,
   subscribeZones,
@@ -47,35 +38,127 @@ import { Loading } from '../components/Loading';
 import { Dashboard } from './Dashboard';
 import { Profile } from './Profile';
 
+const formatLocalIso = (d: Date, timeStr: '00:00' | '23:59'): string => {
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${timeStr}`;
+};
+
+const getTodayStartLocal = (): string => formatLocalIso(new Date(), '00:00');
+const getTodayEndLocal = (): string => formatLocalIso(new Date(), '23:59');
+
+const PRESET_BUTTONS = [
+  { id: 'today', label: 'Hôm nay' },
+  { id: 'yesterday', label: 'Hôm qua' },
+  { id: 'tomorrow', label: 'Ngày mai' },
+  { id: 'thisWeek', label: 'Tuần này' },
+  { id: 'lastWeek', label: 'Tuần trước' },
+  { id: 'nextWeek', label: 'Tuần sau' },
+  { id: 'thisMonth', label: 'Tháng này' },
+  { id: 'lastMonth', label: 'Tháng trước' },
+  { id: 'all', label: 'Tất cả' },
+] as const;
+
 export const HomePage: React.FC = () => {
   const [zones, setZones] = useState<Zone[]>([]);
   const [tasks, setTasks] = useState<TaskItem[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [selectedZoneId, setSelectedZoneId] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchDateFrom, setSearchDateFrom] = useState<string>(getTodayStartLocal);
+  const [searchDateTo, setSearchDateTo] = useState<string>(getTodayEndLocal);
+  const [activePreset, setActivePreset] = useState<string | null>('today');
 
-  // Task form state
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [taskZoneId, setTaskZoneId] = useState('');
-  const [scheduledAt, setScheduledAt] = useState<string>(''); // datetime-local value (YYYY-MM-DDTHH:MM:SS)
-  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const applyPreset = (presetId: string) => {
+    setActivePreset(presetId);
+    const now = new Date();
+
+    if (presetId === 'today') {
+      setSearchDateFrom(formatLocalIso(now, '00:00'));
+      setSearchDateTo(formatLocalIso(now, '23:59'));
+      return;
+    }
+
+    if (presetId === 'yesterday') {
+      const d = new Date(now);
+      d.setDate(d.getDate() - 1);
+      setSearchDateFrom(formatLocalIso(d, '00:00'));
+      setSearchDateTo(formatLocalIso(d, '23:59'));
+      return;
+    }
+
+    if (presetId === 'tomorrow') {
+      const d = new Date(now);
+      d.setDate(d.getDate() + 1);
+      setSearchDateFrom(formatLocalIso(d, '00:00'));
+      setSearchDateTo(formatLocalIso(d, '23:59'));
+      return;
+    }
+
+    const day = now.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const thisMonday = new Date(now);
+    thisMonday.setDate(now.getDate() + diffToMonday);
+
+    if (presetId === 'thisWeek') {
+      const thisSunday = new Date(thisMonday);
+      thisSunday.setDate(thisMonday.getDate() + 6);
+      setSearchDateFrom(formatLocalIso(thisMonday, '00:00'));
+      setSearchDateTo(formatLocalIso(thisSunday, '23:59'));
+      return;
+    }
+
+    if (presetId === 'lastWeek') {
+      const lastMonday = new Date(thisMonday);
+      lastMonday.setDate(thisMonday.getDate() - 7);
+      const lastSunday = new Date(lastMonday);
+      lastSunday.setDate(lastMonday.getDate() + 6);
+      setSearchDateFrom(formatLocalIso(lastMonday, '00:00'));
+      setSearchDateTo(formatLocalIso(lastSunday, '23:59'));
+      return;
+    }
+
+    if (presetId === 'nextWeek') {
+      const nextMonday = new Date(thisMonday);
+      nextMonday.setDate(thisMonday.getDate() + 7);
+      const nextSunday = new Date(nextMonday);
+      nextSunday.setDate(nextMonday.getDate() + 6);
+      setSearchDateFrom(formatLocalIso(nextMonday, '00:00'));
+      setSearchDateTo(formatLocalIso(nextSunday, '23:59'));
+      return;
+    }
+
+    if (presetId === 'thisMonth') {
+      const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      setSearchDateFrom(formatLocalIso(firstDay, '00:00'));
+      setSearchDateTo(formatLocalIso(lastDay, '23:59'));
+      return;
+    }
+
+    if (presetId === 'lastMonth') {
+      const firstDay = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const lastDay = new Date(now.getFullYear(), now.getMonth(), 0);
+      setSearchDateFrom(formatLocalIso(firstDay, '00:00'));
+      setSearchDateTo(formatLocalIso(lastDay, '23:59'));
+      return;
+    }
+
+    if (presetId === 'all') {
+      setSearchDateFrom('');
+      setSearchDateTo('');
+      return;
+    }
+  };
 
   // UI state
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskItem | null>(null);
   const [isZoneModalOpen, setIsZoneModalOpen] = useState(false);
-  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
   const [selectedDetailTask, setSelectedDetailTask] = useState<TaskItem | null>(null);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [evaluatingExp, setEvaluatingExp] = useState(false);
   // View: 'home' | 'dashboard' | 'profile'
   const [view, setView] = useState<'home' | 'dashboard' | 'profile'>('home');
-  const [menuOpen, setMenuOpen] = useState(false);
   const [zoneDropdownOpen, setZoneDropdownOpen] = useState(false);
   const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
-  // Tick mỗi giây để cập nhật live timer cho task ongoing
-  const [, setTick] = useState(0);
-  // Đồng hồ live HH:MM:SS
-  const [clockTime, setClockTime] = useState(() => new Date());
 
   // User ID từ sessionStorage (set khi auth thành công)
   const userId = getStoredUserId() || '1';
@@ -92,9 +175,6 @@ export const HomePage: React.FC = () => {
 
     const unsubscribeZones = subscribeZones(userId, (loadedZones) => {
       setZones(loadedZones);
-      if (loadedZones.length > 0 && !taskZoneId) {
-        setTaskZoneId(loadedZones[0].id);
-      }
       zonesLoaded = true;
       if (zonesLoaded && tasksLoaded) {
         setInitialLoading(false);
@@ -115,111 +195,11 @@ export const HomePage: React.FC = () => {
     };
   }, []);
 
-  // Live tick mỗi giây khi có task ongoing để cập nhật timer
-  useEffect(() => {
-    const hasOngoing = tasks.some((t) => t.status === 'ongoing' && t.startedAt);
-    if (!hasOngoing) return;
-    const id = setInterval(() => setTick((t) => t + 1), 1000);
-    return () => clearInterval(id);
-  }, [tasks]);
 
-  // Đồng hồ live cập nhật mỗi giây
-  useEffect(() => {
-    const id = setInterval(() => setClockTime(new Date()), 1000);
-    return () => clearInterval(id);
-  }, []);
-
-  const handleTaskSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title.trim()) return;
-
-    // Tính scheduledAt: nếu user không nhập → mặc định 00:00:00 của ngày tạo (hôm nay)
-    const now = new Date();
-    const defaultScheduled = new Date(now);
-    defaultScheduled.setHours(0, 0, 0, 0);
-    const scheduledIso =
-      parseScheduledInput(scheduledAt) ?? defaultScheduled.toISOString();
-    const scheduledHour = hourFromIso(scheduledIso);
-
-    setEvaluatingExp(true);
-    try {
-      if (editingTaskId) {
-        const existing = tasks.find((t) => t.id === editingTaskId);
-        if (existing) {
-          // Re-evaluate EXP nếu description thay đổi
-          let exp = existing.exp ?? 0;
-          if (existing.title !== title.trim() || existing.description !== description) {
-            try {
-              exp = await evaluateExp(title.trim(), description);
-            } catch {
-              /* giữ exp cũ nếu lỗi */
-            }
-          }
-          const updatedTask: TaskItem = {
-            ...existing,
-            title: title.trim(),
-            description,
-            zoneId: taskZoneId,
-            exp,
-            scheduledAt: scheduledIso,
-            scheduledHour,
-            startedAt: existing.startedAt ?? null,
-            durationMs: existing.durationMs ?? 0,
-            updatedAt: new Date().toISOString(),
-          };
-          await saveTaskToFirestore(updatedTask);
-          toast.fire({
-            icon: 'success',
-            title: `Đã cập nhật công việc! (+${exp} EXP)`,
-          });
-        }
-        setEditingTaskId(null);
-      } else {
-        let exp = 10;
-        try {
-          exp = await evaluateExp(title.trim(), description);
-        } catch (err: any) {
-          toast.fire({ icon: 'warning', title: 'Không đánh giá được EXP, dùng mặc định 10' });
-        }
-        const newTask: TaskItem = {
-          id: 'task-' + Date.now(),
-          userId,
-          title: title.trim(),
-          description,
-          zoneId: taskZoneId || (zones[0]?.id ?? 'zone-1'),
-          status: 'pending',
-          exp,
-          scheduledAt: scheduledIso,
-          scheduledHour,
-          startedAt: null,
-          durationMs: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        await saveTaskToFirestore(newTask);
-        toast.fire({
-          icon: 'success',
-          title: `Đã thêm công việc! (+${exp} EXP)`,
-        });
-      }
-
-      setTitle('');
-      setDescription('');
-      setScheduledAt('');
-      setIsFormOpen(false);
-    } finally {
-      setEvaluatingExp(false);
-    }
-  };
 
   const handleEditClick = (task: TaskItem) => {
-    setEditingTaskId(task.id);
-    setTitle(task.title);
-    setDescription(task.description);
-    setTaskZoneId(task.zoneId);
-    setScheduledAt(toScheduledInputValue(task.scheduledAt));
-    setIsFormOpen(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setEditingTask(task);
+    setIsTaskModalOpen(true);
   };
 
   const handleDeleteTask = async (id: string) => {
@@ -236,64 +216,6 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  const handleCycleStatus = async (task: TaskItem, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const statusOrder: TaskStatus[] = ['pending', 'ongoing', 'completed'];
-    const currentIndex = statusOrder.indexOf(task.status);
-    const nextStatus = statusOrder[(currentIndex + 1) % statusOrder.length];
-
-    const now = new Date();
-    const nowIso = now.toISOString();
-
-    // Logic timer theo status:
-    // - pending → ongoing: bắt đầu đếm (set startedAt = now)
-    // - ongoing → completed: dừng đếm, tính durationMs = now - startedAt
-    // - completed → pending: reset (startedAt = null, durationMs = 0)
-    // - ongoing → pending (nếu có): reset (startedAt = null, durationMs = 0)
-    // - completed → ongoing (nếu có): bắt đầu đếm lại (set startedAt = now)
-    // - pending → completed (nhảy cóc): durationMs = 0
-    // Lưu ý: Firestore không chấp nhận undefined → luôn dùng null/0 thay thế
-    let startedAt: string | null = task.startedAt ?? null;
-    let durationMs: number = task.durationMs ?? 0;
-
-    if (nextStatus === 'ongoing') {
-      startedAt = nowIso;
-    } else if (nextStatus === 'completed') {
-      if (task.status === 'ongoing' && task.startedAt) {
-        const start = new Date(task.startedAt).getTime();
-        durationMs = now.getTime() - start;
-      } else {
-        // pending → completed (nhảy cóc): không có thời gian thực hiện
-        durationMs = 0;
-      }
-      startedAt = null;
-    } else if (nextStatus === 'pending') {
-      // reset về pending: clear timer
-      startedAt = null;
-      durationMs = 0;
-    }
-
-    const updatedTask: TaskItem = {
-      ...task,
-      status: nextStatus,
-      startedAt,
-      durationMs,
-      updatedAt: nowIso,
-    };
-    await saveTaskToFirestore(updatedTask);
-
-    const statusNames = {
-      pending: '⏳ Chờ xử lý (Pending)',
-      ongoing: '⚡ Đang thực hiện (Ongoing)',
-      completed: '✅ Hoàn thành (Completed)',
-    };
-
-    toast.fire({
-      icon: 'info',
-      title: `Đã đổi sang: ${statusNames[nextStatus]}`,
-    });
-  };
-
   const handleAddZone = async (newZoneData: Omit<Zone, 'id' | 'userId'>) => {
     const newZone: Zone = {
       ...newZoneData,
@@ -305,7 +227,6 @@ export const HomePage: React.FC = () => {
       icon: 'success',
       title: `Đã tạo Zone "${newZone.name}"`,
     });
-    if (!taskZoneId) setTaskZoneId(newZone.id);
   };
 
   /**
@@ -435,7 +356,6 @@ export const HomePage: React.FC = () => {
       }
 
       if (selectedZoneId === id) setSelectedZoneId('all');
-      if (taskZoneId === id) setTaskZoneId(fallbackZoneId);
 
       toast.fire({
         icon: 'success',
@@ -444,148 +364,7 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  const filteredTasks = tasks.filter((t) => {
-    const matchesZone = selectedZoneId === 'all' || t.zoneId === selectedZoneId;
-    const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
-    return matchesZone && matchesStatus;
-  });
-
   const getZoneById = (id: string) => zones.find((z) => z.id === id);
-
-  /**
-   * Chuyển giá trị datetime-local (YYYY-MM-DDTHH:MM:SS) sang ISO string.
-   * Trả về null nếu rỗng.
-   */
-  const parseScheduledInput = (value: string): string | null => {
-    const v = value.trim();
-    if (!v) return null;
-    // datetime-local không có timezone → xem như local time
-    const d = new Date(v);
-    return isNaN(d.getTime()) ? null : d.toISOString();
-  };
-
-  /**
-   * Chuyển ISO datetime sang giá trị cho input datetime-local (local time, có seconds).
-   * Trả về '' nếu null/invalid.
-   */
-  const toScheduledInputValue = (iso?: string | null): string => {
-    if (!iso) return '';
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '';
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-  };
-
-  /**
-   * Lấy giờ (0-23) từ ISO datetime. Trả về 0 nếu null/invalid.
-   */
-  const hourFromIso = (iso?: string | null): number => {
-    if (!iso) return 0;
-    const d = new Date(iso);
-    return isNaN(d.getTime()) ? 0 : d.getHours();
-  };
-
-  /** Format ISO datetime → chỉ "HH:MM:SS" */
-  const formatScheduledTime = (iso?: string | null): string => {
-    if (!iso) return '';
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return '';
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-  };
-
-  /**
-   * Format một Date theo offset UTC (giờ) bất kỳ → "HH:MM:SS".
-   * Vd offset=7 → giờ Hà Nội, offset=0 → giờ UTC.
-   */
-  const formatInOffset = (date: Date, offsetHours: number): string => {
-    const pad = (n: number) => String(n).padStart(2, '0');
-    const shifted = new Date(date.getTime() + offsetHours * 3600 * 1000);
-    return `${pad(shifted.getUTCHours())}:${pad(shifted.getUTCMinutes())}:${pad(shifted.getUTCSeconds())}`;
-  };
-
-  // Format milliseconds → "Xh Ym" / "Xm Ys" / "Xs"
-  const formatDuration = (ms: number): string => {
-    if (!ms || ms < 0) return '0s';
-    const totalSec = Math.floor(ms / 1000);
-    const h = Math.floor(totalSec / 3600);
-    const m = Math.floor((totalSec % 3600) / 60);
-    const s = totalSec % 60;
-    if (h > 0) return `${h}h ${m}m`;
-    if (m > 0) return `${m}m ${s}s`;
-    return `${s}s`;
-  };
-
-  // Group tasks theo ngày: ưu tiên scheduledAt, fallback về createdAt nếu null
-  const groupTasksByDate = (taskList: TaskItem[]) => {
-    const groups: { dateKey: string; dateLabel: string; tasks: TaskItem[] }[] = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    const map = new Map<string, TaskItem[]>();
-    for (const t of taskList) {
-      // Ưu tiên scheduledAt; nếu null thì fallback về createdAt
-      const refIso = t.scheduledAt ?? t.createdAt;
-      const d = new Date(refIso);
-      d.setHours(0, 0, 0, 0);
-      // Dùng local date (không toISOString để tránh lệch timezone UTC)
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(t);
-    }
-
-    // Sort theo ngày giảm dần (mới nhất trước)
-    const sortedKeys = Array.from(map.keys()).sort((a, b) => b.localeCompare(a));
-    for (const key of sortedKeys) {
-      const d = new Date(key + 'T00:00:00');
-      let label: string;
-      if (d.getTime() === today.getTime()) {
-        label = 'Hôm nay';
-      } else if (d.getTime() === yesterday.getTime()) {
-        label = 'Hôm qua';
-      } else {
-        label = d.toLocaleDateString('vi-VN', {
-          weekday: 'long',
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        });
-      }
-      groups.push({
-        dateKey: key,
-        dateLabel: label,
-        tasks: map.get(key)!,
-      });
-    }
-    return groups;
-  };
-
-  const groupedTasks = groupTasksByDate(filteredTasks);
-
-  const renderStatusBadge = (status: TaskStatus) => {
-    switch (status) {
-      case 'pending':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/15 text-amber-400 border border-amber-500/30 hover:scale-105 transition-transform">
-            <FontAwesomeIcon icon={faClock} /> Pending
-          </span>
-        );
-      case 'ongoing':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/15 text-blue-400 border border-blue-500/30 hover:scale-105 transition-transform">
-            <FontAwesomeIcon icon={faSpinner} spin /> Ongoing
-          </span>
-        );
-      case 'completed':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 hover:scale-105 transition-transform">
-            <FontAwesomeIcon icon={faCircleCheck} /> Completed
-          </span>
-        );
-    }
-  };
 
   if (initialLoading) {
     return <Loading message="Đang gom tụ linh khí..." />;
@@ -608,243 +387,165 @@ export const HomePage: React.FC = () => {
   }
 
   return (
-    <div className="w-full max-w-none px-4 sm:px-8 py-4 space-y-4">
-      {/* Header Mobile & Desktop */}
-      <header className="flex items-center justify-between py-3 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <img src="/logo.jpg" alt="Logo" className="w-10 h-10 rounded-xl object-cover border border-slate-700 shadow-md" />
-          <div>
-            <h1 className="text-xl sm:text-2xl font-black bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent tracking-wider uppercase" style={{ fontFamily: "'Chakra Petch', sans-serif", letterSpacing: '0.08em' }}>
-              {CONFIG.APP_NAME}
-            </h1>
-            <div className="flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-400 tracking-widest tabular-nums" style={{ fontFamily: "'Chakra Petch', sans-serif" }}>
-              <span title="Giờ app (UTC+7 Hà Nội)">
-                {formatInOffset(clockTime, CONFIG.APP_UTC_OFFSET)}
-              </span>
-              <span className="text-slate-600">·</span>
-              <span className="text-slate-500" title="Giờ UTC">
-                UTC {formatInOffset(clockTime, 0)}
-              </span>
-            </div>
-          </div>
-        </div>
+    <Layout
+      onOpenProfile={() => setView('profile')}
+      onOpenDashboard={() => setView('dashboard')}
+      onOpenZoneModal={() => setIsZoneModalOpen(true)}
+      onLogout={handleLogout}
+    >
 
-        <div className="flex items-center gap-2">
-          {/* Hamburger menu — mobile only */}
-          <div className="relative lg:hidden">
-            <button
-              onClick={() => setMenuOpen((v) => !v)}
-              className={`hamburger-btn ${menuOpen ? 'active' : ''} flex items-center justify-center w-10 h-10 bg-slate-900 border border-slate-800 hover:border-indigo-500 rounded-xl text-slate-200 transition-all active:scale-90 shadow-sm`}
-              title="Menu"
-            >
-              <FontAwesomeIcon icon={menuOpen ? faXmark : faBars} className="text-base" />
-            </button>
-
-            {menuOpen && (
-              <>
-                {/* Click-outside overlay */}
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setMenuOpen(false)}
-                />
-                {/* Dropdown menu */}
-                <div className="menu-dropdown absolute right-0 top-full mt-2 w-52 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden">
-                  <button
-                    onClick={() => { setView('profile'); setMenuOpen(false); }}
-                    className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800 transition-colors text-left"
-                  >
-                    <FontAwesomeIcon icon={faUserAstronaut} className="text-purple-400 w-5" />
-                    <span className="text-sm font-bold text-slate-200">Hồ Sơ Tu Hành</span>
-                  </button>
-                  <button
-                    onClick={() => { setView('dashboard'); setMenuOpen(false); }}
-                    className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800 transition-colors text-left border-t border-slate-800/50"
-                  >
-                    <FontAwesomeIcon icon={faChartLine} className="text-emerald-400 w-5" />
-                    <span className="text-sm font-bold text-slate-200">Thiên Cơ Các</span>
-                  </button>
-                  <button
-                    onClick={() => { setIsZoneModalOpen(true); setMenuOpen(false); }}
-                    className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800 transition-colors text-left border-t border-slate-800/50"
-                  >
-                    <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400 w-5" />
-                    <span className="text-sm font-bold text-slate-200">Linh Vực Không Gian</span>
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="menu-item w-full flex items-center gap-3 px-4 py-3 hover:bg-red-500/10 transition-colors text-left border-t border-slate-800/50"
-                  >
-                    <FontAwesomeIcon icon={faRightFromBracket} className="text-red-400 w-5" />
-                    <span className="text-sm font-bold text-slate-200">Thoát Ly Thần Thức</span>
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Desktop buttons — lg and up */}
-          <div className="hidden lg:flex items-center gap-2">
-            <button
-              onClick={() => setView('profile')}
-              className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
-            >
-              <FontAwesomeIcon icon={faUserAstronaut} className="text-purple-400" />
-              <span>Hồ Sơ Tu Hành</span>
-            </button>
-            <button
-              onClick={() => setView('dashboard')}
-              className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
-            >
-              <FontAwesomeIcon icon={faChartLine} className="text-emerald-400" />
-              <span>Thiên Cơ Các</span>
-            </button>
-            <button
-              onClick={() => setIsZoneModalOpen(true)}
-              className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
-            >
-              <FontAwesomeIcon icon={faFolderPlus} className="text-indigo-400" />
-              <span>Linh Vực Không Gian</span>
-            </button>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3.5 py-2 bg-slate-900 border border-slate-800 hover:border-red-500/30 hover:bg-red-500/5 rounded-xl text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
-            >
-              <FontAwesomeIcon icon={faRightFromBracket} className="text-red-400" />
-              <span>Thoát Ly Thần Thức</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Zone Selector — Mobile: dropdown, Desktop: horizontal pills */}
-      {/* Mobile dropdown */}
-      <div className="sm:hidden relative">
-        <button
-          onClick={() => setZoneDropdownOpen((v) => !v)}
-          className="flex items-center justify-between w-full gap-2 px-4 py-2.5 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition-all"
-        >
-          <span className="flex items-center gap-2">
-            <FontAwesomeIcon icon={faLayerGroup} className="text-indigo-400" />
-            {selectedZoneId === 'all'
-              ? `Tất cả (${tasks.length})`
-              : `${zones.find((z) => z.id === selectedZoneId)?.name || 'Zone'} (${tasks.filter((t) => t.zoneId === selectedZoneId).length})`}
-          </span>
-          <FontAwesomeIcon icon={zoneDropdownOpen ? faChevronUp : faChevronDown} className="text-slate-500 text-[10px]" />
-        </button>
-
-        {zoneDropdownOpen && (
-          <>
-            <div className="fixed inset-0 z-40" onClick={() => setZoneDropdownOpen(false)} />
-            <div className="menu-dropdown absolute left-0 right-0 top-full mt-1.5 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden">
-              <button
-                onClick={() => { setSelectedZoneId('all'); setZoneDropdownOpen(false); }}
-                className={`menu-item w-full flex items-center gap-3 px-4 py-3 transition-colors text-left ${
-                  selectedZoneId === 'all' ? 'bg-indigo-600/20 text-indigo-300' : 'hover:bg-slate-800 text-slate-200'
-                }`}
-              >
-                <FontAwesomeIcon icon={faLayerGroup} className="text-indigo-400 w-4" />
-                <span className="text-sm font-bold">Tất cả ({tasks.length})</span>
-              </button>
-              {zones.map((z) => {
-                const count = tasks.filter((t) => t.zoneId === z.id).length;
-                const isSelected = selectedZoneId === z.id;
-                return (
-                  <button
-                    key={z.id}
-                    onClick={() => { setSelectedZoneId(z.id); setZoneDropdownOpen(false); }}
-                    className={`menu-item w-full flex items-center gap-3 px-4 py-3 transition-colors text-left border-t border-slate-800/50 ${
-                      isSelected ? 'bg-slate-800' : 'hover:bg-slate-800'
-                    }`}
-                  >
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: z.color }} />
-                    <span className="text-sm font-bold text-slate-200">{z.name} ({count})</span>
-                  </button>
-                );
-              })}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Desktop horizontal pills */}
-      <div className="hidden sm:flex gap-2.5 overflow-x-auto py-1 no-scrollbar">
-        <button
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
-            selectedZoneId === 'all'
-              ? 'bg-indigo-600 border-indigo-500 text-white shadow-lg shadow-indigo-600/30'
-              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-          }`}
-          onClick={() => setSelectedZoneId('all')}
-        >
-          <FontAwesomeIcon icon={faLayerGroup} />
-          <span>Tất cả ({tasks.length})</span>
-        </button>
-
-        {zones.map((z) => {
-          const count = tasks.filter((t) => t.zoneId === z.id).length;
-          const isSelected = selectedZoneId === z.id;
-          return (
-            <button
-              key={z.id}
-              className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border ${
-                isSelected
-                  ? 'text-white shadow-lg'
-                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
-              }`}
-              style={{
-                borderColor: z.color,
-                backgroundColor: isSelected ? z.color : undefined,
-              }}
-              onClick={() => setSelectedZoneId(z.id)}
-            >
-              <span
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: isSelected ? '#ffffff' : z.color }}
-              />
-              <span>
-                {z.name} ({count})
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Action Bar */}
-      <div className="flex items-center gap-3">
+      {/* 1. Action Bar & Filters (Tạo mới, Dropdown Zone, Dropdown Trạng thái) */}
+      <div className="flex flex-wrap sm:flex-nowrap items-center justify-end gap-2 sm:gap-3 w-full">
         <button
           onClick={() => {
-            if (isFormOpen && editingTaskId) {
-              setEditingTaskId(null);
-              setTitle('');
-              setDescription('');
-              setScheduledAt('');
-            }
-            setIsFormOpen(!isFormOpen);
+            setEditingTask(null);
+            setIsTaskModalOpen(true);
           }}
-          className="flex-1 py-3 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-indigo-600/25 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shrink-0"
         >
-          <FontAwesomeIcon icon={isFormOpen ? faChevronUp : faPlus} />
-          <span>{editingTaskId ? 'Sửa công việc' : isFormOpen ? 'Đóng khung nhập' : <><span className="sm:hidden">Tạo mới</span><span className="hidden sm:inline">Tạo công việc mới</span></>}</span>
+          <FontAwesomeIcon icon={faPlus} />
+          <span>Tạo mới</span>
+          {selectedZoneId !== 'all' && (
+            <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-black/30 border border-white/15 text-xs font-semibold text-white shadow-inner">
+              <span
+                className="w-2 h-2 rounded-full shrink-0"
+                style={{
+                  backgroundColor:
+                    zones.find((z) => z.id === selectedZoneId)?.color || '#6366f1',
+                }}
+              />
+              <span className="truncate max-w-[120px]">
+                {zones.find((z) => z.id === selectedZoneId)?.name || 'Zone'}
+              </span>
+            </span>
+          )}
         </button>
 
-        {/* Status filter — icon-only on mobile, icon+text on desktop */}
-        <div className="relative">
+        {/* Zone Selector Dropdown */}
+        <div className="relative flex-1 sm:flex-initial">
           <button
-            onClick={() => setStatusDropdownOpen((v) => !v)}
-            className="flex items-center gap-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl px-3.5 py-3 text-xs font-bold text-slate-200 transition-all active:scale-95"
-            title="Lọc trạng thái"
+            onClick={() => {
+              setZoneDropdownOpen((v) => !v);
+              setStatusDropdownOpen(false);
+            }}
+            className="flex items-center justify-between sm:justify-start gap-2 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl px-3.5 py-3 text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm w-full sm:w-auto"
+            title="Lọc theo Zone"
           >
-            <FontAwesomeIcon icon={faFilter} className="text-slate-400" />
+            <span className="flex items-center gap-1.5 truncate">
+              <FontAwesomeIcon icon={faLayerGroup} className="text-indigo-400 shrink-0 text-xs" />
+              <span className="text-slate-400 font-medium">Zone:</span>
+              {selectedZoneId === 'all' ? (
+                <>
+                  <span className="text-slate-200 font-bold">Tất cả</span>
+                  <span className="text-slate-400 text-[11px] font-semibold">({tasks.length})</span>
+                </>
+              ) : (
+                <>
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ backgroundColor: zones.find((z) => z.id === selectedZoneId)?.color || '#6366f1' }}
+                  />
+                  <span className="text-slate-200 font-bold truncate max-w-[110px] sm:max-w-[150px]">
+                    {zones.find((z) => z.id === selectedZoneId)?.name || 'Zone'}
+                  </span>
+                  <span className="text-slate-400 text-[11px] font-semibold">
+                    ({tasks.filter((t) => t.zoneId === selectedZoneId).length})
+                  </span>
+                </>
+              )}
+            </span>
             <FontAwesomeIcon
-              icon={statusFilter === 'all' ? faList : statusFilter === 'pending' ? faClock : statusFilter === 'ongoing' ? faHourglassHalf : faCircleCheck}
+              icon={zoneDropdownOpen ? faChevronUp : faChevronDown}
+              className="text-slate-500 text-[10px] shrink-0 ml-1"
+            />
+          </button>
+
+          {zoneDropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setZoneDropdownOpen(false)} />
+              <div className="menu-dropdown absolute left-0 sm:left-0 top-full mt-1.5 w-60 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden max-h-80 overflow-y-auto">
+                <div className="px-3.5 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800/80 bg-slate-950/60">
+                  Lọc theo Zone
+                </div>
+                <button
+                  onClick={() => { setSelectedZoneId('all'); setZoneDropdownOpen(false); }}
+                  className={`menu-item w-full flex items-center justify-between gap-3 px-4 py-3 transition-colors text-left ${
+                    selectedZoneId === 'all' ? 'bg-indigo-600/20 text-indigo-300' : 'hover:bg-slate-800 text-slate-200'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 truncate">
+                    <FontAwesomeIcon icon={faLayerGroup} className="text-indigo-400 w-4 shrink-0" />
+                    <span className="text-sm font-bold truncate">Tất cả</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">
+                      {tasks.length}
+                    </span>
+                    {selectedZoneId === 'all' && <span className="text-emerald-400 text-xs">✓</span>}
+                  </div>
+                </button>
+                {zones.map((z) => {
+                  const count = tasks.filter((t) => t.zoneId === z.id).length;
+                  const isSelected = selectedZoneId === z.id;
+                  return (
+                    <button
+                      key={z.id}
+                      onClick={() => { setSelectedZoneId(z.id); setZoneDropdownOpen(false); }}
+                      className={`menu-item w-full flex items-center justify-between gap-3 px-4 py-3 transition-colors text-left border-t border-slate-800/50 ${
+                        isSelected ? 'bg-slate-800' : 'hover:bg-slate-800'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: z.color }} />
+                        <span className="text-sm font-bold text-slate-200 truncate">{z.name}</span>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">
+                          {count}
+                        </span>
+                        {isSelected && <span className="text-emerald-400 text-xs">✓</span>}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Status filter — icon-only on mobile, icon+text on desktop */}
+        <div className="relative shrink-0">
+          <button
+            onClick={() => {
+              setStatusDropdownOpen((v) => !v);
+              setZoneDropdownOpen(false);
+            }}
+            className="flex items-center gap-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl px-3.5 py-3 text-xs font-bold text-slate-200 transition-all active:scale-95 shadow-sm"
+            title="Lọc theo trạng thái"
+          >
+            <FontAwesomeIcon icon={faFilter} className="text-slate-400 text-xs" />
+            <span className="text-slate-400 font-medium hidden sm:inline">Trạng thái:</span>
+            <FontAwesomeIcon
+              icon={
+                statusFilter === 'all' ? faList :
+                statusFilter === 'pending' ? faClock :
+                statusFilter === 'ongoing' ? faHourglassHalf :
+                statusFilter === 'completed' ? faCircleCheck : faBan
+              }
               className={
                 statusFilter === 'all' ? 'text-indigo-400' :
                 statusFilter === 'pending' ? 'text-slate-400' :
-                statusFilter === 'ongoing' ? 'text-blue-400' : 'text-emerald-400'
+                statusFilter === 'ongoing' ? 'text-blue-400' :
+                statusFilter === 'completed' ? 'text-emerald-400' : 'text-rose-400'
               }
             />
-            <span className="hidden sm:inline">
-              {statusFilter === 'all' ? 'Tất cả' : statusFilter === 'pending' ? 'Pending' : statusFilter === 'ongoing' ? 'Ongoing' : 'Completed'}
+            <span className="text-slate-200 font-bold hidden sm:inline">
+              {
+                statusFilter === 'all' ? 'Tất cả' :
+                statusFilter === 'pending' ? 'Pending' :
+                statusFilter === 'ongoing' ? 'Ongoing' :
+                statusFilter === 'completed' ? 'Completed' : 'Cancel'
+              }
             </span>
             <FontAwesomeIcon icon={statusDropdownOpen ? faChevronUp : faChevronDown} className="text-slate-500 text-[10px]" />
           </button>
@@ -853,11 +554,15 @@ export const HomePage: React.FC = () => {
             <>
               <div className="fixed inset-0 z-40" onClick={() => setStatusDropdownOpen(false)} />
               <div className="menu-dropdown absolute right-0 top-full mt-1.5 w-44 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-50 overflow-hidden">
+                <div className="px-3.5 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800/80 bg-slate-950/60">
+                  Lọc theo Trạng Thái
+                </div>
                 {([
                   { value: 'all', icon: faList, label: 'Tất cả', color: 'text-indigo-400' },
                   { value: 'pending', icon: faClock, label: 'Pending', color: 'text-slate-400' },
                   { value: 'ongoing', icon: faHourglassHalf, label: 'Ongoing', color: 'text-blue-400' },
                   { value: 'completed', icon: faCircleCheck, label: 'Completed', color: 'text-emerald-400' },
+                  { value: 'cancel', icon: faBan, label: 'Cancel', color: 'text-rose-400' },
                 ] as const).map((opt) => (
                   <button
                     key={opt.value}
@@ -877,314 +582,83 @@ export const HomePage: React.FC = () => {
         </div>
       </div>
 
-      {/* Task Form Card */}
-      {isFormOpen && (
-        <form onSubmit={handleTaskSubmit} className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl animate-in fade-in slide-in-from-top-3 duration-200">
-          <h3 className="text-base font-bold text-slate-100">
-            {editingTaskId ? 'Cập nhật Task' : 'Thêm Task Mới'}
-          </h3>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              Tên công việc *
-            </label>
-            <input
-              type="text"
-              placeholder="Nhập tên task..."
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              Chọn Zone dự án
-            </label>
-            <select
-              value={taskZoneId}
-              onChange={(e) => setTaskZoneId(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 focus:outline-none focus:border-indigo-500"
-            >
-              {zones.map((z) => (
-                <option key={z.id} value={z.id}>
-                  {z.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              Ngày &amp; giờ dự kiến làm (HH:MM:SS)
-            </label>
+      {/* 2. Cụm tìm kiếm Datetime & Nút bấm nhanh (Quick Search) */}
+      <div className="mt-4 sm:mt-5 flex flex-wrap items-center justify-between gap-3 bg-slate-900/70 border border-slate-800/80 rounded-2xl p-2.5 sm:p-3 shadow-sm">
+        {/* Left: 2 Datetime inputs */}
+        <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold">
+            <FontAwesomeIcon icon={faCalendarDays} className="text-indigo-400 text-xs shrink-0 mr-0.5" />
+            <span className="text-[11px] font-bold text-slate-400">Từ:</span>
             <input
               type="datetime-local"
-              step={1}
-              value={scheduledAt}
-              onChange={(e) => setScheduledAt(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-100 focus:outline-none focus:border-indigo-500 [color-scheme:dark]"
-            />
-            <p className="mt-1 text-[10px] text-slate-500">
-              Để trống sẽ mặc định <span className="text-slate-400 font-semibold">00:00:00</span> của ngày tạo task.
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
-              Mô tả chi tiết & Hình ảnh (Rich Editor)
-            </label>
-            <RichTextEditor
-              value={description}
-              onChange={(content) => setDescription(content)}
-              height={260}
-              placeholder="Nhập mô tả chi tiết cho công việc..."
-            />
-          </div>
-
-          <div className="flex gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={evaluatingExp}
-              className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 text-white font-bold text-sm rounded-xl shadow-lg shadow-indigo-600/30 hover:from-indigo-500 hover:to-violet-500 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {evaluatingExp ? (
-                <>
-                  <FontAwesomeIcon icon={faWandMagicSparkles} spin />
-                  <span>AI đang chấm EXP...</span>
-                </>
-              ) : (
-                <span>{editingTaskId ? 'Lưu thay đổi' : 'Thêm công việc'}</span>
-              )}
-            </button>
-            <button
-              type="button"
-              className="px-5 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm rounded-xl"
-              onClick={() => {
-                setIsFormOpen(false);
-                setEditingTaskId(null);
-                setTitle('');
-                setDescription('');
-                setScheduledAt('');
+              value={searchDateFrom}
+              onChange={(e) => {
+                setSearchDateFrom(e.target.value);
+                setActivePreset(null);
               }}
-            >
-              Hủy
-            </button>
+              className="bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-200 outline-none transition-colors [color-scheme:dark]"
+              title="Thời điểm bắt đầu"
+            />
           </div>
-        </form>
-      )}
+
+          <div className="flex items-center gap-1.5 text-xs text-slate-400 font-semibold">
+            <span className="text-[11px] font-bold text-slate-400">Đến:</span>
+            <input
+              type="datetime-local"
+              value={searchDateTo}
+              onChange={(e) => {
+                setSearchDateTo(e.target.value);
+                setActivePreset(null);
+              }}
+              className="bg-slate-950 border border-slate-800 hover:border-slate-700 focus:border-indigo-500 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-200 outline-none transition-colors [color-scheme:dark]"
+              title="Thời điểm kết thúc"
+            />
+          </div>
+        </div>
+
+        {/* Right: Quick Search Preset Buttons */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {PRESET_BUTTONS.map((p) => (
+            <button
+              key={p.id}
+              onClick={() => applyPreset(p.id)}
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap active:scale-95 ${
+                activePreset === p.id
+                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
+                  : 'bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/40'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Floating Task Form Modal */}
+      <TaskFormModal
+        isOpen={isTaskModalOpen}
+        onClose={() => {
+          setIsTaskModalOpen(false);
+          setEditingTask(null);
+        }}
+        editingTask={editingTask}
+        zones={zones}
+        selectedZoneId={selectedZoneId}
+        userId={userId}
+      />
 
       {/* TASK LIST - GROUPED BY DATE */}
-      <main className="space-y-5">
-        {filteredTasks.length === 0 ? (
-          <div className="text-center py-12 px-4 bg-slate-900/60 border border-dashed border-slate-800 rounded-2xl text-slate-400 text-sm">
-            Chưa có công việc nào trong thư mục này.
-          </div>
-        ) : (
-          groupedTasks.map((group) => {
-            const completedCount = group.tasks.filter((t) => t.status === 'completed').length;
-            const totalCount = group.tasks.length;
-            const dayExp = group.tasks
-              .filter((t) => t.status === 'completed')
-              .reduce((sum, t) => sum + (t.exp ?? 0), 0);
-
-            return (
-              <div key={group.dateKey} className="space-y-2.5">
-                {/* Date Legend Header */}
-                <div className="flex items-center gap-3 px-1 sticky top-0 z-10 bg-slate-950/80 backdrop-blur-sm py-2">
-                  <div className="flex items-center gap-2 flex-shrink-0">
-                    <div className="w-1.5 h-6 rounded-full bg-gradient-to-b from-indigo-500 to-violet-500" />
-                    <h2 className="text-sm font-extrabold text-slate-200 capitalize">
-                      {group.dateLabel}
-                    </h2>
-                  </div>
-                  <div className="flex items-center gap-2 text-[10px] font-bold">
-                    <span className="px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
-                      {totalCount}
-                    </span>
-                    {completedCount > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                        ✓ {completedCount}<span className="hidden sm:inline"> hoàn thành</span>
-                      </span>
-                    )}
-                    {dayExp > 0 && (
-                      <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                        ⚡ {dayExp}<span className="hidden sm:inline"> EXP</span>
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex-1 h-px bg-slate-800" />
-                </div>
-
-                {/* Tasks in this date group */}
-                <div className="space-y-3">
-                  {group.tasks.map((task) => {
-                    const currentZone = getZoneById(task.zoneId);
-                    const isExpanded = expandedTaskId === task.id;
-
-                    return (
-                      <div
-                        key={task.id}
-                        className={`group relative bg-slate-900 border border-slate-800/80 rounded-xl p-3 pt-5 space-y-2 shadow-sm hover:border-slate-700 transition-all ${
-                          task.status === 'completed' ? 'opacity-80' : ''
-                        }`}
-                      >
-                        {/* Left accent border line based on status */}
-                        <div
-                          className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-xl ${
-                            task.status === 'pending'
-                              ? 'bg-amber-500'
-                              : task.status === 'ongoing'
-                              ? 'bg-blue-500'
-                              : 'bg-emerald-500'
-                          }`}
-                        />
-
-                        {/* Scheduled time chip — nằm trên đường border top của card */}
-                        {task.scheduledAt && (
-                          <span
-                            className="absolute -top-2.5 left-3 z-10 inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold text-amber-300 bg-slate-900 bg-amber-500/10 border border-amber-500/40 whitespace-nowrap shadow-sm"
-                            title={`Giờ dự kiến: ${task.scheduledHour ?? 0}h`}
-                          >
-                            {formatScheduledTime(task.scheduledAt)}
-                          </span>
-                        )}
-
-                        {/* Card Header: Zone tag, EXP & Status badge */}
-                        <div className="flex items-center justify-between gap-2 pl-1">
-                          <div className="flex items-center gap-2 flex-wrap min-w-0">
-                            {currentZone && (
-                              <span
-                                className="inline-block px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider text-white whitespace-nowrap"
-                                style={{ backgroundColor: currentZone.color }}
-                              >
-                                {currentZone.name}
-                              </span>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-1.5 flex-shrink-0">
-                            <span
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-extrabold border whitespace-nowrap"
-                              style={{
-                                backgroundColor:
-                                  (task.exp ?? 0) >= 200
-                                    ? 'rgba(244,63,94,0.15)'
-                                    : (task.exp ?? 0) >= 100
-                                    ? 'rgba(245,158,11,0.15)'
-                                    : 'rgba(16,185,129,0.15)',
-                                color:
-                                  (task.exp ?? 0) >= 200
-                                    ? '#fb7185'
-                                    : (task.exp ?? 0) >= 100
-                                    ? '#fbbf24'
-                                    : '#34d399',
-                                borderColor:
-                                  (task.exp ?? 0) >= 200
-                                    ? 'rgba(244,63,94,0.3)'
-                                    : (task.exp ?? 0) >= 100
-                                    ? 'rgba(245,158,11,0.3)'
-                                    : 'rgba(16,185,129,0.3)',
-                              }}
-                              title="Điểm EXP do AI đánh giá"
-                            >
-                              <FontAwesomeIcon icon={faBolt} />
-                              {task.exp ?? 0} EXP
-                            </span>
-                            <button
-                              onClick={(e) => handleCycleStatus(task, e)}
-                              className="focus:outline-none"
-                              title="Bấm để đổi trạng thái"
-                            >
-                              {renderStatusBadge(task.status)}
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Title row */}
-                        <h3 className="text-sm font-bold text-slate-100 truncate pl-1">
-                          {task.title}
-                        </h3>
-
-                        {/* Inline Action Bar: Time, Expand Toggle & Action Buttons */}
-                        <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/60 pl-1 text-xs">
-                          <div className="flex items-center gap-3">
-                            <span className="text-[11px] text-slate-500 font-medium whitespace-nowrap" title="Thời điểm tạo task">
-                              Tạo: {new Date(task.createdAt).toLocaleTimeString('vi-VN', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
-                            </span>
-
-                            {/* Timer: ongoing = live, completed = total duration, pending = hidden */}
-                            {task.status === 'ongoing' && task.startedAt && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-400 whitespace-nowrap">
-                                <FontAwesomeIcon icon={faClock} />
-                                {formatDuration(Date.now() - new Date(task.startedAt).getTime())}
-                              </span>
-                            )}
-                            {task.status === 'completed' && task.durationMs && task.durationMs > 0 && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 whitespace-nowrap">
-                                <FontAwesomeIcon icon={faClock} />
-                                {formatDuration(task.durationMs)}
-                              </span>
-                            )}
-
-                            {task.description && (
-                              <button
-                                onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
-                                className="flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
-                              >
-                                <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} />
-                                <span>{isExpanded ? 'Thu gọn' : 'Xem mô tả'}</span>
-                              </button>
-                            )}
-                          </div>
-
-                          <div className="flex items-center gap-1.5">
-                            <button
-                              onClick={() => setSelectedDetailTask(task)}
-                              className="px-2 py-1 rounded-md bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 text-[11px] font-bold flex items-center gap-1 transition-colors"
-                              title="Phóng to full màn hình"
-                            >
-                              <FontAwesomeIcon icon={faMaximize} /><span className="hidden sm:inline">Chi tiết</span>
-                            </button>
-                            <button
-                              onClick={() => handleEditClick(task)}
-                              className="px-2 py-1 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold flex items-center gap-1 transition-colors"
-                            >
-                              <FontAwesomeIcon icon={faPenToSquare} /><span className="hidden sm:inline">Sửa</span>
-                            </button>
-                            <button
-                              onClick={() => handleDeleteTask(task.id)}
-                              className="px-2 py-1 rounded-md bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-[11px] font-semibold flex items-center gap-1 transition-colors"
-                            >
-                              <FontAwesomeIcon icon={faTrashCan} /><span className="hidden sm:inline">Xóa</span>
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Description Content - Expanded Area */}
-                        {task.description && isExpanded && (
-                          <div className="pl-1 pt-1 animate-in fade-in duration-150">
-                            <div className="bg-slate-950/80 border border-slate-800/80 rounded-lg p-3 text-xs">
-                              <div
-                                className="rich-text-content text-slate-200 leading-relaxed space-y-2"
-                                dangerouslySetInnerHTML={{ __html: task.description }}
-                              />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          })
-        )}
-      </main>
+      <TaskList
+        tasks={tasks}
+        zones={zones}
+        selectedZoneId={selectedZoneId}
+        statusFilter={statusFilter}
+        dateFrom={searchDateFrom}
+        dateTo={searchDateTo}
+        onEdit={handleEditClick}
+        onDelete={handleDeleteTask}
+        onOpenDetail={(task) => setSelectedDetailTask(task)}
+      />
 
       {/* Task Detail Fullscreen Modal */}
       <TaskDetailModal
@@ -1207,6 +681,6 @@ export const HomePage: React.FC = () => {
 
       {/* AI Chat Assistant (Floating) */}
       <ChatPanel zones={zones} onCreateTask={handleCreateTaskFromChat} />
-    </div>
+    </Layout>
   );
 };

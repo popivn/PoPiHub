@@ -109,14 +109,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ tasks, zones, onBack }) =>
 
   // Phân bố theo status
   const statusData = useMemo(() => {
-    const counts = { pending: 0, ongoing: 0, completed: 0 };
+    const counts: Record<string, number> = { pending: 0, ongoing: 0, completed: 0, cancel: 0 };
     filteredTasks.forEach((t) => {
-      counts[t.status]++;
+      if (counts[t.status] !== undefined) {
+        counts[t.status]++;
+      }
     });
     return [
       { name: 'Pending', value: counts.pending, color: '#f59e0b' },
       { name: 'Ongoing', value: counts.ongoing, color: '#3b82f6' },
       { name: 'Completed', value: counts.completed, color: '#10b981' },
+      { name: 'Cancel', value: counts.cancel, color: '#f43f5e' },
     ].filter((d) => d.value > 0);
   }, [filteredTasks]);
 

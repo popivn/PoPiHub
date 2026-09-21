@@ -1,4 +1,4 @@
-export type TaskStatus = 'pending' | 'ongoing' | 'completed';
+export type TaskStatus = 'pending' | 'ongoing' | 'completed' | 'cancel';
 
 export interface Zone {
   id: string;

@@ -1,7 +1,7 @@
 import React from 'react';
 import type { TaskItem, Zone } from '../types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faXmark, faClock, faSpinner, faCircleCheck, faPenToSquare, faTrashCan, faBolt } from '@fortawesome/free-solid-svg-icons';
+import { faXmark, faClock, faSpinner, faCircleCheck, faPenToSquare, faTrashCan, faBolt, faBan } from '@fortawesome/free-solid-svg-icons';
 
 interface TaskDetailModalProps {
   task: TaskItem | null;
@@ -57,6 +57,12 @@ export const TaskDetailModal: React.FC<TaskDetailModalProps> = ({
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
             <FontAwesomeIcon icon={faCircleCheck} /> Completed
+          </span>
+        );
+      case 'cancel':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-bold bg-rose-500/15 text-rose-400 border border-rose-500/30">
+            <FontAwesomeIcon icon={faBan} /> Cancel
           </span>
         );
     }
